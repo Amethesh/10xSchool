@@ -1,0 +1,22 @@
+.customHeroButton {
+  background-color: #bfecff;
+  color: black;
+  padding: 1.2rem;
+  font-size: 18px;
+  font-weight: 500;
+  border: 1px solid black;
+  width: fit-content;
+  box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.8);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.customHeroButton:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px rgba(0, 0, 0, 0.8);
+}
+
+.customHeroButton:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px rgba(0, 0, 0, 0.8);
+}

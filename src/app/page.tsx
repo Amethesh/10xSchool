@@ -1,103 +1,134 @@
+import Abacus from "@/components/Home/Abacus";
+import AboutSection from "@/components/Home/AboutUs";
+import WhatWeDoSection from "@/components/Home/WhatWeDo";
+// import styles from "@/styles/landingPage.module.css";
+import * as motion from "motion/react-client";
 import Image from "next/image";
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <main>
+      <section className="mt-25 overflow-x-hidden mx-auto ">
+        {/* Header Banner - Reduced height */}
+        <div className="w-full h-[70px] bg-gradient-to-r from-[#bfecff] to-[#a8e6ff] flex items-center justify-center text-[24px] font-semibold text-black border-2 border-black ">
+          Welcome to The 10X School - Empowering Minds, Transforming Futures
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+
+        {/* Main Content - Reduced overall height */}
+        <div className="bg-white border-b-2 border-black">
+          <div className="flex border-black overflow-hidden max-w-7xl mx-auto min-h-[500px]">
+            {/* Left Content Panel */}
+            <div className="w-[60%] px-12 py-10 flex flex-col justify-center relative">
+              {/* Subtle background pattern */}
+              <div className="absolute inset-0 opacity-5 bg-gradient-to-br from-[#bfecff] via-transparent to-[#D3EF95]"></div>
+
+              <div className="relative z-10">
+                <h2 className="text-[37px] font-bold text-black leading-tight mb-6">
+                  Unlock Your Child&apos;s Superpower
+                  <br />
+                  <span className="text-[#2563eb]">
+                    in Math, Logical & Lateral thinking.
+                  </span>
+                </h2>
+
+                <p className="text-[16px] text-gray-600 leading-relaxed mb-8 max-w-lg">
+                  Discover online brain development & academic tutoring programs
+                  that make your child smarter, sharper, and more confident —
+                  all from the comfort of home.
+                </p>
+
+                {/* Enhanced Features List */}
+                <div className="flex flex-wrap gap-4 mb-8">
+                  <span className="bg-[#D3EF95] text-black px-3 py-1 rounded-full text-sm font-medium border border-black/20">
+                    🧠 Brain Development
+                  </span>
+                  <span className="bg-[#bfecff] text-black px-3 py-1 rounded-full text-sm font-medium border border-black/20">
+                    📚 Academic Tutoring
+                  </span>
+                  <span className="bg-[#ffd6cc] text-black px-3 py-1 rounded-full text-sm font-medium border border-black/20">
+                    🏠 Learn from Home
+                  </span>
+                </div>
+
+                <motion.button
+                  className="bg-gradient-to-r from-[#bfecff] to-[#a8e6ff] text-black w-fit px-8 py-3 font-semibold text-base border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.8)] cursor-pointer rounded-lg"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileHover={{
+                    background:
+                      "linear-gradient(45deg, rgba(173, 243, 21, 1), rgba(200, 255, 50, 1))",
+                    transform: "translate(-2px, -2px)",
+                    boxShadow: "6px 6px 0px 0px rgba(0,0,0,0.8)",
+                  }}
+                  whileTap={{
+                    background: "rgba(255, 255, 255, 1)",
+                    transform: "translate(2px, 2px)",
+                    boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.8)",
+                  }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.3,
+                    ease: "easeOut",
+                  }}
+                >
+                  Explore Our Programs →
+                </motion.button>
+              </div>
+            </div>
+
+            <div className="w-[40%] bg-gradient-to-br from-[#D3EF95]/30 to-[#bfecff]/30 flex ">
+              <Abacus />
+
+              {/* Image container with better styling */}
+              <div className="w-full aspect-sq border-4 border-black rounded-full shadow-lg overflow-hidden bg-white relative">
+                <div className="absolute inset-2 rounded-full overflow-hidden">
+                  <Image
+                    src="/images/child_pic.png"
+                    alt="Child playing with an tablet"
+                    width={400}
+                    height={400}
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <AboutSection />
+      <WhatWeDoSection />
+    </main>
   );
 }
+// pages/index.js (or wherever you want to display this section)
+
+// import { AnimatedHeroSection } from "./Animate";
+
+// export default function HomePage() {
+//   return (
+//     <div>
+//       {/* Other content on your page */}
+//       <AnimatedHeroSection />
+//       <section className="relative">
+//         <div className="absolute w-full flex justify-center">
+//           <p className="px-12 py-4 text-2xl bg-white border-2 border-black w-fit font-bold mt-10 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)]">
+//             ABOUT US
+//           </p>
+//         </div>
+//         <div className="bg-black h-[2px] w-full mb-5 mt-12"></div>
+//         <div className="bg-black h-[5px] w-full mb-5"></div>
+//         <div className="bg-black h-[8px] w-full mb-5"></div>
+//         <div className="bg-black h-[10px] w-full mb-5"></div>
+//         <div className="bg-black h-[12px] w-full mb-5"></div>
+
+//         <div className="bg-black h-[700px] w-full"></div>
+
+//         <div className="bg-black h-[12px] w-full mb-5 mt-5"></div>
+//         <div className="bg-black h-[10px] w-full mb-5"></div>
+//         <div className="bg-black h-[8px] w-full mb-5"></div>
+//         <div className="bg-black h-[5px] w-full mb-5"></div>
+//         <div className="bg-black h-[2px] w-full mb-5 "></div>
+//       </section>
+//       {/* Other content on your page */}
+//     </div>
+//   );
+// }
