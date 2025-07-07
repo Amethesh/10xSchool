@@ -1,13 +1,11 @@
-// This directive is ESSENTIAL for Next.js
 "use client";
-
 import React, { useState, useLayoutEffect } from "react";
 import {
   motion,
   useAnimate,
   motionValue, // <-- Import the factory function, not the hook
   MotionValue,
-} from "framer-motion";
+} from "motion/react";
 
 // --- Constants for easier maintenance ---
 const NUM_BEADS = 6;

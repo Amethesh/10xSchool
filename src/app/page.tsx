@@ -1,7 +1,10 @@
 import Abacus from "@/components/Home/Abacus";
 import AboutSection from "@/components/Home/AboutUs";
+import FAQComponent from "@/components/Home/FAQ";
+import Footer from "@/components/Home/Footer";
+import GetStarted from "@/components/Home/GetStarted";
+import Testimonials from "@/components/Home/Testimonials";
 import WhatWeDoSection from "@/components/Home/WhatWeDo";
-// import styles from "@/styles/landingPage.module.css";
 import * as motion from "motion/react-client";
 import Image from "next/image";
 
@@ -96,39 +99,10 @@ export default function Home() {
       </section>
       <AboutSection />
       <WhatWeDoSection />
+      <Testimonials />
+      <FAQComponent />
+      <GetStarted />
+      <Footer />
     </main>
   );
 }
-// pages/index.js (or wherever you want to display this section)
-
-// import { AnimatedHeroSection } from "./Animate";
-
-// export default function HomePage() {
-//   return (
-//     <div>
-//       {/* Other content on your page */}
-//       <AnimatedHeroSection />
-//       <section className="relative">
-//         <div className="absolute w-full flex justify-center">
-//           <p className="px-12 py-4 text-2xl bg-white border-2 border-black w-fit font-bold mt-10 shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)]">
-//             ABOUT US
-//           </p>
-//         </div>
-//         <div className="bg-black h-[2px] w-full mb-5 mt-12"></div>
-//         <div className="bg-black h-[5px] w-full mb-5"></div>
-//         <div className="bg-black h-[8px] w-full mb-5"></div>
-//         <div className="bg-black h-[10px] w-full mb-5"></div>
-//         <div className="bg-black h-[12px] w-full mb-5"></div>
-
-//         <div className="bg-black h-[700px] w-full"></div>
-
-//         <div className="bg-black h-[12px] w-full mb-5 mt-5"></div>
-//         <div className="bg-black h-[10px] w-full mb-5"></div>
-//         <div className="bg-black h-[8px] w-full mb-5"></div>
-//         <div className="bg-black h-[5px] w-full mb-5"></div>
-//         <div className="bg-black h-[2px] w-full mb-5 "></div>
-//       </section>
-//       {/* Other content on your page */}
-//     </div>
-//   );
-// }
