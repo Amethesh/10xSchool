@@ -1,5 +1,3 @@
-"use client";
-import React from "react";
 import * as motion from "motion/react-client";
 import Image from "next/image";
 
@@ -30,9 +28,10 @@ const AboutSection = () => {
         {[2, 5, 8, 10, 12].map((height, index, arr) => (
           <motion.div
             key={index}
-            className={`bg-black h-[${height}px] w-full${
+            className={`bg-black w-full${
               index !== arr.length - 1 ? " mb-5" : ""
             }`}
+            style={{ height: `${height}px` }}
             initial={{ scaleX: 0 }}
             whileInView={{ scaleX: 1 }}
             transition={{
@@ -244,7 +243,8 @@ const AboutSection = () => {
         {[12, 10, 8, 5, 2].map((height, index) => (
           <motion.div
             key={index}
-            className={`bg-black h-[${height}px] w-full mb-5`}
+            className="bg-black w-full mb-5"
+            style={{ height: `${height}px` }}
             initial={{ scaleX: 0 }}
             whileInView={{ scaleX: 1 }}
             transition={{
