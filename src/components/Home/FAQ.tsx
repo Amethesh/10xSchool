@@ -26,43 +26,44 @@ const FAQComponent = () => {
         "What is the ideal age for joining the 5-in-1 Brain Development Program?",
       answer:
         "Children aged 5 to 15 years can join. The course is structured into 8 levels, ensuring development at each stage.",
-      icon: <Users className="w-5 h-5" />,
+      icon: <Users className="w-6 h-6" />,
     },
     {
       id: 2,
       question: "Are your programs conducted online or offline?",
       answer:
         "We are a 100% online institute, making our programs accessible globally.",
-      icon: <Laptop className="w-5 h-5" />,
+      icon: <Laptop className="w-6 h-6" />,
     },
     {
       id: 3,
-      question: "How are the classes conducted?",
+      question:
+        "Is it required to teach Financial literacy for kids below10 years?",
       answer:
-        "Classes are conducted live via Google Meet in small batches for personalized attention.",
-      icon: <Video className="w-5 h-5" />,
+        "Certainly, because; \n a. 90% of children are not taught money management in school.\n b. Kids face financial choices (online spending digital payments) earlier than ever. \n c. Most teens don’t understand savings, debt, or budgeting — until it’s too late.",
+      icon: <Video className="w-6 h-6" />,
     },
     {
       id: 4,
-      question: "Do you offer trial / demo classes?",
+      question:
+        "My child is not very strong in Math. Will they struggle in this course?",
       answer:
-        "Yes, you can book a free demo class using the QR codes or contact details provided below.",
-      icon: <CalendarCheck className="w-5 h-5" />,
+        "Not at all! This course focuses on money sense, not just numbers. We use stories, games, role-plays, and real-life situations to teach finance — not complex math formulas.",
+      icon: <CalendarCheck className="w-6 h-6" />,
     },
     {
       id: 5,
-      question: "What are the qualifications of your trainers?",
+      question: "What topics will my child learn in this course?",
       answer:
-        "All our mentors are professionally trained with deep expertise in Abacus, Vedic Maths, and child psychology.",
-      icon: <GraduationCap className="w-5 h-5" />,
+        "Your child will explore right from history of Money, budgeting, savings, Banking…….. to Money mindset & Discipline",
+      icon: <GraduationCap className="w-6 h-6" />,
     },
     {
       id: 6,
-      question:
-        "My child is below 5 years. Can I enrol him/her in your program?",
+      question: "Is this course theoretical or practical",
       answer:
-        "Yes, you can. If your child is able to read, write, and speak numbers from 0 to 99 and shows an interest in Maths, they are welcome to join. Passion and basic number skills are more important than age!",
-      icon: <Baby className="w-5 h-5" />,
+        "It’s highly practical and activity-based. Children work on budgeting exercises, goal-planning, savings jars, mock shopping, and even simple investment games — all through child-friendly worksheets and tools.",
+      icon: <Baby className="w-6 h-6" />,
     },
     {
       id: 7,
@@ -70,14 +71,14 @@ const FAQComponent = () => {
         "We live outside India. Will your teachers conduct classes in our time zone?",
       answer:
         "🌍 Absolutely! We already have students learning from countries like the USA, UAE, UK, Singapore, Japan and Australia. Our experienced teachers conduct classes based on your preferred time slot.",
-      icon: <Globe className="w-5 h-5" />,
+      icon: <Globe className="w-6 h-6" />,
     },
     {
       id: 8,
       question: "Are the classes conducted in groups or one-on-one?",
       answer:
         "👩‍🏫 Both options are available. You can choose between group classes and 1-on-1 personalized sessions, based on your child’s comfort and your budget. Fee structure varies accordingly.",
-      icon: <UserPlus className="w-5 h-5" />,
+      icon: <UserPlus className="w-6 h-6" />,
     },
     {
       id: 9,
@@ -85,14 +86,14 @@ const FAQComponent = () => {
         "My child is a slow learner or doesn't speak much. Will he/she be able to learn?",
       answer:
         "❤ Yes, definitely. We specialize in working with shy or slow-to-adapt children. Our trainers give individual attention, use engaging techniques to encourage participation, and teach concepts at the child’s own pace. We ensure every child is confident before moving forward.",
-      icon: <Heart className="w-5 h-5" />,
+      icon: <Heart className="w-6 h-6" />,
     },
     {
       id: 10,
       question: "How much do your programs cost?",
       answer:
         "We offer affordable pricing – less than the cost of a movie ticket per hour! Fee structure varies by course. Please contact us for detailed info.",
-      icon: <DollarSign className="w-5 h-5" />,
+      icon: <DollarSign className="w-6 h-6" />,
     },
   ];
 
@@ -147,8 +148,8 @@ const FAQComponent = () => {
             >
               {/* Question Header */}
               <motion.div
-                className="text-gray-950 w-32"
-                whileHover={{ rotate: 360 }}
+                className="text-gray-950 w-32 flex justify-center items-center"
+                whileHover={{ scale: 1.05 }}
                 transition={{ duration: 0.3 }}
               >
                 {faq.icon}
@@ -160,7 +161,7 @@ const FAQComponent = () => {
                   whileTap={{ scale: 0.99 }}
                 >
                   <div className="flex items-center space-x-3">
-                    <span className="text-gray-800 text-base md:text-xl">
+                    <span className="text-gray-800 text-base md:text-xl font-semibold">
                       {faq.id}. {faq.question}
                     </span>
                   </div>
@@ -183,9 +184,14 @@ const FAQComponent = () => {
                         exit={{ y: -10 }}
                         transition={{ duration: 0.3 }}
                       >
-                        <div className="flex items-start space-x-3">
-                          <p className="text-gray-700 text-sm leading-relaxed">
-                            {faq.answer}
+                        <div className="flex items-start space-x-6">
+                          <p className="text-gray-700 text-base leading-relaxed mt-2">
+                            {faq.answer.split("\n").map((line, idx) => (
+                              <span key={idx}>
+                                {line}
+                                <br />
+                              </span>
+                            ))}
                           </p>
                         </div>
                       </motion.div>

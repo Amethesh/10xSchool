@@ -1,12 +1,11 @@
 import Image from "next/image";
 import React from "react";
-import { HoverButton } from "../ui/HoverButton";
 import Link from "next/link";
+import { Button } from "../ui/button";
 
 const Navbar = () => {
   return (
     <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 w-[900px] max-w-6xl bg-white/90 backdrop-blur-md rounded-3xl shadow-lg px-6 py-3 flex items-center justify-between z-50 ">
-      {/* Logo */}
       <Link href={"/"}>
         <div className="flex items-center cursor-pointer">
           <Image
@@ -57,11 +56,18 @@ const Navbar = () => {
       </ul>
 
       <div className="hidden md:block">
-        {/* <Button
+        <Button
           size="lg"
           className="rounded-2xl border border-black cursor-pointer"
-        ></Button> */}
-        <HoverButton>Enroll Now</HoverButton>
+        >
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSenR-uZldf8c2P_KCo49LLZZWM4ewTgb7pNbPWpQ6pASG5X4A/viewform"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Interested
+          </a>
+        </Button>
       </div>
     </nav>
   );

@@ -4,11 +4,11 @@ import Footer from "@/components/Home/Footer";
 
 const coursesData: CourseCardItems[] = [
   {
-    title: "5-in-1 Brain Development Program (Ages 5-15)",
+    title: "M³ Genius Program",
     description:
-      "An innovative course designed to enhance mental speed, memory retention, logical and lateral thinking using:",
+      "An innovative, multi-skill program designed to boost your child’s mental speed, memory power, money management skills, and logical & lateral thinking, through a dynamic blend of activities and proven techniques.",
     timing: "8 Levels - 3 months each\n2 hours/week",
-    features: ["📜  Certification", "🧮 Abacus Kit", "⚡ Fast maths exercise"],
+    features: ["➗  Master Math", "🧠 Memory", "💵 Money"],
     coursePoints: [
       "Finger Abacus — Add/subtract using fingers (5x faster than traditional methods)",
       "Real Abacus — Solve up to trillion-digit sums using +, −, ×, ÷",
@@ -81,8 +81,7 @@ const coursesData: CourseCardItems[] = [
     bgColor: "bg-[#ccf0ff]",
   },
   {
-    title:
-      "Vedic Maths Brain Development Program training to Tutors / Parents (Ages 25-50)",
+    title: "Teacher training program",
     description:
       "Vedic Maths is a set of ancient Indian mathematical techniques that enable quick and accurate calculations. Instead of the slow, step-by-step methods taught in regular schools, Vedic Maths uses mental strategies and visual tricks to solve problems in seconds.",
     timing: "4 Levels - 3 months each\n2 hours/week",

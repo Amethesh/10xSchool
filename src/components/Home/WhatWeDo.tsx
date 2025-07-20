@@ -7,9 +7,9 @@ import AbacusHorizontal from "./Abacus2";
 const courses = [
   {
     id: 1,
-    title: "5-in-1 Brain Development Program (Ages 5-15)",
+    title: "M³ Genius Program",
     description:
-      "A holistic program to improve mental speed, memory, logic, and math skills.",
+      "A holistic program to improve mental speed, memory, logic and managing money.",
     bgColor: "bg-lime-200",
     icon: "🧠",
   },
@@ -29,22 +29,22 @@ const courses = [
     bgColor: "bg-purple-300",
     icon: "📖",
   },
-  {
-    id: 4,
-    title: "Advanced Reading Program (Ages 6-12)",
-    description:
-      "Enhance comprehension and critical thinking through structured reading exercises.",
-    bgColor: "bg-orange-300",
-    icon: "📚",
-  },
-  {
-    id: 5,
-    title: "Creative Writing Workshop (Ages 8-14)",
-    description:
-      "Develop storytelling skills and creative expression through guided writing activities.",
-    bgColor: "bg-pink-300",
-    icon: "✍️",
-  },
+  // {
+  //   id: 4,
+  //   title: "Advanced Reading Program (Ages 6-12)",
+  //   description:
+  //     "Enhance comprehension and critical thinking through structured reading exercises.",
+  //   bgColor: "bg-orange-300",
+  //   icon: "📚",
+  // },
+  // {
+  //   id: 5,
+  //   title: "Creative Writing Workshop (Ages 8-14)",
+  //   description:
+  //     "Develop storytelling skills and creative expression through guided writing activities.",
+  //   bgColor: "bg-pink-300",
+  //   icon: "✍️",
+  // },
 ];
 
 type Course = {
@@ -62,25 +62,6 @@ type CourseCardProps = {
 
 function CourseCard({ course, index }: CourseCardProps) {
   const ref = useRef(null);
-  // const { scrollYProgress } = useScroll({
-  //   target: ref,
-  //   offset: ["start end", "end start"],
-  // });
-
-  // Smooth spring animations
-  // const springConfig = { damping: 25, stiffness: 80 };
-  // const y = useSpring(
-  //   useTransform(scrollYProgress, [0, 1], [100, -100]),
-  //   springConfig
-  // );
-  // const scale = useSpring(
-  //   useTransform(scrollYProgress, [0, 0.3, 0.7, 1], [0.8, 1.02, 1.02, 0.8]),
-  //   springConfig
-  // );
-  // const opacity = useSpring(
-  //   useTransform(scrollYProgress, [0, 0.2, 0.8, 1], [0, 1, 1, 0]),
-  //   springConfig
-  // );
 
   return (
     <div ref={ref} className="relative h-screen">
@@ -133,7 +114,6 @@ export default function PowerfulProgramsSection() {
     offset: ["start start", "end end"],
   });
 
-  // const backgroundY = useTransform(scrollYProgress, [0, 1], ["0%", "20%"]);
   const textScale = useTransform(scrollYProgress, [0, 0.5, 1], [1, 1.05, 1]);
 
   return (
