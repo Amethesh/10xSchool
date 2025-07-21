@@ -67,7 +67,7 @@ function CourseCard({ course, index }: CourseCardProps) {
     <div ref={ref} className="relative h-screen">
       <motion.div
         // style={{ y, scale, opacity }}
-        className={`sticky top-[20vh] p-10 m-5 min-h-[300px] shadow-lg hover:shadow-xl transition-shadow duration-300 ${course.bgColor} flex flex-col justify-center group cursor-pointer`}
+        className={`sticky top-[20vh] rounded-3xl p-10 m-5 min-h-[300px] shadow-lg hover:shadow-xl transition-shadow duration-300 ${course.bgColor} flex flex-col justify-center group cursor-pointer`}
         style={{
           zIndex: courses.length - index,
         }}
@@ -207,7 +207,7 @@ export default function PowerfulProgramsSection() {
               }}
               whileTap={{ scale: 0.95 }}
             >
-              More Details
+              <a href="/courses">More Details</a>
             </motion.button>
           </motion.div>
         </div>

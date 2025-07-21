@@ -91,7 +91,13 @@ const GetStarted = () => {
             }}
             transition={{ duration: 0.3 }}
           >
-            Book a Demo
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLSenR-uZldf8c2P_KCo49LLZZWM4ewTgb7pNbPWpQ6pASG5X4A/viewform"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Book a Demo
+            </a>
           </motion.span>
 
           {/* Floating particles on hover */}

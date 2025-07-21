@@ -6,7 +6,7 @@ import * as motion from "motion/react-client";
 import { useRef } from "react";
 
 export interface CourseCardItems {
-  title?: string;
+  title: string;
   description?: string;
   timing?: string;
   features?: string[];

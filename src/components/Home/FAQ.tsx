@@ -22,8 +22,7 @@ const FAQComponent = () => {
   const faqData = [
     {
       id: 1,
-      question:
-        "What is the ideal age for joining the 5-in-1 Brain Development Program?",
+      question: "What is the ideal age for joining the M³ Genius Program?",
       answer:
         "Children aged 5 to 15 years can join. The course is structured into 8 levels, ensuring development at each stage.",
       icon: <Users className="w-6 h-6" />,
@@ -38,7 +37,7 @@ const FAQComponent = () => {
     {
       id: 3,
       question:
-        "Is it required to teach Financial literacy for kids below10 years?",
+        "Is it required to teach Financial literacy for kids below 10 years?",
       answer:
         "Certainly, because; \n a. 90% of children are not taught money management in school.\n b. Kids face financial choices (online spending digital payments) earlier than ever. \n c. Most teens don’t understand savings, debt, or budgeting — until it’s too late.",
       icon: <Video className="w-6 h-6" />,
