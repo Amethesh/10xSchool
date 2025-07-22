@@ -1,11 +1,17 @@
+"use client";
+
 import Image from "next/image";
 import React from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
 
 const Navbar = () => {
+  const pathname = usePathname();
+
+  if (pathname === "/game") return null;
   return (
-    <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 w-[900px] max-w-6xl bg-white/90 backdrop-blur-md rounded-3xl shadow-lg px-6 py-3 flex items-center justify-between z-50 ">
+    <nav className="fixed top-4 left-1/2 transform -translate-x-1/2 w-[1000px] max-w-6xl bg-white/90 backdrop-blur-md rounded-3xl shadow-lg px-6 py-3 flex items-center justify-between z-50 ">
       <Link href={"/"}>
         <div className="flex items-center cursor-pointer">
           <Image
@@ -55,7 +61,13 @@ const Navbar = () => {
         </li>
       </ul>
 
-      <div className="hidden md:block">
+      <div className="flex gap-2 items-center">
+        <Button
+          size="sm"
+          className="rounded-lg bg-[#bfecff]  border border-black cursor-pointer"
+        >
+          <a href="/game">Test your mind</a>
+        </Button>
         <Button
           size="lg"
           className="rounded-2xl border border-black cursor-pointer"

@@ -1,3 +1,4 @@
+@import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
 @import "tailwindcss";
 @import "tw-animate-css";
 
@@ -168,4 +169,41 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+
+/* 8-Bit Heading Styles */
+.eightbit-heading {
+  color: #00ff00; /* Bright green */
+  text-shadow: 2px 2px 0px #008800; /* Darker green shadow for pixelated effect */
+  font-size: 3rem; /* Adjust as needed */
+  letter-spacing: 0.1em;
+}
+
+/* 8-Bit Sub-heading/Section Title Styles */
+.eightbit-subheading {
+  color: #ffff00; /* Yellow */
+  text-shadow: 1px 1px 0px #cccc00; /* Darker yellow shadow */
+  font-size: 1rem; /* Adjust as needed */
+}
+
+/* 8-Bit Panel/Card Style */
+.eightbit-panel {
+  background: #0f0f23; /* Dark background */
+  border: 4px solid #333; /* Thick dark border */
+  border-radius: 0; /* Sharp corners */
+}
+
+/* Animated background float keyframes */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-20px) rotate(180deg);
+  }
+}
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }

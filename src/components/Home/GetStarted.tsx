@@ -92,7 +92,7 @@ const GetStarted = () => {
             transition={{ duration: 0.3 }}
           >
             <a
-              href="https://docs.google.com/forms/d/e/1FAIpQLSenR-uZldf8c2P_KCo49LLZZWM4ewTgb7pNbPWpQ6pASG5X4A/viewform"
+              href="https://docs.google.com/forms/d/e/1FAIpQLSek5rcxkKm8IFUl1oQ45SXhnMv0JZBw3r4qX7VX8ho-pYclAA/viewform?usp=dialog"
               target="_blank"
               rel="noopener noreferrer"
             >
