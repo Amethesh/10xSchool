@@ -28,7 +28,6 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${FredokaFont.variable} antialiased grid-background`}
       >
-        <Navbar />
         {children}
       </body>
     </html>
