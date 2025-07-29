@@ -289,7 +289,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
           >
             <div className="text-center mb-6 sm:mb-8 flex-shrink-0"> {/* flex-shrink-0 prevents title from shrinking */}
               <h1 className="pixel-font text-3xl sm:text-4xl text-white mb-2 sm:mb-4 tracking-wider">
-                MATH ARENA
+                MATH QUIZ
               </h1>
               <div className="pixel-font text-xs text-cyan-300 blink">
                 ENTER YOU USERNAME TO BEGIN
@@ -301,7 +301,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
               {/* Username Input Section */}
               <div>
                 <div className="pixel-font text-xs text-white mb-2 sm:mb-3 text-center">
-                  ENTER GAMER TAG:
+                  ENTER YOUR NAME:
                 </div>
                 <input
                   type="text"

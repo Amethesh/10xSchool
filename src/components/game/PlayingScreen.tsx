@@ -137,7 +137,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                   onClick={() => handleAnswerSelect(key)}
                   disabled={showResult}
                   className={`
-                    relative p-4 font-bold text-sm transition-all transform
+                    relative p-4 font-bold text-xl transition-all transform
                     ${
                       showResult
                         ? "pointer-events-none"
@@ -146,7 +146,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                   `}
                   style={{
                     fontFamily: '"Press Start 2P", monospace',
-                    fontSize: "10px",
+                    fontSize: "20px",
                     lineHeight: "1.4",
                     background: showResult
                       ? selectedAnswer === key
@@ -200,7 +200,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className="w-8 h-8 flex items-center justify-center font-bold text-xs flex-shrink-0"
+                      className="w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0"
                       style={{
                         background: "#81c784",
                         color: "#1b5e20",

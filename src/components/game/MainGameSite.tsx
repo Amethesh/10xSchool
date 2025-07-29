@@ -16,19 +16,19 @@ import useSound from "@/hooks/useSound";
 const difficultySettings: DifficultySettings = {
   easy: {
     time: 15,
-    label: "ROOKIE",
+    label: "EASY",
     color: "from-green-400 to-green-600",
     icon: "🌟",
   },
   medium: {
     time: 10,
-    label: "WARRIOR",
+    label: "MEDIUM",
     color: "from-orange-400 to-red-500",
     icon: "⚡",
   },
   hard: {
     time: 5,
-    label: "LEGEND",
+    label: "HARD",
     color: "from-purple-500 to-pink-600",
     icon: "🔥",
   },
