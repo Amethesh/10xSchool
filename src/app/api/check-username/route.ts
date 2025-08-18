@@ -18,7 +18,7 @@ export async function GET(request: Request) {
   try {
     const { data: profile, error } = await supabase
       .from("students")
-      .select("id, totalScore")
+      .select("id, total_score")
       .eq("student_id", username.trim())
       .single();
 
@@ -33,7 +33,7 @@ export async function GET(request: Request) {
 
     if (profile) {
       return NextResponse.json(
-        { exists: true, userId: profile.id, totalScore: profile.totalScore },
+        { exists: true, userId: profile.id, total_score: profile.total_score },
         { status: 200 }
       );
     } else {

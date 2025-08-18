@@ -2,7 +2,7 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import { Target, Clock, TrendingUp } from 'lucide-react';
-import { formatTime } from '@/lib/quiz';
+import { formatTime } from '@/utils/ResultUtils';
 
 type MetricColor = 'green' | 'cyan' | 'purple';
 

@@ -12,8 +12,8 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import clsx from "clsx";
-import { formatTime } from "@/lib/quiz";
 import { PerformanceInsights } from "./PerformanceInsights";
+import { formatDate, formatTime } from "@/utils/ResultUtils";
 
 interface PerformanceData {
   attemptId: string;
@@ -65,23 +65,6 @@ const StatCard = ({ icon, label, value }: { icon: React.ReactNode, label: string
 // A structured component for displaying a single attempt in the history
 const AttemptHistoryItem = ({ attempt, isLatest }: { attempt: PerformanceData, isLatest: boolean }) => {
   const scoreColor = attempt.score >= 80 ? "text-green-400" : attempt.score >= 60 ? "text-yellow-400" : "text-red-400";
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  };
-
-  // Format time display
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
-  };
 
   return (
     <motion.div

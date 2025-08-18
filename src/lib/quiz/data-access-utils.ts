@@ -19,7 +19,7 @@ export async function getLevelLeaderboard(
     .select(`
       student_id,
       score,
-      students!inner(fullName)
+      students!inner(full_name)
     `)
     .eq('level', level)
     .not('completed_at', 'is', null);
@@ -43,7 +43,7 @@ export async function getLevelLeaderboard(
 
   attempts.forEach(attempt => {
     const studentId = attempt.student_id;
-    const studentName = (attempt.students as any)?.fullName || 'Unknown Student';
+    const studentName = (attempt.students as any)?.full_name || 'Unknown Student';
 
     // Skip if student_id is null
     if (!studentId) return;

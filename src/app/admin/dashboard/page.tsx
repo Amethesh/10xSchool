@@ -12,22 +12,19 @@ import {
   Target,
   TrendingUp,
   Search,
-  Filter,
-  Download,
   Plus
 } from "lucide-react";
 import { getAllStudentsData } from "./actions";
 import EditStudentModal from "@/components/admin/EditStudentModal";
 import { logout } from "@/app/(auth)/actions";
-import Image from "next/image";
 
 // Define the Student type for type safety
 export type Student = {
   id: string;
-  fullName: string;
+  full_name: string;
   student_id: string;
   email: string;
-  totalScore: number;
+  total_score: number;
   level: number;
   rank: string;
 };
@@ -35,7 +32,8 @@ export type Student = {
 const AdminDashboardPage = () => {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<keyof Student>("totalScore");
+  // UPDATED: Sort keys now match the Student type
+  const [sortBy, setSortBy] = useState<keyof Omit<Student, 'grantedLevels'>>("total_score");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const {
@@ -52,7 +50,8 @@ const AdminDashboardPage = () => {
     if (!students) return [];
 
     let filtered = students.filter(student =>
-      (student.fullName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+      // UPDATED: Use student.full_name
+      (student.full_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (student.student_id?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
       (student.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
     );
@@ -66,7 +65,8 @@ const AdminDashboardPage = () => {
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       }
-
+      
+      // Default to number comparison
       return sortOrder === 'asc'
         ? (aValue as number) - (bValue as number)
         : (bValue as number) - (aValue as number);
@@ -75,17 +75,18 @@ const AdminDashboardPage = () => {
 
   // Calculate stats
   const stats = React.useMemo(() => {
-    if (!students) return { total: 0, avgScore: 0, maxLevel: 0, topRank: "N/A" };
+    if (!students || students.length === 0) return { total: 0, avgScore: 0, maxLevel: 0, topRank: "N/A" };
 
     return {
       total: students.length,
-      avgScore: Math.round(students.reduce((sum, s) => sum + (s.totalScore || 0), 0) / students.length),
+      // UPDATED: Use s.total_score
+      avgScore: Math.round(students.reduce((sum, s) => sum + (s.total_score || 0), 0) / students.length),
       maxLevel: Math.max(...students.map(s => s.level || 0)),
       topRank: students.find(s => s.rank === "LEGEND")?.rank || students[0]?.rank || "N/A"
     };
   }, [students]);
 
-  const handleSort = (field: keyof Student) => {
+  const handleSort = (field: keyof Omit<Student, 'grantedLevels'>) => {
     if (sortBy === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
@@ -234,14 +235,15 @@ const AdminDashboardPage = () => {
               </div>
 
               <div className="flex gap-2">
+                {/* UPDATED: Select values now use snake_case */}
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as keyof Student)}
                   className="pixel-select"
                 >
-                  <option value="totalScore">SCORE</option>
+                  <option value="total_score">SCORE</option>
                   <option value="level">LEVEL</option>
-                  <option value="fullName">NAME</option>
+                  <option value="full_name">NAME</option>
                   <option value="rank">RANK</option>
                 </select>
 
@@ -256,86 +258,88 @@ const AdminDashboardPage = () => {
             </div>
           </div>
 
-          {/* Students Table */}
-          <div className="pixel-panel p-6 bg-gradient-to-br from-gray-900/40 to-black/40">
-            <div className="overflow-x-auto custom-scrollbar">
-              <table className="w-full pixel-font text-xs text-white">
-                <thead>
-                  <tr className="border-b-2 border-cyan-400">
-                    <th
-                      className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
-                      onClick={() => handleSort("fullName")}
-                    >
-                      FULL NAME {sortBy === "fullName" && (sortOrder === "asc" ? "↑" : "↓")}
-                    </th>
-                    <th className="p-4 text-left">STUDENT ID</th>
-                    <th
-                      className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
-                      onClick={() => handleSort("level")}
-                    >
-                      LEVEL {sortBy === "level" && (sortOrder === "asc" ? "↑" : "↓")}
-                    </th>
-                    <th
-                      className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
-                      onClick={() => handleSort("totalScore")}
-                    >
-                      SCORE {sortBy === "totalScore" && (sortOrder === "asc" ? "↑" : "↓")}
-                    </th>
-                    <th
-                      className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
-                      onClick={() => handleSort("rank")}
-                    >
-                      RANK {sortBy === "rank" && (sortOrder === "asc" ? "↑" : "↓")}
-                    </th>
-                    <th className="p-4 text-center">ACTIONS</th>
+        {/* Students Table */}
+        <div className="pixel-panel p-6 bg-gradient-to-br from-gray-900/40 to-black/40">
+          <div className="overflow-x-auto custom-scrollbar">
+            <table className="w-full pixel-font text-xs text-white">
+              <thead>
+                <tr className="border-b-2 border-cyan-400">
+                  {/* UPDATED: onClick and sortBy checks use snake_case */}
+                  <th
+                    className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
+                    onClick={() => handleSort("full_name")}
+                  >
+                    FULL NAME {sortBy === "full_name" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </th>
+                  <th className="p-4 text-left">STUDENT ID</th>
+                  <th
+                    className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
+                    onClick={() => handleSort("level")}
+                  >
+                    LEVEL {sortBy === "level" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </th>
+                  <th
+                    className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
+                    onClick={() => handleSort("total_score")}
+                  >
+                    SCORE {sortBy === "total_score" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </th>
+                  <th
+                    className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
+                    onClick={() => handleSort("rank")}
+                  >
+                    RANK {sortBy === "rank" && (sortOrder === "asc" ? "↑" : "↓")}
+                  </th>
+                  <th className="p-4 text-center">ACTIONS</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredAndSortedStudents.map((student, index) => (
+                  <tr
+                    key={student.id}
+                    className={`border-b border-gray-700/50 hover:bg-gradient-to-r hover:from-cyan-900/20 hover:to-blue-900/20 transition-all duration-200 ${index % 2 === 0 ? 'bg-gray-900/20' : 'bg-transparent'}`}
+                  >
+                    {/* UPDATED: Use student.full_name */}
+                    <td className="p-4 font-medium">{student.full_name}</td>
+                    <td className="p-4">
+                      <span className="px-2 py-1 bg-yellow-900/30 text-yellow-300 rounded border border-yellow-600/50">
+                        {student.student_id}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className="px-2 py-1 bg-purple-900/30 text-purple-300 rounded border border-purple-600/50">
+                        LVL {student.level}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className="px-2 py-1 bg-green-900/30 text-green-300 rounded border border-green-600/50">
+                        {/* UPDATED: Use student.total_score */}
+                        {(student.total_score || 0).toLocaleString()}
+                      </span>
+                    </td>
+                    <td className="p-4">
+                      <span className={`px-2 py-1 rounded border ${student.rank === "LEGEND"
+                          ? "bg-yellow-900/30 text-yellow-300 border-yellow-600/50"
+                          : student.rank === "MASTER"
+                            ? "bg-purple-900/30 text-purple-300 border-purple-600/50"
+                            : "bg-cyan-900/30 text-cyan-300 border-cyan-600/50"
+                        }`}>
+                        {student.rank}
+                      </span>
+                    </td>
+                    <td className="p-4 text-center">
+                      <button
+                        onClick={() => setEditingStudent(student)}
+                        className="pixel-button text-xs p-2 hover:scale-105 transition-transform"
+                        title="Edit Student"
+                      >
+                        <Edit className="w-3 h-3" />
+                      </button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {filteredAndSortedStudents.map((student, index) => (
-                    <tr
-                      key={student.id}
-                      className={`border-b border-gray-700/50 hover:bg-gradient-to-r hover:from-cyan-900/20 hover:to-blue-900/20 transition-all duration-200 ${index % 2 === 0 ? 'bg-gray-900/20' : 'bg-transparent'
-                        }`}
-                    >
-                      <td className="p-4 font-medium">{student.fullName}</td>
-                      <td className="p-4">
-                        <span className="px-2 py-1 bg-yellow-900/30 text-yellow-300 rounded border border-yellow-600/50">
-                          {student.student_id}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <span className="px-2 py-1 bg-purple-900/30 text-purple-300 rounded border border-purple-600/50">
-                          LVL {student.level}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <span className="px-2 py-1 bg-green-900/30 text-green-300 rounded border border-green-600/50">
-                          {(student.totalScore || 0).toLocaleString()}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <span className={`px-2 py-1 rounded border ${student.rank === "LEGEND"
-                            ? "bg-yellow-900/30 text-yellow-300 border-yellow-600/50"
-                            : student.rank === "MASTER"
-                              ? "bg-purple-900/30 text-purple-300 border-purple-600/50"
-                              : "bg-cyan-900/30 text-cyan-300 border-cyan-600/50"
-                          }`}>
-                          {student.rank}
-                        </span>
-                      </td>
-                      <td className="p-4 text-center">
-                        <button
-                          onClick={() => setEditingStudent(student)}
-                          className="pixel-button text-xs p-2 hover:scale-105 transition-transform"
-                          title="Edit Student"
-                        >
-                          <Edit className="w-3 h-3" />
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                ))}
+              </tbody>
+            </table>
 
               {filteredAndSortedStudents.length === 0 && (
                 <div className="text-center py-12">

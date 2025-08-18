@@ -1,12 +1,8 @@
 import { createClient } from '@/lib/supabase/client';
 import { Database } from '@/lib/supabase/database.types';
-import { LevelAccess, AccessRequest } from '@/types/types';
 
 type Tables = Database['public']['Tables'];
-type LevelAccessRow = Tables['level_access']['Row'];
 type AccessRequestRow = Tables['access_requests']['Row'];
-type LevelAccessInsert = Tables['level_access']['Insert'];
-type AccessRequestInsert = Tables['access_requests']['Insert'];
 
 export async function checkStudentLevelAccess(
   studentId: string,
@@ -31,37 +27,6 @@ export async function checkStudentLevelAccess(
   }
 
   return !!accessData;
-}
-
-/**
- * Get all levels a student has access to
- */
-export async function getStudentAccessibleLevels(
-  studentId: string
-): Promise<string[]> {
-  const supabase = createClient();
-  
-  const { data, error } = await supabase
-    .from('level_access')
-    .select('level')
-    .eq('student_id', studentId);
-
-  if (error) {
-    throw new Error(`Failed to fetch accessible levels: ${error.message}`);
-  }
-
-  // Always include beginner level
-  const accessibleLevels = ['beginner'];
-  
-  if (data) {
-    data.forEach(access => {
-      if (access.level && !accessibleLevels.includes(access.level.toLowerCase())) {
-        accessibleLevels.push(access.level.toLowerCase());
-      }
-    });
-  }
-
-  return accessibleLevels;
 }
 
 /**
@@ -118,7 +83,7 @@ export async function getStudentAccessRequests(
   status?: 'pending' | 'approved' | 'denied'
 ): Promise<AccessRequestRow[]> {
   const supabase = createClient();
-  
+
   let query = supabase
     .from('access_requests')
     .select('*')
@@ -145,19 +110,21 @@ export async function getPendingAccessRequests(): Promise<Array<{
   id: string;
   studentId: string;
   studentName: string;
-  level: string;
+  levelId: number;
+  levelName: string;
   requestedAt: string;
 }>> {
   const supabase = createClient();
-  
+
   const { data, error } = await supabase
     .from('access_requests')
     .select(`
       id,
       student_id,
-      level,
+      level_id,
       requested_at,
-      students!inner(fullName)
+      students!inner(full_name),
+      levels!inner(name)
     `)
     .eq('status', 'pending')
     .order('requested_at', { ascending: true });
@@ -169,8 +136,9 @@ export async function getPendingAccessRequests(): Promise<Array<{
   return (data || []).map(request => ({
     id: request.id,
     studentId: request.student_id || '',
-    studentName: (request.students as any)?.fullName || 'Unknown Student',
-    level: request.level,
+    studentName: (request.students as any)?.full_name || 'Unknown Student',
+    levelId: request.level_id || 0,
+    levelName: (request.levels as any)?.name || 'Unknown Level',
     requestedAt: request.requested_at || '',
   }));
 }
@@ -182,12 +150,12 @@ export async function approveAccessRequest(
   requestId: string,
   adminId: string
 ): Promise<void> {
-  const supabase = createClient();
-  
+  const supabase = await createClient();
+
   // Get the request details first
   const { data: request, error: fetchError } = await supabase
     .from('access_requests')
-    .select('student_id, level, status')
+    .select('student_id, level_id, status')
     .eq('id', requestId)
     .single();
 
@@ -203,42 +171,34 @@ export async function approveAccessRequest(
     throw new Error('Access request is not pending');
   }
 
-  if (!request.student_id) {
+  if (!request.student_id ) {
     throw new Error('Invalid access request: missing student ID');
+  }
+  if (!request.level_id ) {
+    throw new Error('Invalid access request: missing level ID');
   }
 
   // Check if student already has access
-  const hasAccess = await checkStudentLevelAccess(request.student_id, request.level);
-  if (hasAccess) {
-    // Update request status to approved anyway
-    await supabase
+  const hasAccess = await checkStudentLevelAccess(request.student_id, request.level_id);
+
+  if (!hasAccess) {
+    // Grant access by inserting into student_levels
+    const { error: insertError } = await supabase
       .from('access_requests')
-      .update({
-        status: 'approved',
+      .insert({
+        student_id: request.student_id,
+        level_id: request.level_id,
         reviewed_at: new Date().toISOString(),
         reviewed_by: adminId,
-      })
-      .eq('id', requestId);
-    return;
+        status: "approved"
+      });
+
+    if (insertError) {
+      throw new Error(`Failed to grant access to student: ${insertError.message}`);
+    }
   }
 
-  // Start a transaction-like operation
-  const accessData: LevelAccessInsert = {
-    student_id: request.student_id,
-    level: request.level,
-    granted_by: adminId,
-  };
-
-  // Grant access
-  const { error: accessError } = await supabase
-    .from('level_access')
-    .insert(accessData);
-
-  if (accessError) {
-    throw new Error(`Failed to grant access: ${accessError.message}`);
-  }
-
-  // Update request status
+  // Update request status to approved
   const { error: updateError } = await supabase
     .from('access_requests')
     .update({
@@ -249,7 +209,7 @@ export async function approveAccessRequest(
     .eq('id', requestId);
 
   if (updateError) {
-    throw new Error(`Failed to update request status: ${updateError.message}`);
+    throw new Error(`Failed to approve access request: ${updateError.message}`);
   }
 }
 
@@ -261,7 +221,7 @@ export async function denyAccessRequest(
   adminId: string
 ): Promise<void> {
   const supabase = createClient();
-  
+
   // Check if request exists and is pending
   const { data: request, error: fetchError } = await supabase
     .from('access_requests')
@@ -295,67 +255,6 @@ export async function denyAccessRequest(
   }
 }
 
-/**
- * Revoke level access for a student
- */
-export async function revokeLevelAccess(
-  studentId: string,
-  level: string,
-  adminId: string
-): Promise<void> {
-  // Cannot revoke beginner level access
-  if (level.toLowerCase() === 'beginner') {
-    throw new Error('Cannot revoke access to beginner level');
-  }
-
-  const supabase = createClient();
-  
-  const { error } = await supabase
-    .from('level_access')
-    .delete()
-    .eq('student_id', studentId)
-    .eq('level', level);
-
-  if (error) {
-    throw new Error(`Failed to revoke level access: ${error.message}`);
-  }
-}
-
-/**
- * Get all students with access to a specific level
- */
-export async function getStudentsWithLevelAccess(
-  level: string
-): Promise<Array<{
-  studentId: string;
-  studentName: string;
-  grantedAt: string;
-  grantedBy: string;
-}>> {
-  const supabase = createClient();
-  
-  const { data, error } = await supabase
-    .from('level_access')
-    .select(`
-      student_id,
-      granted_at,
-      granted_by,
-      students!inner(fullName)
-    `)
-    .eq('level', level)
-    .order('granted_at', { ascending: false });
-
-  if (error) {
-    throw new Error(`Failed to fetch students with level access: ${error.message}`);
-  }
-
-  return (data || []).map(access => ({
-    studentId: access.student_id || '',
-    studentName: (access.students as any)?.fullName || 'Unknown Student',
-    grantedAt: access.granted_at || '',
-    grantedBy: access.granted_by || '',
-  }));
-}
 
 /**
  * Check if a student has a pending access request for a level
@@ -365,7 +264,7 @@ export async function hasPendingAccessRequest(
   level: string
 ): Promise<boolean> {
   const supabase = createClient();
-  
+
   const { data, error } = await supabase
     .from('access_requests')
     .select('id')
@@ -389,7 +288,7 @@ export async function getAccessRequestStatus(
   level: string
 ): Promise<'none' | 'pending' | 'approved' | 'denied'> {
   const supabase = createClient();
-  
+
   const { data, error } = await supabase
     .from('access_requests')
     .select('status')

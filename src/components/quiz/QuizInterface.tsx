@@ -20,8 +20,8 @@ import { ErrorNotification, useErrorNotification } from './ErrorNotification';
 import { QuizErrorBoundary } from './ErrorBoundary';
 import { Play, Pause, RotateCcw, CheckCircle } from 'lucide-react';
 import Image from 'next/image';
-import { formatLevelName } from '@/lib/quiz/level-access-utils';
 import { motion, AnimatePresence } from 'motion/react';
+import { formatLevelName } from '@/utils/levelUtils';
 
 interface QuizInterfaceProps {
   questions: Question[];

@@ -19,7 +19,7 @@ interface DifficultyModalProps {
 
 // --- Constants ---
 const DIFFICULTY_OPTIONS: QuizDifficulty[] = [
-  { name: 'easy', timeLimit: 1500, label: 'Easy - 15 seconds per question' },
+  { name: 'easy', timeLimit: 15, label: 'Easy - 15 seconds per question' },
   { name: 'medium', timeLimit: 10, label: 'Medium - 10 seconds per question' },
   { name: 'hard', timeLimit: 5, label: 'Hard - 5 seconds per question' }
 ];

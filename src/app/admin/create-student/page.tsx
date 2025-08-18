@@ -6,7 +6,7 @@ import { createStudentAction } from "./actions";
 
 const CreateStudentPage = () => {
   const [formData, setFormData] = useState({
-    fullName: "",
+    full_name: "",
     email: "",
     password: "",
   });
@@ -42,7 +42,7 @@ const CreateStudentPage = () => {
     setNewStudentId(null); // Reset previous ID on new submission
 
     if (
-      !formData.fullName.trim() ||
+      !formData.full_name.trim() ||
       !formData.email.trim() ||
       !formData.password.trim()
     ) {
@@ -61,7 +61,7 @@ const CreateStudentPage = () => {
     setStatusMessage("CREATING STUDENT ACCOUNT...");
 
     const data = new FormData();
-    data.append("fullName", formData.fullName);
+    data.append("full_name", formData.full_name);
     data.append("email", formData.email);
     data.append("password", formData.password);
 
@@ -74,13 +74,13 @@ const CreateStudentPage = () => {
       } else if (result.success && result.student_id) {
         setStatus("success");
         setStatusMessage(
-          `STUDENT "${formData.fullName.toUpperCase()}" CREATED SUCCESSFULLY!`
+          `STUDENT "${formData.full_name.toUpperCase()}" CREATED SUCCESSFULLY!`
         );
         // 4. Store the new student ID in state
         setNewStudentId(result.student_id);
 
         setTimeout(() => {
-          setFormData({ fullName: "", email: "", password: "" });
+          setFormData({ full_name: "", email: "", password: "" });
           setStatus("idle");
           setStatusMessage("");
           setNewStudentId(null); // Clear the ID when resetting the form
@@ -119,7 +119,7 @@ const CreateStudentPage = () => {
             </div>
 
             <div className="space-y-4 sm:space-y-6 flex-grow">
-              {/* Inputs for fullName, email, password */}
+              {/* Inputs for full_name, email, password */}
               <div>
                 <div className="pixel-font text-xs text-white mb-2 sm:mb-3 text-center">
                   FULL NAME:
@@ -128,9 +128,9 @@ const CreateStudentPage = () => {
                   <User className="text-[#607d8b] w-4 h-4 absolute top-3 left-2" />
                   <input
                     type="text"
-                    id="fullName"
-                    name="fullName"
-                    value={formData.fullName}
+                    id="full_name"
+                    name="full_name"
+                    value={formData.full_name}
                     onChange={handleInputChange}
                     placeholder="ENTER FULL NAME"
                     className="pixel-input input-with-icon"

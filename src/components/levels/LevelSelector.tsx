@@ -2,8 +2,7 @@
 import { useState, useRef, useEffect, JSX } from "react";
 import { Lock, Clock, Crown, Trophy, Zap, Target, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import {motion, useMotionValue, useTransform, AnimatePresence} from "motion/react"
-import { formatLevelName } from "@/lib/quiz/level-access-utils";
-import { getColorForDifficulty, getDifficultyLabel, getIconForDifficulty } from "@/utils/levelUtils";
+import { formatLevelName, getDifficultyLabel, getIconForDifficulty } from "@/utils/levelUtils";
 import { LevelData, WeekLesson } from "@/types/types";
 
 interface HorizontalLevelSelectorProps {

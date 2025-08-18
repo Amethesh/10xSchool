@@ -2,10 +2,10 @@ import { QuizResultsPageContent } from "@/components/quiz/QuizResultPageContent"
 import { RouteProtection } from "@/components/quiz/RouteProtection";
 
 interface QuizResultsPageProps {
-  params: {
+  params: Promise<{
     level: string;
     week: string;
-  };
+  }>;
 }
 
 export default async function QuizResultsPage({ params }: QuizResultsPageProps) {

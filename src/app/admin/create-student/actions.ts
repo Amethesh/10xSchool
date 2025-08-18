@@ -15,7 +15,7 @@ export async function createStudentAction(formData: FormData) {
   }
 
   const isAdmin = await supabase
-    .from("profiles")
+    .from("admins")
     .select("role")
     .eq("id", user.id)
     .single();
@@ -24,11 +24,11 @@ export async function createStudentAction(formData: FormData) {
     return { error: "Unauthorized: You are not an admin." };
   }
 
-  const fullName = formData.get("fullName") as string;
+  const full_name = formData.get("full_name") as string;
   const password = formData.get("password") as string;
   const contactEmail = formData.get("email") as string;
 
-  if (!fullName || !password || !contactEmail) {
+  if (!full_name || !password || !contactEmail) {
     return { error: "Full name, password, and email are required." };
   }
 
@@ -60,12 +60,12 @@ export async function createStudentAction(formData: FormData) {
       id: newUser?.id,
       student_id: student_id,
       email: contactEmail,
-      fullName: fullName,
+      full_name: full_name,
       password_change_required: true,
     });
     if (insertError) throw insertError;
 
-    console.log("Inserted student record:", { student_id, fullName });
+    console.log("Inserted student record:", { student_id, full_name });
 
     revalidatePath("/admin/students");
 

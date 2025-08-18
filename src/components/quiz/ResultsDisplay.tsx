@@ -19,7 +19,6 @@ import {
 import { QuizResults } from "@/types/types";
 import { PerformanceTracker } from "../result/PerformanceTracker";
 import { useQuizResults } from "@/hooks/useQuizResults";
-import { PerformanceExample } from "./PerformanceExample";
 import { ResultsHeader } from "../result/ResultsHeader";
 import { PerformanceMetrics } from "../result/PerformanceMetrics";
 import { RankingDisplay } from "../result/RankingDisplay";

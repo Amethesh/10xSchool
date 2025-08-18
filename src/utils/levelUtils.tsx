@@ -59,3 +59,12 @@ export const renderStars = (stars = 0) =>
       />
     </motion.div>
 ));
+
+
+export function formatLevelName(level: string): string {
+  if (!level || typeof level !== 'string') {
+    return '';
+  }
+  
+  return level.charAt(0).toUpperCase() + level.slice(1).toLowerCase();
+}

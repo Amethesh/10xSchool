@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
+// Helper function to verify if the current user is an admin
 async function verifyAdmin() {
   const supabase = await createClient();
   const {
@@ -16,69 +17,98 @@ async function verifyAdmin() {
     throw new Error("Authentication required: You must be logged in.");
   }
 
-  const { data: profile, error } = await supabase
-    .from("profiles") // Assuming admins also have a profile
+  // UPDATED: Now queries the `admins` table instead of `profiles`
+  const { data: adminProfile, error } = await supabase
+    .from("admins")
     .select("role")
     .eq("id", user.id)
     .single();
 
-  if (error || profile?.role !== "admin") {
-    throw new Error("Authorization failed: You are not an admin.");
+  // The logic remains the same, just the table name changed
+  if (error || adminProfile?.role !== "admin") {
+    throw new Error("Authorization failed: You do not have admin privileges.");
   }
 
-  return user; 
+  return user;
 }
 
 /**
- * Fetches all student records. Only callable by an admin.
+ * Fetch all students with their approved levels from access_requests.
  */
 export async function getAllStudentsData() {
   await verifyAdmin();
   const supabase = await createClient();
 
+  // MAJOR UPDATE:
+  // - The query now joins with `access_requests` instead of `level_access`.
+  // - It explicitly filters for requests where status is 'approved'.
+  // - It selects columns using their exact snake_case names from your schema.
   const { data, error } = await supabase
     .from("students")
-    .select("id, fullName, student_id, email, totalScore, level, rank")
-    .order("fullName", { ascending: true });
-
-  console.log(data);
+    .select(`
+      id,
+      full_name,
+      student_id,
+      email,
+      total_score,
+      rank,
+      level,
+      access_requests (
+        level_id,
+        levels ( name )
+      )
+    `)
+    .eq('access_requests.status', 'approved') // <-- Filter for approved levels
+    .order("full_name", { ascending: true });
 
   if (error) {
     throw new Error(`Failed to fetch students: ${error.message}`);
   }
 
-  return data;
+  // Flatten the nested data to make it easier for the UI to consume
+  return (data || []).map((student) => ({
+    id: student.id,
+    full_name: student.full_name,
+    student_id: student.student_id,
+    email: student.email,
+    total_score: student.total_score,
+    rank: student.rank,
+    level: student.level,
+    // The structure for granted levels is mapped from the new query
+    grantedLevels: student.access_requests?.map((req) => ({
+      levelId: req.level_id,
+      levelName: req.levels?.name,
+    })) ?? [],
+  }));
 }
 
 /**
- * Updates a student's profile. Only callable by an admin.
+ * Updates a student's profile (not their level access).
+ * Admin-only.
  */
 export async function updateStudentByAdmin(formData: FormData) {
-  await verifyAdmin(); // Security check
+  await verifyAdmin();
 
   const studentId = formData.get("id") as string;
-  const fullName = formData.get("fullName") as string;
-  const totalScore = Number(formData.get("totalScore"));
-  const level = Number(formData.get("level"));
+  const full_name = formData.get("full_name") as string; // Match form data name
+  const total_score = Number(formData.get("total_score")); // Match form data name
   const rank = formData.get("rank") as string;
 
-  if (!studentId || !fullName) {
+  if (!studentId || !full_name) {
     throw new Error("Student ID and Full Name are required.");
   }
 
-  // Use the admin client to bypass RLS for administrative tasks.
-  // This is safe because we've already verified the user's role.
   const supabaseAdmin = createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  // UPDATED: Use snake_case column names to match the database schema
   const { error } = await supabaseAdmin
     .from("students")
     .update({
-      fullName,
-      totalScore,
-      level,
+      full_name: full_name,
+      total_score: total_score,
       rank,
     })
     .eq("id", studentId);
@@ -87,8 +117,7 @@ export async function updateStudentByAdmin(formData: FormData) {
     throw new Error(`Failed to update student: ${error.message}`);
   }
 
-  // Revalidate the path to ensure the list on the dashboard refreshes
   revalidatePath("/admin/dashboard");
 
-  return { success: true, message: `${fullName} updated successfully.` };
+  return { success: true, message: `${full_name} updated successfully.` };
 }

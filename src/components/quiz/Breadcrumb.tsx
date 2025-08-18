@@ -7,7 +7,7 @@ import { useRouter } from 'next/navigation';
 import { BookOpen, ChevronRight, Home, PlayIcon, Trophy } from 'lucide-react';
 import { motion, Variants } from 'motion/react';
 import clsx from 'clsx';
-import { formatLevelName } from '@/lib/quiz/level-access-utils';
+import { formatLevelName } from '@/utils/levelUtils';
 
 // --- Type Definitions ---
 export interface BreadcrumbItem {

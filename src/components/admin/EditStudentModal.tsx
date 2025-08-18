@@ -18,8 +18,8 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
     Omit<Student, "student_id" | "email">
   >({
     id: "",
-    fullName: "",
-    totalScore: 0,
+    full_name: "",
+    total_score: 0,
     level: 0,
     rank: "",
   });
@@ -30,8 +30,8 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
   useEffect(() => {
     setFormData({
       id: student.id,
-      fullName: student.fullName,
-      totalScore: student.totalScore,
+      full_name: student.full_name,
+      total_score: student.total_score,
       level: student.level,
       rank: student.rank,
     });
@@ -58,8 +58,8 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
     e.preventDefault();
     const data = new FormData();
     data.append("id", formData.id);
-    data.append("fullName", formData.fullName);
-    data.append("totalScore", String(formData.totalScore));
+    data.append("full_name", formData.full_name);
+    data.append("total_score", String(formData.total_score));
     data.append("level", String(formData.level));
     data.append("rank", formData.rank);
     updateStudent(data);
@@ -85,8 +85,8 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
             <User className="input-icon w-4 h-4" />
             <input
               type="text"
-              name="fullName"
-              value={formData.fullName}
+              name="full_name"
+              value={formData.full_name}
               onChange={handleInputChange}
               className="pixel-input input-with-icon"
               required
@@ -109,8 +109,8 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
             <Star className="input-icon w-4 h-4" />
             <input
               type="number"
-              name="totalScore"
-              value={formData.totalScore}
+              name="total_score"
+              value={formData.total_score}
               onChange={handleInputChange}
               className="pixel-input input-with-icon"
               required

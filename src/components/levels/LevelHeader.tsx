@@ -1,7 +1,6 @@
 "use client";
 
-import { formatLevelName } from "@/lib/quiz/level-access-utils";
-import { getColorForDifficulty, getDifficultyLabel, getIconForDifficulty } from "@/utils/levelUtils";
+import { formatLevelName, getColorForDifficulty, getDifficultyLabel, getIconForDifficulty } from "@/utils/levelUtils";
 import { Clock } from "lucide-react";
 
 type levelType = {

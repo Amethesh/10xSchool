@@ -2,11 +2,11 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuizNavigation } from "@/hooks/useQuizNavigation";
-import { ResultsDisplay } from "@/components/quiz";
 import { QuizNavigation } from "@/components/quiz/QuizNavigation";
 import { QuizResults } from "@/types/types";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
+import { ResultsDisplay } from "./ResultsDisplay";
 
 interface QuizResultsPageContentProps {
   paramsData: {
@@ -107,7 +107,7 @@ export function QuizResultsPageContent({ paramsData }: QuizResultsPageContentPro
   }
 
   return (
-<div className="relative min-h-screen bg-black">
+    <div className="relative min-h-screen bg-black">
       <Image
         src={"/images/8bitBG2.png"}
         fill

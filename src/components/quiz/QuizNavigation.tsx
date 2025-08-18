@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { Breadcrumb, generateQuizBreadcrumbs } from './Breadcrumb';
-import { BackButton } from './BackButton';
 
 interface QuizNavigationProps {
   levelName: string;

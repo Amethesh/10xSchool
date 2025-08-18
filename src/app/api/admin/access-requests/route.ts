@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import { 
-  getPendingAccessRequests,
-  approveAccessRequest,
   denyAccessRequest,
-  bulkApproveAccessRequests,
   bulkDenyAccessRequests,
+  approveAccessRequest,
+  getPendingAccessRequests,
+  bulkApproveAccessRequests,
 } from '@/lib/quiz/level-access';
 import { checkAdminRole } from '@/lib/quiz/level-access-server';
 

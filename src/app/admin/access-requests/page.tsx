@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Loader2, CheckCircle, XCircle, Clock, Users, AlertCircle } from 'lucide-react';
-import { formatLevelName } from '@/lib/quiz/level-access-utils';
 import { toast } from 'sonner';
+import { formatLevelName } from '@/utils/levelUtils';
 
 interface AccessRequest {
   id: string;

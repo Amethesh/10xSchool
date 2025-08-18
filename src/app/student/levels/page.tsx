@@ -137,7 +137,7 @@ const StudentLevelsPage: React.FC = () => {
         <div className="pixel-panel p-4 sm:p-6 backdrop-blur-sm bg-black/20">
           <div className="text-center mb-8">
              {/* ... main content header is unchanged ... */}
-             <h2 className="pixel-font text-xl sm:text-3xl text-white mb-3 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
+             <h2 className="pixel-font text-xl sm:text-3xl mb-3 bg-gradient-to-r from-cyan-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
               MATH QUEST LEVELS
             </h2>
             <div className="pixel-font text-xs sm:text-sm text-cyan-300 mb-4">

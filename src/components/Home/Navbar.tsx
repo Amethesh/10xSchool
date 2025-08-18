@@ -152,7 +152,7 @@ const Navbar = () => {
               className="rounded-lg bg-primary font-black border border-black cursor-pointer"
               onClick={() => setIsMenuOpen(false)}
             >
-              <a href="/game">Test your mind</a>
+              <a href="/login">Login</a>
             </Button>
             <Button
               size="lg"
