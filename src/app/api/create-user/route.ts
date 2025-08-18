@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     // User does not exist, proceed to create
     const { data: newProfile, error: insertError } = await supabase
       .from("profiles")
-      .insert({ username: trimmedUsername, total_score: 0 }) // Initial score is 0
+      .insert({ id: trimmedUsername, role: 'student' }) // Create basic profile
       .select("id") // Select the ID of the newly created profile [39]
       .single(); // Expecting one new record
 

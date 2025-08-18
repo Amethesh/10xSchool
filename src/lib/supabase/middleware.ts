@@ -29,40 +29,52 @@ export async function updateSession(request: NextRequest) {
     }
   );
 
-  // Do not run code between createServerClient and
-  // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-  // issues with users being randomly logged out.
-
-  // IMPORTANT: DO NOT REMOVE auth.getUser()
-
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
+  const { pathname } = request.nextUrl;
+  // --- START: FORCE PASSWORD CHANGE LOGIC ---
+  // This block runs if a user is logged in.
   if (
-    request.nextUrl.pathname !== "/" &&
-    !user &&
-    !request.nextUrl.pathname.startsWith("/login") &&
-    !request.nextUrl.pathname.startsWith("/auth")
+    user &&
+    pathname !== "/change-password" &&
+    !pathname.startsWith("/login")
   ) {
-    // no user, potentially respond by redirecting the user to the login page
+    // Check our custom flag in the database.
+    const { data: studentProfile, error } = await supabase
+      .from("students") // Or 'profiles' if you named it that
+      .select("password_change_required")
+      .eq("id", user.id)
+      .single();
+
+    // If the flag is true, force redirect to the change-password page.
+    if (studentProfile?.password_change_required) {
+      // Use rewrite to show the change-password page content
+      // without changing the URL in the browser bar.
+      const url = request.nextUrl.clone();
+      url.pathname = "/change-password";
+      return NextResponse.rewrite(url);
+    }
+
+    if (error) {
+      console.error("Middleware error checking password flag:", error.message);
+      // If we can't check the profile, let them proceed but log the error.
+      // You could also choose to redirect them to an error page.
+    }
+  }
+  // --- END: FORCE PASSWORD CHANGE LOGIC ---
+
+  // This is your existing logic to protect routes from unauthenticated users.
+  if (
+    !user &&
+    !pathname.startsWith("/login") &&
+    !pathname.startsWith("/auth") &&
+    pathname !== "/"
+  ) {
     const url = request.nextUrl.clone();
-    url.pathname = "/auth/login";
+    url.pathname = "/login";
     return NextResponse.redirect(url);
   }
-
-  // IMPORTANT: You *must* return the supabaseResponse object as it is.
-  // If you're creating a new response object with NextResponse.next() make sure to:
-  // 1. Pass the request in it, like so:
-  //    const myNewResponse = NextResponse.next({ request })
-  // 2. Copy over the cookies, like so:
-  //    myNewResponse.cookies.setAll(supabaseResponse.cookies.getAll())
-  // 3. Change the myNewResponse object to fit your needs, but avoid changing
-  //    the cookies!
-  // 4. Finally:
-  //    return myNewResponse
-  // If this is not done, you may be causing the browser and server to go out
-  // of sync and terminate the user's session prematurely!
 
   return supabaseResponse;
 }

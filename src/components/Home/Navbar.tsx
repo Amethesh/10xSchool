@@ -85,19 +85,20 @@ const Navbar = () => {
 
       <div className="hidden md:flex gap-2 items-center">
         <Button
-          size="sm"
-          className="rounded-lg bg-[#bfecff]  border border-black cursor-pointer"
+          size="lg"
+          className="rounded-2xl  border border-black cursor-pointer"
         >
           <a href="/game">Test your mind</a>
         </Button>
         <Button
           size="lg"
-          className="rounded-2xl border border-black cursor-pointer"
+          className="rounded-2xl bg-[#d8f999] hover:bg-[#e4ffb3] text-black border border-black cursor-pointer"
         >
           <a
-            href="https://docs.google.com/forms/d/e/1FAIpQLSenR-uZldf8c2P_KCo49LLZZWM4ewTgb7pNbPWpQ6pASG5X4A/viewform"
-            target="_blank"
-            rel="noopener noreferrer"
+            // href="https://docs.google.com/forms/d/e/1FAIpQLSenR-uZldf8c2P_KCo49LLZZWM4ewTgb7pNbPWpQ6pASG5X4A/viewform"
+            href="/application"
+            // target="_blank"
+            // rel="noopener noreferrer"
           >
             Interested
           </a>
@@ -148,7 +149,7 @@ const Navbar = () => {
           <div className="flex flex-col gap-2 items-center mt-4">
             <Button
               size="sm"
-              className="rounded-lg bg-[#bfecff]  border border-black cursor-pointer"
+              className="rounded-lg bg-primary font-black border border-black cursor-pointer"
               onClick={() => setIsMenuOpen(false)}
             >
               <a href="/game">Test your mind</a>
@@ -159,9 +160,10 @@ const Navbar = () => {
               onClick={() => setIsMenuOpen(false)}
             >
               <a
-                href="https://docs.google.com/forms/d/e/1FAIpQLSenR-uZldf8c2P_KCo49LLZZWM4ewTgb7pNbPWpQ6pASG5X4A/viewform"
-                target="_blank"
-                rel="noopener noreferrer"
+                // href="https://docs.google.com/forms/d/e/1FAIpQLSenR-uZldf8c2P_KCo49LLZZWM4ewTgb7pNbPWpQ6pASG5X4A/viewform"
+                href="/application"
+                // target="_blank"
+                // rel="noopener noreferrer"
               >
                 Interested
               </a>

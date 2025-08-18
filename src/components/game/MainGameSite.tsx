@@ -48,9 +48,7 @@ const MathGameSite: React.FC = () => {
   const [lives, setLives] = useState<number>(3);
   const [score, setScore] = useState<number>(0);
   const [timeLeft, setTimeLeft] = useState<number>(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<
-    keyof Question["options"] | ""
-  >("");
+  const [selectedAnswer, setSelectedAnswer] = useState<string>("");
   const [showResult, setShowResult] = useState<boolean>(false);
   const [isCorrect, setIsCorrect] = useState<boolean>(false);
   const [gameQuestions, setGameQuestions] = useState<Question[]>([]);
@@ -333,7 +331,7 @@ const MathGameSite: React.FC = () => {
     }, 2000);
   };
 
-  const handleAnswerSelect = (answer: keyof Question["options"]) => {
+  const handleAnswerSelect = (answer: string) => {
     if (showResult || timeLeft <= 0) return;
     
     console.log("Answer select")
@@ -500,8 +498,6 @@ const MathGameSite: React.FC = () => {
           selectedAnswer={selectedAnswer}
           showResult={showResult}
           isCorrect={isCorrect}
-          difficultySettings={difficultySettings}
-          difficulty={difficulty}
           handleAnswerSelect={handleAnswerSelect}
           shake={shake}
         />

@@ -17,9 +17,9 @@ export async function GET(request: Request) {
 
   try {
     const { data: profile, error } = await supabase
-      .from("profiles")
-      .select("id, total_score")
-      .eq("username", username.trim())
+      .from("students")
+      .select("id, totalScore")
+      .eq("student_id", username.trim())
       .single();
 
     if (error && error.code !== "PGRST116") {
@@ -33,7 +33,7 @@ export async function GET(request: Request) {
 
     if (profile) {
       return NextResponse.json(
-        { exists: true, userId: profile.id, totalScore: profile.total_score },
+        { exists: true, userId: profile.id, totalScore: profile.totalScore },
         { status: 200 }
       );
     } else {

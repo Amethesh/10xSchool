@@ -1,9 +1,8 @@
 // src/components/PlayingScreen.tsx
-"use client"; // This component needs to be a client component
-
+"use client";
 import React from "react";
-import HUD from "./HUD"; // Adjust path
-import { Question, DifficultySettings } from "@/types/types"; // Adjust path
+import HUD from "./HUD";
+import { Question } from "@/types/types";
 import Image from "next/image";
 
 interface PlayingScreenProps {
@@ -15,12 +14,10 @@ interface PlayingScreenProps {
   score: number;
   timeLeft: number;
   combo: number;
-  selectedAnswer: keyof Question["options"] | "";
+  selectedAnswer: string;
   showResult: boolean;
   isCorrect: boolean;
-  difficultySettings: DifficultySettings; // Passed but not directly used in this component's render
-  difficulty: "easy" | "medium" | "hard" | ""; // Passed but not directly used in this component's render
-  handleAnswerSelect: (answer: keyof Question["options"]) => void;
+  handleAnswerSelect: (answer: string) => void;
   shake: boolean;
 }
 
@@ -113,7 +110,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                   fontSize: "clamp(26px, 4vw, 32px)",
                 }}
               >
-                {currentQuestion.question_text}
+                {currentQuestion.question}
               </div>
               <div
                 className="text-sm font-bold"
@@ -127,96 +124,99 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              {(
-                Object.keys(currentQuestion.options) as Array<
-                  keyof Question["options"]
-                >
-              ).map((key) => (
-                <button
-                  key={key}
-                  onClick={() => handleAnswerSelect(key)}
-                  disabled={showResult}
-                  className={`
-                    relative p-4 font-bold text-xl transition-all transform
-                    ${
-                      showResult
-                        ? "pointer-events-none"
-                        : "hover:scale-105 cursor-pointer"
-                    }
-                  `}
-                  style={{
-                    fontFamily: '"Press Start 2P", monospace',
-                    fontSize: "20px",
-                    lineHeight: "1.4",
-                    background: showResult
-                      ? selectedAnswer === key
-                        ? isCorrect
+              {(['A', 'B', 'C', 'D'] as const).map((key) => {
+                const optionText = key === 'A' ? currentQuestion.option_a :
+                                 key === 'B' ? currentQuestion.option_b :
+                                 key === 'C' ? currentQuestion.option_c :
+                                 currentQuestion.option_d;
+                
+                return (
+                  <button
+                    key={key}
+                    onClick={() => handleAnswerSelect(key)}
+                    disabled={showResult}
+                    className={`
+                      relative p-4 font-bold text-xl transition-all transform
+                      ${
+                        showResult
+                          ? "pointer-events-none"
+                          : "hover:scale-105 cursor-pointer"
+                      }
+                    `}
+                    style={{
+                      fontFamily: '"Press Start 2P", monospace',
+                      fontSize: "20px",
+                      lineHeight: "1.4",
+                      background: showResult
+                        ? selectedAnswer === key
+                          ? isCorrect
+                            ? "linear-gradient(to bottom, #66bb6a 0%, #4caf50 100%)"
+                            : "linear-gradient(to bottom, #f44336 0%, #d32f2f 100%)"
+                          : currentQuestion.correct_answer.toUpperCase() === key
                           ? "linear-gradient(to bottom, #66bb6a 0%, #4caf50 100%)"
-                          : "linear-gradient(to bottom, #f44336 0%, #d32f2f 100%)"
-                        : currentQuestion.correct_answer === key
-                        ? "linear-gradient(to bottom, #66bb6a 0%, #4caf50 100%)"
-                        : "linear-gradient(to bottom, #455a64 0%, #263238 100%)"
-                      : "linear-gradient(to bottom, #4fc3f7 0%, #29b6f6 100%)",
-                    border: "3px solid",
-                    borderColor: showResult
-                      ? selectedAnswer === key
-                        ? isCorrect
+                          : "linear-gradient(to bottom, #455a64 0%, #263238 100%)"
+                        : "linear-gradient(to bottom, #4fc3f7 0%, #29b6f6 100%)",
+                      border: "3px solid",
+                      borderColor: showResult
+                        ? selectedAnswer === key
+                          ? isCorrect
+                            ? "#4caf50"
+                            : "#f44336"
+                          : currentQuestion.correct_answer.toUpperCase() === key
                           ? "#4caf50"
-                          : "#f44336"
-                        : currentQuestion.correct_answer === key
-                        ? "#4caf50"
-                        : "#607d8b"
-                      : "#1565c0",
-                    color:
-                      showResult &&
-                      selectedAnswer !== key &&
-                      currentQuestion.correct_answer !== key
-                        ? "#757575"
-                        : "#ffffff",
-                    boxShadow: showResult
-                      ? "inset 2px 2px 0px rgba(0,0,0,0.3)"
-                      : `
-                          inset -3px -3px 0px #1565c0,
-                          inset 3px 3px 0px #81d4fa,
-                          3px 3px 0px #0d47a1
-                        `,
-                    textShadow: "1px 1px 0px rgba(0,0,0,0.8)",
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!showResult) {
-                      e.currentTarget.style.background =
-                        "linear-gradient(to bottom, #81d4fa 0%, #4fc3f7 100%)";
-                      e.currentTarget.style.transform =
-                        "scale(1.05) translate(-1px, -1px)";
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!showResult) {
-                      e.currentTarget.style.background =
-                        "linear-gradient(to bottom, #4fc3f7 0%, #29b6f6 100%)";
-                      e.currentTarget.style.transform = "scale(1)";
-                    }
-                  }}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0"
-                      style={{
-                        background: "#81c784",
-                        color: "#1b5e20",
-                        border: "2px solid #4caf50",
-                        boxShadow:
-                          "inset 1px 1px 0px #a5d6a7, 1px 1px 0px #2e7d32",
-                      }}
-                    >
-                      {key.toUpperCase()}
+                          : "#607d8b"
+                        : "#1565c0",
+                      color:
+                        showResult &&
+                        selectedAnswer !== key &&
+                        currentQuestion.correct_answer.toUpperCase() !== key
+                          ? "#757575"
+                          : "#ffffff",
+                      boxShadow: showResult
+                        ? "inset 2px 2px 0px rgba(0,0,0,0.3)"
+                        : `
+                            inset -3px -3px 0px #1565c0,
+                            inset 3px 3px 0px #81d4fa,
+                            3px 3px 0px #0d47a1
+                          `,
+                      textShadow: "1px 1px 0px rgba(0,0,0,0.8)",
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!showResult) {
+                        e.currentTarget.style.background =
+                          "linear-gradient(to bottom, #81d4fa 0%, #4fc3f7 100%)";
+                        e.currentTarget.style.transform =
+                          "scale(1.05) translate(-1px, -1px)";
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!showResult) {
+                        e.currentTarget.style.background =
+                          "linear-gradient(to bottom, #4fc3f7 0%, #29b6f6 100%)";
+                        e.currentTarget.style.transform = "scale(1)";
+                      }
+                    }}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0"
+                        style={{
+                          background: "#81c784",
+                          color: "#1b5e20",
+                          border: "2px solid #4caf50",
+                          boxShadow:
+                            "inset 1px 1px 0px #a5d6a7, 1px 1px 0px #2e7d32",
+                        }}
+                      >
+                        {key}
+                      </div>
+                      <span className="text-left flex-1">
+                        {optionText}
+                      </span>
                     </div>
-                    <span className="text-left flex-1">
-                      {currentQuestion.options[key]}
-                    </span>
-                  </div>
-                </button>
-              ))}
+                  </button>
+                );
+              })}
             </div>
 
             {showResult && (
@@ -251,7 +251,10 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                     CORRECT ANSWER:{" "}
                     <span style={{ color: "#4caf50" }}>
                       {currentQuestion.correct_answer.toUpperCase()}.{" "}
-                      {currentQuestion.options[currentQuestion.correct_answer]}
+                      {currentQuestion.correct_answer.toUpperCase() === 'A' ? currentQuestion.option_a :
+                       currentQuestion.correct_answer.toUpperCase() === 'B' ? currentQuestion.option_b :
+                       currentQuestion.correct_answer.toUpperCase() === 'C' ? currentQuestion.option_c :
+                       currentQuestion.option_d}
                     </span>
                   </div>
                 )}

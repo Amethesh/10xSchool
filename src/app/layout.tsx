@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Fredoka } from "next/font/google";
 import "./globals.css";
-import Navbar from "@/components/Home/Navbar";
+import { TanStackProvider } from "@/lib/TanstackProvider";
+import { Toaster } from "sonner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +29,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${FredokaFont.variable} antialiased grid-background`}
       >
-        {children}
+        <TanStackProvider>{children}</TanStackProvider>
+        <Toaster />
       </body>
     </html>
   );

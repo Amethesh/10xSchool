@@ -29,22 +29,6 @@ const courses = [
     bgColor: "bg-purple-300",
     icon: "📖",
   },
-  // {
-  //   id: 4,
-  //   title: "Advanced Reading Program (Ages 6-12)",
-  //   description:
-  //     "Enhance comprehension and critical thinking through structured reading exercises.",
-  //   bgColor: "bg-orange-300",
-  //   icon: "📚",
-  // },
-  // {
-  //   id: 5,
-  //   title: "Creative Writing Workshop (Ages 8-14)",
-  //   description:
-  //     "Develop storytelling skills and creative expression through guided writing activities.",
-  //   bgColor: "bg-pink-300",
-  //   icon: "✍️",
-  // },
 ];
 
 type Course = {
@@ -66,8 +50,7 @@ function CourseCard({ course, index }: CourseCardProps) {
   return (
     <div ref={ref} className="relative h-screen">
       <motion.div
-        // style={{ y, scale, opacity }}
-        className={`sticky top-[20vh] rounded-3xl p-10 m-5 min-h-[300px] shadow-lg hover:shadow-xl transition-shadow duration-300 ${course.bgColor} flex flex-col justify-center group cursor-pointer`}
+        className={`sticky top-[20vh] rounded-3xl p-10 m-5 min-h-[300px] shadow-lg hover:shadow-xl transition-shadow duration-300 ${course.bgColor} flex flex-col justify-center group`}
         style={{
           zIndex: courses.length - index,
         }}
@@ -127,7 +110,7 @@ export default function PowerfulProgramsSection() {
         viewport={{ once: true }}
       >
         <motion.p
-          className="px-12 py-4 text-2xl bg-white border-2 border-black w-fit font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.8)] transition-all duration-300 cursor-pointer"
+          className="px-12 py-4 text-2xl bg-white border-2 border-black w-fit font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.8)] transition-all duration-300"
           whileHover={{
             scale: 1.05,
             rotate: -1,

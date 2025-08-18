@@ -1,8 +1,20 @@
-import { LoginForm } from "@/components/ui/8bit/blocks/login-form";
+import PixelLoginForm from "@/components/auth/LoginForm";
+import { createClient } from "@/lib/supabase/server";
 import Image from "next/image";
+import { redirect } from "next/navigation";
 import React from "react";
 
-const page = () => {
+const page = async () => {
+
+  const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+  
+    if (user) {
+      redirect("/student/levels");
+    }
+
   return (
     <main className="">
       <Image
@@ -12,7 +24,7 @@ const page = () => {
         className="object-cover"
       />
       <div className="w-screen h-screen flex items-center justify-center">
-      <LoginForm className="max-w-xl" />
+      <PixelLoginForm />
       </div>
     </main>
   );
