@@ -2,20 +2,31 @@
 
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Loader2, CheckCircle, XCircle, Clock, Users, AlertCircle } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Clock, Users, AlertCircle, ArrowBigLeft, ChevronLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatLevelName } from '@/utils/levelUtils';
+import { motion, Variants, AnimatePresence } from 'motion/react';
+import clsx from 'clsx';
+import Image from 'next/image';
 
 interface AccessRequest {
   id: string;
   studentId: string;
   studentName: string;
-  level: string;
+  levelName: string;
+  levelId: number;
   requestedAt: string;
 }
+
+// --- Animation Variants ---
+const staggerContainer: Variants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
+};
+const fadeInItem: Variants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0 },
+};
 
 // Fetch pending access requests
 async function fetchPendingAccessRequests(): Promise<AccessRequest[]> {
@@ -150,12 +161,18 @@ export default function AccessRequestsPage() {
     }
   };
 
+  // --- Loading and Error States (Themed) ---
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 mx-auto mb-4 animate-spin" />
-          <p className="text-muted-foreground">Loading access requests...</p>
+      <div className="flex flex-col items-center justify-center min-h-screen p-4 pixel-font text-cyan-300">
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-40"
+          style={{ backgroundImage: "url('/images/8bitBG6.png')" }}
+        />
+        <div className="absolute inset-0 bg-black opacity-40"></div>
+        <div className='pixel-panel backdrop-blur-lg flex flex-col justify-center items-center p-4'>
+          <Loader2 className="w-8 h-8 mb-4 animate-spin" />
+          <p>LOADING ACCESS REQUESTS...</p>
         </div>
       </div>
     );
@@ -163,191 +180,188 @@ export default function AccessRequestsPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-500" />
-            <CardTitle>Error Loading Requests</CardTitle>
-            <CardDescription>
-              {error instanceof Error ? error.message : 'Failed to load access requests'}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="text-center">
-            <Button onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
-          </CardContent>
-        </Card>
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <div className="pixel-panel p-8 text-center max-w-md w-full">
+          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-400" />
+          <h2 className="pixel-font text-lg text-white mb-2">Error Loading Data</h2>
+          <p className="pixel-font text-xs text-red-400/80 mb-6">
+            {error instanceof Error ? error.message : 'An unknown error occurred'}
+          </p>
+          <button className="pixel-button" onClick={() => window.location.reload()}>
+            TRY AGAIN
+          </button>
+        </div>
       </div>
     );
   }
 
+  // --- Main Component Render ---
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold mb-2">Access Requests Management</h1>
-        <p className="text-muted-foreground">
-          Review and manage student requests for level access
-        </p>
-      </div>
-
-      {/* Summary Stats */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Request Summary
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-yellow-600">
-                {requests?.length || 0}
-              </div>
-              <div className="text-sm text-muted-foreground">Pending Requests</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">
-                {selectedRequests.length}
-              </div>
-              <div className="text-sm text-muted-foreground">Selected</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-green-600">
-                {new Set(requests?.map(r => r.level)).size || 0}
-              </div>
-              <div className="text-sm text-muted-foreground">Unique Levels</div>
-            </div>
+    <>
+      <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{ backgroundImage: "url('/images/8bitBG6.png')" }}
+        />
+        <div className="absolute inset-0 bg-black opacity-40"></div>
+      <motion.div 
+        className="pixel-panel backdrop-blur-lg max-w-5xl mx-auto p-4 mt-6 sm:p-6"
+        initial="hidden"
+        animate="visible"
+        variants={staggerContainer}
+      >
+        {/* Header */}
+        <motion.div className="mb-8 flex gap-4 items-center" variants={fadeInItem}>
+          <div className='p-4'>
+            <a
+              href="/admin/dashboard"
+              className="pixel-button pixel-button-secondary flex items-center"
+              >
+              <ChevronLeft  className="w-6 h-6" />
+            </a>
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <h1 className="pixel-font text-2xl sm:text-3xl text-white mb-2">ACCESS REQUESTS</h1>
+            <p className="pixel-font text-sm text-cyan-300/80">
+              Manage student requests for level access.
+            </p>
+          </div>
+        </motion.div>
 
-      {/* Bulk Actions */}
-      {requests && requests.length > 0 && (
-        <Card className="mb-6">
-          <CardContent className="pt-6">
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-2">
+        {/* Summary Stats */}
+        <motion.div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8" variants={staggerContainer}>
+          <div className="pixel-panel !p-4 text-center">
+            <div className="pixel-font text-3xl font-bold text-yellow-400">{requests?.length || 0}</div>
+            <div className="pixel-font text-xs text-cyan-300/70 mt-1">Pending Requests</div>
+          </div>
+          <div className="pixel-panel !p-4 text-center">
+            <div className="pixel-font text-3xl font-bold text-blue-400">{selectedRequests.length}</div>
+            <div className="pixel-font text-xs text-cyan-300/70 mt-1">Selected</div>
+          </div>
+          <div className="pixel-panel !p-4 text-center">
+            <div className="pixel-font text-3xl font-bold text-green-400">{new Set(requests?.map(r => r.levelId)).size || 0}</div>
+            <div className="pixel-font text-xs text-cyan-300/70 mt-1">Unique Levels</div>
+          </div>
+        </motion.div>
+
+        {/* Bulk Actions */}
+        {requests && requests.length > 0 && (
+          <motion.div className="pixel-panel p-4 mb-6" variants={fadeInItem}>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+              <label className="flex items-center gap-3 pixel-font text-sm text-white cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={selectedRequests.length === requests.length}
+                  checked={selectedRequests.length > 0 && selectedRequests.length === requests.length}
                   onChange={handleSelectAll}
-                  className="rounded"
+                  className="w-5 h-5 bg-cyan-900/50 border-cyan-400/50 text-cyan-400 focus:ring-cyan-400"
                 />
-                <span className="text-sm">
-                  Select All ({selectedRequests.length} selected)
-                </span>
-              </div>
+                Select All ({selectedRequests.length} selected)
+              </label>
               
-              {selectedRequests.length > 0 && (
-                <div className="flex gap-2">
-                  <Button
-                    onClick={() => bulkApproveMutation.mutate(selectedRequests)}
-                    disabled={bulkApproveMutation.isPending}
-                    className="bg-green-600 hover:bg-green-700"
+              <AnimatePresence>
+                {selectedRequests.length > 0 && (
+                  <motion.div
+                    className="flex gap-2"
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
                   >
-                    {bulkApproveMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <CheckCircle className="w-4 h-4 mr-2" />
-                    )}
-                    Approve Selected ({selectedRequests.length})
-                  </Button>
-                  <Button
-                    onClick={() => bulkDenyMutation.mutate(selectedRequests)}
-                    disabled={bulkDenyMutation.isPending}
-                    variant="destructive"
-                  >
-                    {bulkDenyMutation.isPending ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <XCircle className="w-4 h-4 mr-2" />
-                    )}
-                    Deny Selected ({selectedRequests.length})
-                  </Button>
-                </div>
-              )}
+                    <button
+                      onClick={() => bulkApproveMutation.mutate(selectedRequests)}
+                      disabled={bulkApproveMutation.isPending}
+                      className="pixel-button-small flex items-center gap-2"
+                    >
+                      {bulkApproveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => bulkDenyMutation.mutate(selectedRequests)}
+                      disabled={bulkDenyMutation.isPending}
+                      className="pixel-button-secondary-small flex items-center gap-2"
+                    >
+                      {bulkDenyMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                      Deny
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          </motion.div>
+        )}
 
-      {/* Requests List */}
-      {!requests || requests.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <Clock className="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-lg font-medium mb-2">No Pending Requests</h3>
-            <p className="text-muted-foreground">
-              All access requests have been processed.
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-4">
-          {requests.map((request) => (
-            <Card key={request.id} className="transition-all duration-200 hover:shadow-md">
-              <CardContent className="pt-6">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <input
-                      type="checkbox"
-                      checked={selectedRequests.includes(request.id)}
-                      onChange={() => handleSelectRequest(request.id)}
-                      className="rounded"
-                    />
-                    <div>
-                      <div className="font-medium">{request.studentName}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Student ID: {request.studentId}
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4">
-                    <div className="text-right">
-                      <Badge variant="outline" className="mb-1">
-                        {formatLevelName(request.level)}
-                      </Badge>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(request.requestedAt).toLocaleDateString()}
+        {/* Requests List */}
+        {!requests || requests.length === 0 ? (
+          <motion.div className="pixel-panel p-12 text-center" variants={fadeInItem}>
+            <Clock className="w-12 h-12 mx-auto mb-4 text-cyan-400/50" />
+            <h3 className="pixel-font text-lg text-white mb-2">All Clear!</h3>
+            <p className="pixel-font text-sm text-cyan-300/70">No pending access requests.</p>
+          </motion.div>
+        ) : (
+          <motion.div className="space-y-4" variants={staggerContainer}>
+            <AnimatePresence>
+              {requests.map((request) => (
+                <motion.div
+                  key={request.id}
+                  className={clsx(
+                    "pixel-panel !p-4 transition-colors",
+                    selectedRequests.includes(request.id) ? "bg-blue-500/15 border-blue-400" : "bg-cyan-900/20"
+                  )}
+                  variants={fadeInItem}
+                  layout
+                >
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    {/* Left Side: Selection & Student Info */}
+                    <div className="flex items-center gap-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedRequests.includes(request.id)}
+                        onChange={() => handleSelectRequest(request.id)}
+                        className="w-5 h-5 bg-cyan-900/50 border-cyan-400/50 text-cyan-400 focus:ring-cyan-400 flex-shrink-0"
+                      />
+                      <div>
+                        <div className="pixel-font text-base text-white">{request.studentName}</div>
+                        <div className="pixel-font text-xs text-cyan-300/60">
+                          ID: {request.studentId}
+                        </div>
                       </div>
                     </div>
                     
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => approveMutation.mutate(request.id)}
-                        disabled={approveMutation.isPending}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        {approveMutation.isPending ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                          <CheckCircle className="w-3 h-3" />
-                        )}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => denyMutation.mutate(request.id)}
-                        disabled={denyMutation.isPending}
-                      >
-                        {denyMutation.isPending ? (
-                          <Loader2 className="w-3 h-3 animate-spin" />
-                        ) : (
-                          <XCircle className="w-3 h-3" />
-                        )}
-                      </Button>
+                    {/* Right Side: Level Info & Actions */}
+                    <div className="flex items-center gap-4 w-full sm:w-auto justify-between">
+                      <div className="text-right">
+                        <div className="pixel-font text-xs px-2 py-1 bg-cyan-400/10 text-cyan-300 rounded mb-1">
+                          {formatLevelName(request.levelName)}
+                        </div>
+                        <div className="pixel-font text-[10px] text-cyan-300/50">
+                          {new Date(request.requestedAt).toLocaleDateString()}
+                        </div>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <button
+                          title="Approve"
+                          onClick={() => approveMutation.mutate(request.id)}
+                          disabled={approveMutation.isPending || denyMutation.isPending}
+                          className="pixel-button !p-2 sm:!p-3"
+                        >
+                          {approveMutation.isPending && !denyMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                        </button>
+                        <button
+                          title="Deny"
+                          onClick={() => denyMutation.mutate(request.id)}
+                          disabled={denyMutation.isPending || approveMutation.isPending}
+                          className="pixel-button-secondary !p-2 sm:!p-3"
+                        >
+                          {denyMutation.isPending && !approveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
-    </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
+      </motion.div>
+    </>
   );
 }

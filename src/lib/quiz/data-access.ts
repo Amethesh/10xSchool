@@ -1,18 +1,17 @@
 "use server"
 import { createClient } from '@/lib/supabase/server';
 import { Database } from '@/lib/supabase/database.types';
-import { Question, QuizAttempt, QuizAnswer, StudentRanking } from '@/types/types';
-import { QuizError, QuizErrorType, categorizeError } from './errors';
-import { withDatabaseRetry, withNetworkRetry, withDatabaseCircuitBreaker } from './retry';
+import { Question, StudentRanking } from '@/types/types';
+import { QuizError, categorizeError } from './errors';
+import { withDatabaseRetry, withDatabaseCircuitBreaker } from './retry';
 
 type Tables = Database['public']['Tables'];
 type QuizAttemptRow = Tables['quiz_attempts']['Row'];
 type QuizAnswerRow = Tables['quiz_answers']['Row'];
-type MathQuestionRow = Tables['math_questions']['Row'];
-type StudentRow = Tables['students']['Row'];
 
 /**
- * Fetch questions by level and week number from math_questions table
+ * Fetch a random set of questions by level and week number
+ * using the 'get_random_questions' RPC function.
  */
 export async function fetchQuestionsByLevelAndWeek(
   levelId: number,
@@ -21,25 +20,27 @@ export async function fetchQuestionsByLevelAndWeek(
   try {
     return await withDatabaseCircuitBreaker(async () => {
       return await withDatabaseRetry(async () => {
-        const supabase =  await createClient();
+        const supabase = await createClient();
 
-        const { data, error } = await supabase
-          .from("math_questions")
-          .select("*")
-          .eq("level_id", levelId)
-          .eq("week_no", weekNo)
+        const { data, error } = await supabase.rpc("get_random_questions", {
+          p_level_id: levelId,
+          p_week_no: weekNo,
+        });
 
         if (error) {
+          // Error handling logic remains the same.
           throw QuizError.database(
-            `Failed to fetch questions: ${error.message}`,
+            `Failed to fetch questions via RPC: ${error.message}`,
             {
               levelId,
               weekNo,
-              operation: "fetchQuestionsByLevelAndWeek",
+              operation: "fetchQuestionsByLevelAndWeek (RPC)",
             }
           );
         }
 
+        // The check for empty data is also still crucial.
+        // An RPC call with no results returns an empty array.
         if (!data || data.length === 0) {
           throw QuizError.questionLoad(
             `No questions found for levelId ${levelId} week ${weekNo}`,
@@ -50,17 +51,22 @@ export async function fetchQuestionsByLevelAndWeek(
           );
         }
 
-        return data;
+        // Transform the data to match the Question interface
+        return data.map(question => ({
+          ...question,
+          level_no: question.level_id // Map level_id to level_no to match Question interface
+        }));
       });
     });
   } catch (error) {
+    // Outer error handling also remains the same.
     if (error instanceof QuizError) {
       throw error;
     }
     throw categorizeError(error as Error, {
       levelId,
       weekNo,
-      operation: "fetchQuestionsByLevelAndWeek",
+      operation: "fetchQuestionsByLevelAndWeek (RPC)",
     });
   }
 }
@@ -135,7 +141,7 @@ export async function createQuizAttempt(
 }
 
 /**
- * Update quiz attempt with final results
+ * Update quiz attempt with final results and student's total score
  */
 export async function updateQuizAttempt(
   attemptId: string,
@@ -148,7 +154,18 @@ export async function updateQuizAttempt(
       return await withDatabaseRetry(async () => {
         const supabase = await createClient();
 
-        const { error } = await supabase
+        // Get the current authenticated user
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+        if (authError || !user) {
+          throw QuizError.database('User not authenticated', {
+            attemptId,
+            operation: 'updateQuizAttempt - auth check'
+          });
+        }
+
+        // Update quiz attempt with final results
+        const { error: updateAttemptError } = await supabase
           .from('quiz_attempts')
           .update({
             correct_answers: correctAnswers,
@@ -158,13 +175,43 @@ export async function updateQuizAttempt(
           })
           .eq('id', attemptId);
 
-        if (error) {
-          throw QuizError.save(`Failed to update quiz attempt: ${error.message}`, {
+        if (updateAttemptError) {
+          throw QuizError.save(`Failed to update quiz attempt: ${updateAttemptError.message}`, {
             attemptId,
             correctAnswers,
             score,
             timeSpent,
-            operation: 'updateQuizAttempt'
+            operation: 'updateQuizAttempt - update attempt'
+          });
+        }
+
+        // Get current student total score and update it
+        const { data: studentData, error: studentFetchError } = await supabase
+          .from('students')
+          .select('total_score')
+          .eq('id', user.id)
+          .single();
+
+        if (studentFetchError) {
+          throw QuizError.database(`Failed to fetch student data: ${studentFetchError.message}`, {
+            studentId: user.id,
+            operation: 'updateQuizAttempt - fetch student'
+          });
+        }
+
+        // Update student's total score by adding the correct answers
+        const newTotalScore = (studentData?.total_score || 0) + correctAnswers;
+        const { error: studentUpdateError } = await supabase
+          .from('students')
+          .update({ total_score: newTotalScore })
+          .eq('id', user.id);
+
+        if (studentUpdateError) {
+          throw QuizError.save(`Failed to update student total score: ${studentUpdateError.message}`, {
+            studentId: user.id,
+            correctAnswers,
+            newTotalScore,
+            operation: 'updateQuizAttempt - update student score'
           });
         }
       });
@@ -346,7 +393,7 @@ export async function calculateStudentRanking(
   const { data: allAttempts, error } = await supabase
     .from("quiz_attempts")
     .select("student_id, score, completed_at")
-    .eq("level_id", levelId)   // ✅ use level_id instead of level
+    .eq("level_id", levelId)
     .eq("week_no", weekNo)
     .eq("difficulty", difficulty)
     .not("completed_at", "is", null)

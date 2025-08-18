@@ -14,7 +14,7 @@ export async function getStudentLevelsData() {
 
   const { data: profile, error: profileError } = await supabase
     .from("students")
-    .select("id, full_name, email")
+    .select("id, full_name, total_score, email, student_id")
     .eq("id", user.id)
     .single();
   if (profileError) throw profileError;

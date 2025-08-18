@@ -1,7 +1,7 @@
 "use client";
 import React, { useState } from "react";
 // 1. Import Copy and Check icons
-import { User, Mail, Lock, UserPlus, Copy, Check } from "lucide-react";
+import { User, Mail, Lock, UserPlus, Copy, Check, ChevronLeft } from "lucide-react";
 import { createStudentAction } from "./actions"; 
 
 const CreateStudentPage = () => {
@@ -222,10 +222,11 @@ const CreateStudentPage = () => {
               )}
 
               {/* Submit Button */}
+              <div className='flex gap-4 w-full'>
               <button
                 onClick={handleSubmit}
                 disabled={status === "loading"}
-                className="pixel-button pixel-button-green w-full text-center"
+                className="pixel-button pixel-button-green text-center w-full"
                 style={{ padding: "14px 20px" }}
               >
                 <div className="flex items-center justify-center gap-2">
@@ -235,6 +236,14 @@ const CreateStudentPage = () => {
                     : "CREATE STUDENT"}
                 </div>
               </button>
+                <a
+                  href="/admin/dashboard"
+                  className="pixel-button pixel-button-secondary flex items-center w-full"
+                  >
+                  <ChevronLeft  className="w-6 h-6" />
+                  Go BACK
+                </a>
+              </div>
             </div>
           </div>
         </div>

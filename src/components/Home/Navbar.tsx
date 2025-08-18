@@ -88,7 +88,7 @@ const Navbar = () => {
           size="lg"
           className="rounded-2xl  border border-black cursor-pointer"
         >
-          <a href="/game">Test your mind</a>
+          <a href="/login">Login</a>
         </Button>
         <Button
           size="lg"

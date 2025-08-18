@@ -12,11 +12,13 @@ import {
   Target,
   TrendingUp,
   Search,
-  Plus
+  Plus,
+  BadgeCheck
 } from "lucide-react";
 import { getAllStudentsData } from "./actions";
 import EditStudentModal from "@/components/admin/EditStudentModal";
 import { logout } from "@/app/(auth)/actions";
+import Image from "next/image";
 
 // Define the Student type for type safety
 export type Student = {
@@ -98,6 +100,13 @@ const AdminDashboardPage = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
+        <Image
+          src={"/images/8bitBG6.png"}
+          fill
+          alt="BG"
+          className="object-fill"
+        />
+        <div className="absolute inset-0 bg-black opacity-40"></div>
         <div className="pixel-panel p-8 text-center">
           <div className="pixel-font text-white text-lg mb-4">
             LOADING ADMIN DASHBOARD...
@@ -126,8 +135,15 @@ const AdminDashboardPage = () => {
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br from-black via-gray-900 to-black p-4 sm:p-6">
+        <Image
+          src={"/images/8bitBG6.png"}
+          fill
+          alt="BG"
+          className="object-fill"
+        />
+        <div className="absolute inset-0 bg-black opacity-40"></div>
         {/* Animated background elements */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="fixed inset-0 overflow-hidden pointer-events-none z-10">
           {[...Array(20)].map((_, i) => (
             <div
               key={i}
@@ -143,7 +159,7 @@ const AdminDashboardPage = () => {
 
         <div className="relative z-10 max-w-7xl mx-auto">
           {/* Header */}
-          <div className="pixel-panel p-6 mb-6 bg-gradient-to-r from-blue-900/20 to-cyan-900/20">
+          <div className="pixel-panel backdrop-blur-lg p-6 mb-6 bg-gradient-to-r from-blue-900/20 to-cyan-900/20">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="relative">
@@ -168,8 +184,15 @@ const AdminDashboardPage = () => {
                   <Plus className="w-4 h-4" />
                   CREATE STUDENT
                 </a>
+                <a
+                  href="/admin/access-requests"
+                  className="pixel-button pixel-button-purple pixel-button-green flex items-center gap-2 justify-center"
+                >
+                  <BadgeCheck className="w-4 h-4" />
+                  Manage Requests
+                </a>
                 <form action={logout}>
-                  <button className="pixel-button w-full sm:w-auto">
+                  <button className="pixel-button pixel-button-secondary  w-full sm:w-auto">
                     LOG OUT
                   </button>
                 </form>
@@ -179,7 +202,7 @@ const AdminDashboardPage = () => {
 
           {/* Stats Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="pixel-panel p-4 bg-gradient-to-br from-blue-900/30 to-blue-800/30">
+            <div className="pixel-panel backdrop-blur-lg p-4 bg-gradient-to-br from-blue-900/30 to-blue-800/30">
               <div className="flex items-center gap-3">
                 <Users className="w-8 h-8 text-blue-400" />
                 <div>
@@ -189,7 +212,7 @@ const AdminDashboardPage = () => {
               </div>
             </div>
 
-            <div className="pixel-panel p-4 bg-gradient-to-br from-green-900/30 to-green-800/30">
+            <div className="pixel-panel backdrop-blur-lg p-4 bg-gradient-to-br from-green-900/30 to-green-800/30">
               <div className="flex items-center gap-3">
                 <Target className="w-8 h-8 text-green-400" />
                 <div>
@@ -199,7 +222,7 @@ const AdminDashboardPage = () => {
               </div>
             </div>
 
-            <div className="pixel-panel p-4 bg-gradient-to-br from-purple-900/30 to-purple-800/30">
+            <div className="pixel-panel backdrop-blur-lg p-4 bg-gradient-to-br from-purple-900/30 to-purple-800/30">
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-8 h-8 text-purple-400" />
                 <div>
@@ -209,7 +232,7 @@ const AdminDashboardPage = () => {
               </div>
             </div>
 
-            <div className="pixel-panel p-4 bg-gradient-to-br from-yellow-900/30 to-yellow-800/30">
+            <div className="pixel-panel backdrop-blur-lg p-4 bg-gradient-to-br from-yellow-900/30 to-yellow-800/30">
               <div className="flex items-center gap-3">
                 <Trophy className="w-8 h-8 text-yellow-400" />
                 <div>
@@ -221,7 +244,7 @@ const AdminDashboardPage = () => {
           </div>
 
           {/* Controls */}
-          <div className="pixel-panel p-4 mb-6 bg-gradient-to-r from-gray-900/50 to-gray-800/50">
+          <div className="pixel-panel backdrop-blur-lg p-4 mb-6 bg-gradient-to-r from-gray-900/50 to-gray-800/50">
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <div className="relative flex-1 w-full sm:max-w-md">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-cyan-400" />
@@ -259,7 +282,7 @@ const AdminDashboardPage = () => {
           </div>
 
         {/* Students Table */}
-        <div className="pixel-panel p-6 bg-gradient-to-br from-gray-900/40 to-black/40">
+        <div className="pixel-panel backdrop-blur-lg p-6 bg-gradient-to-br from-gray-900/40 to-black/40">
           <div className="overflow-x-auto custom-scrollbar">
             <table className="w-full pixel-font text-xs text-white">
               <thead>

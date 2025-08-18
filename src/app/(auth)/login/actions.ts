@@ -26,6 +26,12 @@ export async function loginAction(studentId: string, password: string) {
     return { error: "INVALID STUDENT ID OR PASSWORD" };
   }
 
+  // Check if the logged in user is admin
+  const { data: { user } } = await supabase.auth.getUser();
+  
+  if (user?.email === "admin@10xschool.com") {
+    redirect("/admin/dashboard");
+  }
   // 4. On success, redirect.
   redirect("/student/levels");
 }

@@ -1,19 +1,11 @@
-
 "use client";
-
 import React, { useEffect, useState } from "react";
-// REMOVED: useQuery is no longer needed directly in this component
 import Confetti from "react-confetti";
 import { useWindowSize } from "react-use";
-
 import {
   Trophy,
   Target,
-  Clock,
-  Users,
   TrendingUp,
-  RotateCcw,
-  Star,
   Award
 } from "lucide-react";
 import { QuizResults } from "@/types/types";
@@ -240,6 +232,5 @@ export function ResultsDisplay({
         </div>
       </div>
     </div>
-    // <PerformanceExample studentId="160f8f54-5716-4775-b185-60bdbe0f1050"/>
   );
 }
