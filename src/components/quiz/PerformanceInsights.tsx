@@ -69,17 +69,17 @@ export function PerformanceInsights({
   const getInsightColor = (type: Insight['type']) => {
     switch (type) {
       case 'achievement':
-        return 'bg-yellow-50 border-yellow-200';
+        return 'bg-yellow-300/20 border-yellow-200';
       case 'improvement':
-        return 'bg-green-50 border-green-200';
+        return 'bg-green-300/20 border-green-200';
       case 'warning':
-        return 'bg-red-50 border-red-200';
+        return 'bg-red-300/20 border-red-200';
       case 'suggestion':
-        return 'bg-blue-50 border-blue-200';
+        return 'bg-blue-300/20 border-blue-200';
       case 'milestone':
-        return 'bg-purple-50 border-purple-200';
+        return 'bg-purple-300/20 border-purple-200';
       default:
-        return 'bg-gray-50 border-gray-200';
+        return 'bg-gray-300/20 border-gray-200';
     }
   };
 
@@ -182,7 +182,7 @@ export function PerformanceInsights({
                 {categoryInsights.map((insight) => (
                   <div
                     key={insight.id}
-                    className={`p-4 rounded-lg border ${getInsightColor(insight.type)}`}
+                    className={`p-4 rounded-lg border-2 backdrop-blur- ${getInsightColor(insight.type)}`}
                   >
                     <div className="flex items-start gap-3">
                       <div className="flex-shrink-0 mt-0.5">
@@ -191,13 +191,13 @@ export function PerformanceInsights({
                       
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium text-gray-900">{insight.title}</h4>
+                          <h4 className="font-semibold text-xl">{insight.title}</h4>
                           <div className="flex items-center gap-2">
                             {getPriorityBadge(insight.priority)}
                           </div>
                         </div>
                         
-                        <p className="text-sm text-gray-700 mb-3">
+                        <p className="text-sm text-white mb-3">
                           {insight.description}
                         </p>
                         
@@ -205,7 +205,7 @@ export function PerformanceInsights({
                         {insight.data && (
                           <div className="flex items-center gap-4 mb-3 text-sm">
                             <div className="flex items-center gap-1">
-                              <span className="text-gray-600">Current:</span>
+                              <span className="text-white">Current:</span>
                               <span className="font-medium">{insight.data.current}%</span>
                             </div>
                             
@@ -231,24 +231,11 @@ export function PerformanceInsights({
                             
                             {insight.data.target !== undefined && (
                               <div className="flex items-center gap-1">
-                                <span className="text-gray-600">Target:</span>
+                                <span className="text-white">Target:</span>
                                 <span className="font-medium">{insight.data.target}%</span>
                               </div>
                             )}
                           </div>
-                        )}
-                        
-                        {/* Action button if actionable */}
-                        {insight.actionable && insight.action && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={insight.action.onClick}
-                            className="mt-2"
-                          >
-                            {insight.action.label}
-                            <ArrowRight className="h-3 w-3 ml-1" />
-                          </Button>
                         )}
                       </div>
                     </div>
@@ -261,7 +248,7 @@ export function PerformanceInsights({
         
         {insights.length > maxInsights && (
           <div className="mt-4 pt-4 border-t text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-white">
               Showing {maxInsights} of {insights.length} insights
             </p>
           </div>

@@ -24,7 +24,7 @@ export async function checkStudentLevelAccess(
     .eq('student_id', studentId)
     .eq('level_id', levelId)
     .eq('status', 'approved')
-    .single();
+    // .single();
 
   if (accessError && accessError.code !== 'PGRST116') {
     throw new Error(`Failed to check level access: ${accessError.message}`);

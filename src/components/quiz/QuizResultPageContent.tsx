@@ -7,7 +7,6 @@ import { QuizNavigation } from "@/components/quiz/QuizNavigation";
 import { QuizResults } from "@/types/types";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
-import { PerformanceExample } from "./PerformanceExample";
 
 interface QuizResultsPageContentProps {
   paramsData: {
@@ -109,13 +108,13 @@ export function QuizResultsPageContent({ paramsData }: QuizResultsPageContentPro
 
   return (
     <div className="relative min-h-screen bg-black">
-      {/* <Image
+      <Image
         src={"/images/8bitBG2.png"}
         fill
         alt="BG"
         className="object-cover"
-      /> */}
-      {/* <div className="relative z-10 p-4">
+      />
+      <div className="relative z-10 p-4">
         <QuizNavigation
           levelName={levelName || ""}
           weekNo={weekNo}
@@ -127,8 +126,7 @@ export function QuizResultsPageContent({ paramsData }: QuizResultsPageContentPro
           onRetry={handleRetry}
           onBackToLevels={handleBackToLevels}
         />
-      </div> */}
-      <PerformanceExample studentId="160f8f54-5716-4775-b185-60bdbe0f1050" />
+      </div>
     </div>
   );
 }

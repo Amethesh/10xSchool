@@ -430,6 +430,8 @@
   border: 3px solid #1c3744;
   position: relative;
   border-radius: 20px;
+  backdrop-filter: blur(10px);
+  color: white;
 }
 
 .status-message {

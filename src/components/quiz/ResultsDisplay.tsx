@@ -19,11 +19,11 @@ import {
 import { QuizResults } from "@/types/types";
 import { PerformanceTracker } from "../result/PerformanceTracker";
 import { useQuizResults } from "@/hooks/useQuizResults";
-import { PerformanceExample } from "./PerformanceExample";
 import { ResultsHeader } from "../result/ResultsHeader";
 import { PerformanceMetrics } from "../result/PerformanceMetrics";
 import { RankingDisplay } from "../result/RankingDisplay";
 import { ActionButtons } from "../result/ActionButtons";
+import { StudentDashboard } from "./StudentDashboard";
 
 interface ResultsDisplayProps {
   results: QuizResults;
@@ -85,162 +85,162 @@ export function ResultsDisplay({
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden">
-      {showConfetti && (
-        <Confetti
-          width={width}
-          height={height}
-          recycle={false}
-          numberOfPieces={200}
-          gravity={0.3}
-        />
-      )}
+    // <div className="min-h-screen relative overflow-hidden">
+    //   {showConfetti && (
+    //     <Confetti
+    //       width={width}
+    //       height={height}
+    //       recycle={false}
+    //       numberOfPieces={200}
+    //       gravity={0.3}
+    //     />
+    //   )}
 
-      <div className="relative z-10 min-h-screen p-3 sm:p-6 max-w-7xl mx-auto">
-        <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
-          {/* Main Results Card */}
-          <div className="pixel-panel p-4 sm:p-6 backdrop-blur-sm bg-black/20">
-            <ResultsHeader
-              performanceBadge={performanceBadge}
-              results={results}
-            />
-            <div className="mt-6 space-y-6">
-              <PerformanceMetrics
-                accuracy={accuracy}
-                timeSpent={results.timeSpent}
-                avgTimePerQuestion={averageTimePerQuestion}
-              />
-              <RankingDisplay
-                ranking={ranking ?? null}
-                isLoading={rankingLoading}
-              />
-              <ActionButtons
-                onRetry={onRetry}
-                onBackToLevels={onBackToLevels}
-              />
-            </div>
-          </div>
+    //   <div className="relative z-10 min-h-screen p-3 sm:p-6 max-w-7xl mx-auto">
+    //     <div className="max-w-4xl mx-auto space-y-4 sm:space-y-6">
+    //       {/* Main Results Card */}
+    //       <div className="pixel-panel p-4 sm:p-6 backdrop-blur-sm bg-black/20">
+    //         <ResultsHeader
+    //           performanceBadge={performanceBadge}
+    //           results={results}
+    //         />
+    //         <div className="mt-6 space-y-6">
+    //           <PerformanceMetrics
+    //             accuracy={accuracy}
+    //             timeSpent={results.timeSpent}
+    //             avgTimePerQuestion={averageTimePerQuestion}
+    //           />
+    //           <RankingDisplay
+    //             ranking={ranking ?? null}
+    //             isLoading={rankingLoading}
+    //           />
+    //           <ActionButtons
+    //             onRetry={onRetry}
+    //             onBackToLevels={onBackToLevels}
+    //           />
+    //         </div>
+    //       </div>
 
-          {/* Performance Tracker */}
-          <PerformanceTracker
-            history={history || []}
-            currentScore={results.score}
-            isLoading={historyLoading}
-          />
+    //       {/* Performance Tracker */}
+    //       <PerformanceTracker
+    //         history={history || []}
+    //         currentScore={results.score}
+    //         isLoading={historyLoading}
+    //       />
 
-          {/* Leaderboard and History */}
-          {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    //       {/* Leaderboard and History */}
+    //       {/* <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
    
-            <div className="pixel-panel p-4 sm:p-6 backdrop-blur-sm bg-black/20">
-              <div className="flex items-center mb-4">
-                <div className="p-2 rounded bg-yellow-400/20 text-yellow-400 mr-2">
-                  <Trophy className="w-5 h-5" />
-                </div>
-                <h3 className="pixel-font text-sm text-yellow-400">LEADERBOARD</h3>
-              </div>
-              <div>
-                {leaderboardLoading ? (
-                  <div className="text-center py-4 pixel-font text-xs text-cyan-300">
-                    LOADING LEADERBOARD...
-                  </div>
-                ) : leaderboard && leaderboard.length > 0 ? (
-                  <div className="space-y-2">
-                    {leaderboard.map((entry, index) => (
-                      <div
-                        key={entry.studentId}
-                        className={`p-3 ${entry.studentId === results.studentId
-                          ? 'border-yellow-400 bg-yellow-400/10'
-                          : 'border-cyan-400 bg-cyan-400/5'
-                          }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${index === 0 ? 'bg-yellow-500' :
-                              index === 1 ? 'bg-gray-400' :
-                                index === 2 ? 'bg-orange-600' : 'bg-gray-600'
-                              }`}>
-                              <span className="pixel-font text-xs text-white">
-                                {entry.rank}
-                              </span>
-                            </div>
-                            <span className="pixel-font text-xs text-white">
-                              {entry.studentId === results.studentId ? 'YOU' : entry.studentName.toUpperCase()}
-                            </span>
-                          </div>
-                          <div className="text-right">
-                            <div className="pixel-font text-xs text-green-400">
-                              {entry.score}%
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-4 pixel-font text-xs text-cyan-300">
-                    NO OTHER STUDENTS YET
-                  </div>
-                )}
-              </div>
-            </div>
+    //         <div className="pixel-panel p-4 sm:p-6 backdrop-blur-sm bg-black/20">
+    //           <div className="flex items-center mb-4">
+    //             <div className="p-2 rounded bg-yellow-400/20 text-yellow-400 mr-2">
+    //               <Trophy className="w-5 h-5" />
+    //             </div>
+    //             <h3 className="pixel-font text-sm text-yellow-400">LEADERBOARD</h3>
+    //           </div>
+    //           <div>
+    //             {leaderboardLoading ? (
+    //               <div className="text-center py-4 pixel-font text-xs text-cyan-300">
+    //                 LOADING LEADERBOARD...
+    //               </div>
+    //             ) : leaderboard && leaderboard.length > 0 ? (
+    //               <div className="space-y-2">
+    //                 {leaderboard.map((entry, index) => (
+    //                   <div
+    //                     key={entry.studentId}
+    //                     className={`p-3 ${entry.studentId === results.studentId
+    //                       ? 'border-yellow-400 bg-yellow-400/10'
+    //                       : 'border-cyan-400 bg-cyan-400/5'
+    //                       }`}
+    //                   >
+    //                     <div className="flex items-center justify-between">
+    //                       <div className="flex items-center">
+    //                         <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${index === 0 ? 'bg-yellow-500' :
+    //                           index === 1 ? 'bg-gray-400' :
+    //                             index === 2 ? 'bg-orange-600' : 'bg-gray-600'
+    //                           }`}>
+    //                           <span className="pixel-font text-xs text-white">
+    //                             {entry.rank}
+    //                           </span>
+    //                         </div>
+    //                         <span className="pixel-font text-xs text-white">
+    //                           {entry.studentId === results.studentId ? 'YOU' : entry.studentName.toUpperCase()}
+    //                         </span>
+    //                       </div>
+    //                       <div className="text-right">
+    //                         <div className="pixel-font text-xs text-green-400">
+    //                           {entry.score}%
+    //                         </div>
+    //                       </div>
+    //                     </div>
+    //                   </div>
+    //                 ))}
+    //               </div>
+    //             ) : (
+    //               <div className="text-center py-4 pixel-font text-xs text-cyan-300">
+    //                 NO OTHER STUDENTS YET
+    //               </div>
+    //             )}
+    //           </div>
+    //         </div>
 
-            <div className="pixel-panel p-4 sm:p-6 backdrop-blur-sm bg-black/20">
-              <div className="flex items-center mb-4">
-                <div className="p-2 rounded bg-purple-400/20 text-purple-400 mr-2">
-                  <Star className="w-5 h-5" />
-                </div>
-                <h3 className="pixel-font text-sm text-purple-400">RECENT PERFORMANCE</h3>
-              </div>
-              <div>
-                {historyLoading ? (
-                  <div className="text-center py-4 pixel-font text-xs text-cyan-300">
-                    LOADING HISTORY...
-                  </div>
-                ) : history && history.length > 0 ? (
-                  <div className="space-y-3">
-                    {history.slice(0, 5).map((attempt, index) => (
-                      <div
-                        key={attempt.attemptId}
-                        className={`p-3 ${index === 0 ? 'border-blue-400 bg-blue-400/10' : 'border-cyan-400 bg-cyan-400/5'
-                          }`}
-                      >
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <div className="pixel-font text-xs text-white">
-                              {attempt.levelName.toUpperCase()} - WEEK {attempt.weekNo}
-                            </div>
-                            <div className="pixel-font text-[10px] text-cyan-300">
-                              {attempt.difficulty.toUpperCase()} • {formatTime(attempt.timeSpent)}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="pixel-font text-xs text-green-400">
-                              {attempt.score}%
-                            </div>
-                            <div className="pixel-font text-[10px] text-cyan-300">
-                              {attempt.correctAnswers}/{attempt.totalQuestions}
-                            </div>
-                          </div>
-                        </div>
-                        {index === 0 && (
-                          <div className="mt-2 bg-blue-500 text-white text-[10px] pixel-font px-2 py-1 rounded w-fit">
-                            LATEST
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-4 pixel-font text-xs text-cyan-300">
-                    YOUR FIRST QUEST!
-                  </div>
-                )}
-              </div>
-            </div>
-          </div> */}
-        </div>
-      </div>
-    </div>
-    // <PerformanceExample studentId="160f8f54-5716-4775-b185-60bdbe0f1050"/>
+    //         <div className="pixel-panel p-4 sm:p-6 backdrop-blur-sm bg-black/20">
+    //           <div className="flex items-center mb-4">
+    //             <div className="p-2 rounded bg-purple-400/20 text-purple-400 mr-2">
+    //               <Star className="w-5 h-5" />
+    //             </div>
+    //             <h3 className="pixel-font text-sm text-purple-400">RECENT PERFORMANCE</h3>
+    //           </div>
+    //           <div>
+    //             {historyLoading ? (
+    //               <div className="text-center py-4 pixel-font text-xs text-cyan-300">
+    //                 LOADING HISTORY...
+    //               </div>
+    //             ) : history && history.length > 0 ? (
+    //               <div className="space-y-3">
+    //                 {history.slice(0, 5).map((attempt, index) => (
+    //                   <div
+    //                     key={attempt.attemptId}
+    //                     className={`p-3 ${index === 0 ? 'border-blue-400 bg-blue-400/10' : 'border-cyan-400 bg-cyan-400/5'
+    //                       }`}
+    //                   >
+    //                     <div className="flex justify-between items-start">
+    //                       <div>
+    //                         <div className="pixel-font text-xs text-white">
+    //                           {attempt.levelName.toUpperCase()} - WEEK {attempt.weekNo}
+    //                         </div>
+    //                         <div className="pixel-font text-[10px] text-cyan-300">
+    //                           {attempt.difficulty.toUpperCase()} • {formatTime(attempt.timeSpent)}
+    //                         </div>
+    //                       </div>
+    //                       <div className="text-right">
+    //                         <div className="pixel-font text-xs text-green-400">
+    //                           {attempt.score}%
+    //                         </div>
+    //                         <div className="pixel-font text-[10px] text-cyan-300">
+    //                           {attempt.correctAnswers}/{attempt.totalQuestions}
+    //                         </div>
+    //                       </div>
+    //                     </div>
+    //                     {index === 0 && (
+    //                       <div className="mt-2 bg-blue-500 text-white text-[10px] pixel-font px-2 py-1 rounded w-fit">
+    //                         LATEST
+    //                       </div>
+    //                     )}
+    //                   </div>
+    //                 ))}
+    //               </div>
+    //             ) : (
+    //               <div className="text-center py-4 pixel-font text-xs text-cyan-300">
+    //                 YOUR FIRST QUEST!
+    //               </div>
+    //             )}
+    //           </div>
+    //         </div>
+    //       </div> */}
+    //     </div>
+    //   </div>
+    // </div>
+    <StudentDashboard studentId="160f8f54-5716-4775-b185-60bdbe0f1050"/>
   );
 }

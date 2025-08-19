@@ -1,9 +1,20 @@
 "use client";
 
 import React from 'react';
+import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer,
+  DotProps
+} from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
+// --- Prop Interfaces (unchanged) ---
 interface PerformanceDataPoint {
   date: string;
   score: number;
@@ -20,12 +31,60 @@ interface PerformanceChartProps {
   height?: number;
 }
 
+// --- Helper function for difficulty color ---
+const getDifficultyColor = (difficulty: string) => {
+  switch (difficulty.toLowerCase()) {
+    case 'easy': return '#10b981'; // emerald-500
+    case 'medium': return '#f59e0b'; // amber-500
+    case 'hard': return '#ef4444'; // red-500
+    default: return '#6b7280'; // gray-500
+  }
+};
+
+// --- Custom Components for Recharts ---
+
+// Custom Dot for the line chart, colored by difficulty
+const CustomizedDot = (props: DotProps & { payload?: PerformanceDataPoint }) => {
+  const { cx, cy, payload } = props;
+  if (!cx || !cy || !payload) return null;
+
+  return (
+    <circle 
+      cx={cx} 
+      cy={cy} 
+      r={6} 
+      stroke="white" 
+      strokeWidth={2} 
+      fill={getDifficultyColor(payload.difficulty)} 
+    />
+  );
+};
+
+// Custom Tooltip to show detailed info on hover
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload as PerformanceDataPoint & { trend: number };
+    return (
+      <div className="p-2 bg-black/80 text-white rounded-md border border-gray-700 text-sm">
+        <p className="font-bold">{`Score: ${data.score}%`}</p>
+        <p>{`${data.level} - Week ${data.weekNo}`}</p>
+        <p className="capitalize">{`Difficulty: ${data.difficulty}`}</p>
+        <p>{`Date: ${new Date(data.date).toLocaleDateString()}`}</p>
+      </div>
+    );
+  }
+  return null;
+};
+
+
+// --- Main Chart Component ---
 export function PerformanceChart({ 
   data, 
   title = "Performance Over Time",
   showTrend = true,
-  height = 200 
+  height = 300 // Recharts works well with a slightly larger default height
 }: PerformanceChartProps) {
+  
   if (!data || data.length === 0) {
     return (
       <Card>
@@ -41,220 +100,127 @@ export function PerformanceChart({
     );
   }
 
-  // Sort data by date
+  // --- Data Preparation ---
+
+  // 1. Sort data by date
   const sortedData = [...data].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
   
-  // Calculate chart dimensions and scaling
-  const maxScore = Math.max(...sortedData.map(d => d.score));
-  const minScore = Math.min(...sortedData.map(d => d.score));
-  const scoreRange = maxScore - minScore || 1;
+  // 2. Calculate trend line if requested
+  let trendSlope = 0;
+  let trendData = [];
   
-  const chartWidth = 400;
-  const chartHeight = height;
-  const padding = 40;
-  
-  // Calculate points for the line chart
-  const points = sortedData.map((point, index) => {
-    const x = padding + (index / (sortedData.length - 1)) * (chartWidth - 2 * padding);
-    const y = padding + ((maxScore - point.score) / scoreRange) * (chartHeight - 2 * padding);
-    return { x, y, ...point };
-  });
-
-  // Calculate trend line if requested
-  let trendLine = null;
   if (showTrend && sortedData.length > 1) {
-    // Simple linear regression
     const n = sortedData.length;
     const sumX = sortedData.reduce((sum, _, i) => sum + i, 0);
     const sumY = sortedData.reduce((sum, d) => sum + d.score, 0);
     const sumXY = sortedData.reduce((sum, d, i) => sum + i * d.score, 0);
     const sumXX = sortedData.reduce((sum, _, i) => sum + i * i, 0);
     
-    const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
-    const intercept = (sumY - slope * sumX) / n;
+    trendSlope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
+    const intercept = (sumY - trendSlope * sumX) / n;
     
-    const trendStart = intercept;
-    const trendEnd = slope * (n - 1) + intercept;
-    
-    const trendStartY = padding + ((maxScore - trendStart) / scoreRange) * (chartHeight - 2 * padding);
-    const trendEndY = padding + ((maxScore - trendEnd) / scoreRange) * (chartHeight - 2 * padding);
-    
-    trendLine = {
-      x1: padding,
-      y1: trendStartY,
-      x2: chartWidth - padding,
-      y2: trendEndY,
-      slope
-    };
+    // Add trend values and a formatted label to each data point for Recharts
+    trendData = sortedData.map((d, i) => ({
+      ...d,
+      label: `W${d.weekNo}`, // X-axis label
+      trend: parseFloat((trendSlope * i + intercept).toFixed(2)),
+    }));
+  } else {
+    // If no trend, just format the data for Recharts
+    trendData = sortedData.map(d => ({ ...d, label: `W${d.weekNo}` }));
   }
 
-  // Create path string for the line
-  const pathData = points.map((point, index) => 
-    `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`
-  ).join(' ');
-
-  // Get difficulty color
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty.toLowerCase()) {
-      case 'easy': return '#10b981'; // green
-      case 'medium': return '#f59e0b'; // yellow
-      case 'hard': return '#ef4444'; // red
-      default: return '#6b7280'; // gray
-    }
-  };
+  // --- Summary Statistics ---
+  const lastScore = sortedData[sortedData.length - 1]?.score;
+  const averageScore = sortedData.reduce((sum, d) => sum + d.score, 0) / sortedData.length;
+  const bestScore = Math.max(...sortedData.map(d => d.score));
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between">
           {title}
-          {trendLine && (
-            <Badge variant={trendLine.slope > 0 ? 'default' : 'destructive'}>
-              {trendLine.slope > 0 ? '↗ Improving' : '↘ Declining'}
+          {showTrend && sortedData.length > 1 && (
+            <Badge variant={trendSlope > 0 ? 'default' : 'destructive'}>
+              {trendSlope > 0.01 ? '↗ Improving' : trendSlope < -0.01 ? '↘ Declining' : '→ Stable'}
             </Badge>
           )}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="relative">
-          <svg width={chartWidth} height={chartHeight} className="border rounded">
-            {/* Grid lines */}
-            <defs>
-              <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#f3f4f6" strokeWidth="1"/>
-              </pattern>
-            </defs>
-            <rect width="100%" height="100%" fill="url(#grid)" />
-            
-            {/* Y-axis labels */}
-            {[0, 25, 50, 75, 100].map(score => {
-              const y = padding + ((maxScore - score) / scoreRange) * (chartHeight - 2 * padding);
-              return (
-                <g key={score}>
-                  <line 
-                    x1={padding - 5} 
-                    y1={y} 
-                    x2={padding} 
-                    y2={y} 
-                    stroke="#6b7280" 
-                    strokeWidth="1"
-                  />
-                  <text 
-                    x={padding - 10} 
-                    y={y + 4} 
-                    textAnchor="end" 
-                    fontSize="12" 
-                    fill="#6b7280"
-                  >
-                    {score}%
-                  </text>
-                </g>
-              );
-            })}
-            
-            {/* Trend line */}
-            {trendLine && (
-              <line
-                x1={trendLine.x1}
-                y1={trendLine.y1}
-                x2={trendLine.x2}
-                y2={trendLine.y2}
-                stroke="#3b82f6"
-                strokeWidth="2"
-                strokeDasharray="5,5"
-                opacity="0.6"
+        <div style={{ height: `${height}px`, width: '100%' }}>
+          <ResponsiveContainer>
+            <LineChart
+              data={trendData}
+              margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+              <XAxis dataKey="label" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis 
+                domain={[0, 100]} 
+                unit="%" 
+                fontSize={12} 
+                tickLine={false} 
+                axisLine={false} 
               />
-            )}
-            
-            {/* Performance line */}
-            <path
-              d={pathData}
-              fill="none"
-              stroke="#3b82f6"
-              strokeWidth="3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            
-            {/* Data points */}
-            {points.map((point, index) => (
-              <g key={index}>
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r="6"
-                  fill={getDifficultyColor(point.difficulty)}
-                  stroke="white"
-                  strokeWidth="2"
-                  className="hover:r-8 transition-all cursor-pointer"
+              <Tooltip content={<CustomTooltip />} />
+              
+              {/* Trend Line */}
+              {showTrend && (
+                <Line
+                  type="monotone"
+                  dataKey="trend"
+                  stroke="#3b82f6"
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={false}
+                  opacity={0.6}
                 />
-                
-                {/* Tooltip on hover */}
-                <g className="opacity-0 hover:opacity-100 transition-opacity pointer-events-none">
-                  <rect
-                    x={point.x - 40}
-                    y={point.y - 50}
-                    width="80"
-                    height="40"
-                    fill="black"
-                    fillOpacity="0.8"
-                    rx="4"
-                  />
-                  <text
-                    x={point.x}
-                    y={point.y - 35}
-                    textAnchor="middle"
-                    fontSize="12"
-                    fill="white"
-                  >
-                    {point.score}%
-                  </text>
-                  <text
-                    x={point.x}
-                    y={point.y - 20}
-                    textAnchor="middle"
-                    fontSize="10"
-                    fill="white"
-                  >
-                    {point.level} W{point.weekNo}
-                  </text>
-                </g>
-              </g>
-            ))}
-          </svg>
-          
-          {/* Legend */}
-          <div className="flex justify-center gap-4 mt-4 text-sm">
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-green-500"></div>
-              <span>Easy</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-              <span>Medium</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-red-500"></div>
-              <span>Hard</span>
-            </div>
+              )}
+
+              {/* Performance Line */}
+              <Line
+                type="monotone"
+                dataKey="score"
+                stroke="#3b82f6"
+                strokeWidth={3}
+                // @ts-ignore - Recharts type for dot is complex, but this works
+                dot={<CustomizedDot />}
+                activeDot={{ r: 8 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        
+        {/* Legend */}
+        <div className="flex justify-center gap-4 mt-4 text-sm">
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getDifficultyColor('easy') }}></div>
+            <span>Easy</span>
           </div>
-          
-          {/* Summary stats */}
-          <div className="grid grid-cols-3 gap-4 mt-4 text-center">
-            <div>
-              <p className="text-sm text-gray-600">Latest</p>
-              <p className="font-bold">{sortedData[sortedData.length - 1]?.score}%</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Average</p>
-              <p className="font-bold">
-                {(sortedData.reduce((sum, d) => sum + d.score, 0) / sortedData.length).toFixed(1)}%
-              </p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Best</p>
-              <p className="font-bold">{maxScore}%</p>
-            </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getDifficultyColor('medium') }}></div>
+            <span>Medium</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: getDifficultyColor('hard') }}></div>
+            <span>Hard</span>
+          </div>
+        </div>
+        
+        {/* Summary stats */}
+        <div className="grid grid-cols-3 gap-4 mt-6 text-center">
+          <div>
+            <p className="text-sm text-gray-600">Latest</p>
+            <p className="font-bold text-lg">{lastScore}%</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Average</p>
+            <p className="font-bold text-lg">{averageScore.toFixed(1)}%</p>
+          </div>
+          <div>
+            <p className="text-sm text-gray-600">Best</p>
+            <p className="font-bold text-lg">{bestScore}%</p>
           </div>
         </div>
       </CardContent>
