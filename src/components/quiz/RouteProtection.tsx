@@ -38,7 +38,6 @@ export function RouteProtection({
           router.push('/login');
           return;
         }
-
         const access = await checkStudentLevelAccess(user.id, level);
         setHasAccess(access);
 

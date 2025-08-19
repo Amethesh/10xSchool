@@ -9,18 +9,15 @@ export async function checkStudentLevelAccess(
   levelId: number
 ): Promise<boolean> {
   const supabase = createClient();
-
-  // 1️⃣ Hardcoded beginner level
+  
   if (levelId === 2) return true;
 
-  // 2️⃣ Check if student has approved access
   const { data: accessData, error: accessError } = await supabase
     .from('access_requests')
     .select('id')
     .eq('student_id', studentId)
     .eq('level_id', levelId)
     .eq('status', 'approved')
-    .single();
 
   if (accessError && accessError.code !== 'PGRST116') {
     throw new Error(`Failed to check level access: ${accessError.message}`);
@@ -253,60 +250,6 @@ export async function denyAccessRequest(
   if (error) {
     throw new Error(`Failed to deny access request: ${error.message}`);
   }
-}
-
-
-/**
- * Check if a student has a pending access request for a level
- */
-export async function hasPendingAccessRequest(
-  studentId: string,
-  level: string
-): Promise<boolean> {
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from('access_requests')
-    .select('id')
-    .eq('student_id', studentId)
-    .eq('level', level)
-    .eq('status', 'pending')
-    .single();
-
-  if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
-    throw new Error(`Failed to check pending access request: ${error.message}`);
-  }
-
-  return !!data;
-}
-
-/**
- * Get access request status for a student and level
- */
-export async function getAccessRequestStatus(
-  studentId: string,
-  level: string
-): Promise<'none' | 'pending' | 'approved' | 'denied'> {
-  const supabase = createClient();
-
-  const { data, error } = await supabase
-    .from('access_requests')
-    .select('status')
-    .eq('student_id', studentId)
-    .eq('level', level)
-    .order('requested_at', { ascending: false })
-    .limit(1)
-    .single();
-
-  if (error && error.code !== 'PGRST116') { // PGRST116 is "not found" error
-    throw new Error(`Failed to check access request status: ${error.message}`);
-  }
-
-  if (!data) {
-    return 'none';
-  }
-
-  return data.status as 'pending' | 'approved' | 'denied';
 }
 
 /**
