@@ -5,15 +5,12 @@ import {
   TrendingDown,
   Minus,
   Target,
-  Clock,
   Award,
   BarChart3,
-  Calendar,
 } from "lucide-react";
-import { motion, AnimatePresence } from "motion/react";
+import { motion } from "motion/react";
 import clsx from "clsx";
 import { PerformanceInsights } from "./PerformanceInsights";
-import { formatDate, formatTime } from "@/utils/ResultUtils";
 
 interface PerformanceData {
   attemptId: string;
@@ -30,7 +27,6 @@ interface PerformanceData {
 
 interface PerformanceTrackerProps {
   history: PerformanceData[];
-  currentScore?: number;
   isLoading?: boolean;
 }
 
@@ -62,56 +58,8 @@ const StatCard = ({ icon, label, value }: { icon: React.ReactNode, label: string
   </motion.div>
 );
 
-// A structured component for displaying a single attempt in the history
-const AttemptHistoryItem = ({ attempt, isLatest }: { attempt: PerformanceData, isLatest: boolean }) => {
-  const scoreColor = attempt.score >= 80 ? "text-green-400" : attempt.score >= 60 ? "text-yellow-400" : "text-red-400";
-
-  return (
-    <motion.div
-      key={attempt.attemptId}
-      className={clsx(
-        "pixel-panel !p-3 flex items-center gap-4 transition-colors",
-        isLatest ? "bg-blue-500/15 border-blue-400" : "bg-cyan-900/20"
-      )}
-      variants={fadeInVariants}
-      initial="hidden"
-      animate="visible"
-      exit="hidden"
-      layout
-    >
-      <div className="flex-shrink-0 text-center">
-        <div className={clsx("text-3xl font-bold", scoreColor)}>
-          {attempt.score}%
-        </div>
-        <div className="text-xs font-bold text-cyan-300/60 -mt-1">SCORE</div>
-      </div>
-      <div className="flex-grow min-w-0">
-        <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-          <span className="text-lg text-white truncate">
-            {attempt.levelName.toUpperCase()} - W{attempt.weekNo}
-          </span>
-          {isLatest && (
-            <span className="font-semibold text-[9px] px-1.5 py-0.5 bg-blue-500 text-white rounded">
-              LATEST
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-4 text-[11px] text-cyan-300/80">
-          <span className="flex items-center gap-1"><Target className="w-3 h-3" /> {attempt.correctAnswers}/{attempt.totalQuestions}</span>
-          <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {formatTime(attempt.timeSpent)}</span>
-        </div>
-        <div className="text-[10px] text-cyan-300/50 mt-1.5">
-          {formatDate(attempt.completedAt)}
-        </div>
-      </div>
-    </motion.div>
-  );
-};
-
-
 export function PerformanceTracker({
   history,
-  currentScore,
   isLoading,
 }: PerformanceTrackerProps) {
   if (isLoading) {
@@ -269,29 +217,6 @@ export function PerformanceTracker({
         </div>
       </motion.div>
       <PerformanceInsights metrics={metrics} />
-      {/* Recent Attempts List - Now uses AttemptHistoryItem */}
-      <div>
-        <motion.div className="flex items-center mb-3" variants={fadeInVariants}>
-          <div className="p-2 rounded-lg bg-cyan-500/20 text-cyan-300 mr-3">
-            <Calendar className="w-5 h-5" />
-          </div>
-          <h3 className="pixel-font text-sm text-white tracking-wider">RECENT ATTEMPTS</h3>
-        </motion.div>
-        <motion.div
-          className="space-y-3 max-h-72 overflow-y-auto custom-scrollbar pr-2"
-          variants={staggerContainer}
-        >
-          <AnimatePresence>
-            {history.slice(0, 8).map((attempt, index) => (
-              <AttemptHistoryItem
-                key={attempt.attemptId}
-                attempt={attempt}
-                isLatest={index === 0}
-              />
-            ))}
-          </AnimatePresence>
-        </motion.div>
-      </div>
     </motion.div>
   );
 }

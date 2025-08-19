@@ -55,8 +55,8 @@ const MetricCard = ({ icon, value, label, color, index = 0 }: MetricCardProps) =
       <div className={`p-1 sm:p-2 rounded-lg ${c.iconWrapBg} ${c.text} w-fit mx-auto mb-1 sm:mb-2`}>
         {icon}
       </div>
-      <div className={`pixel-font ${c.text} text-sm sm:text-xl leading-none mb-0.5`}>{value}</div>
-      <div className="text-[7px] text-nowrap sm:text-[11px] pixel-font text-white/80 tracking-widest">
+      <div className={`${c.text} text-lg sm:text-2xl font-bold leading-none mb-0.5`}>{value}</div>
+      <div className="text-[7px] text-nowrap sm:text-sm font-semibold text-white tracking-widest">
         {label}
       </div>
     </motion.div>

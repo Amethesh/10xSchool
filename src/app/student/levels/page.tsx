@@ -2,7 +2,6 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getStudentLevelsData } from "./actions";
-import { logout } from "@/app/(auth)/actions";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { HorizontalLevelSelector } from "@/components/levels/LevelSelector";
@@ -130,7 +129,7 @@ const StudentLevelsPage: React.FC = () => {
         <LevelProfile 
           profile={profile} 
           overallProgress={overallProgress}
-          logout={logout}
+          page="levels"
         />
 
         {/* Main Content Panel */}
