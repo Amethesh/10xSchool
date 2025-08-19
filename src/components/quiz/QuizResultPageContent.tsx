@@ -2,11 +2,12 @@
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useQuizNavigation } from "@/hooks/useQuizNavigation";
-import { ResultsDisplay } from "@/components/quiz";
+import { ResultsDisplay, ResultsDisplayExample } from "@/components/quiz";
 import { QuizNavigation } from "@/components/quiz/QuizNavigation";
 import { QuizResults } from "@/types/types";
 import { createClient } from "@/lib/supabase/client";
 import Image from "next/image";
+import { PerformanceExample } from "./PerformanceExample";
 
 interface QuizResultsPageContentProps {
   paramsData: {
@@ -107,26 +108,27 @@ export function QuizResultsPageContent({ paramsData }: QuizResultsPageContentPro
   }
 
   return (
-<div className="relative min-h-screen bg-black">
-      <Image
+    <div className="relative min-h-screen bg-black">
+      {/* <Image
         src={"/images/8bitBG2.png"}
         fill
         alt="BG"
         className="object-cover"
-      />
-      <div className="relative z-10 p-4">
-      <QuizNavigation
-        levelName={levelName || ""}
-        weekNo={weekNo}
-        currentPage="results"
-        className="mb-4"
-      />
-      <ResultsDisplay
-        results={results}
-        onRetry={handleRetry}
-        onBackToLevels={handleBackToLevels}
-      />
-    </div>
+      /> */}
+      {/* <div className="relative z-10 p-4">
+        <QuizNavigation
+          levelName={levelName || ""}
+          weekNo={weekNo}
+          currentPage="results"
+          className="mb-4"
+        />
+        <ResultsDisplay
+          results={results}
+          onRetry={handleRetry}
+          onBackToLevels={handleBackToLevels}
+        />
+      </div> */}
+      <PerformanceExample studentId="160f8f54-5716-4775-b185-60bdbe0f1050" />
     </div>
   );
 }
