@@ -13,6 +13,7 @@ export interface HistoryEntry {
   score: number;
   correctAnswers: number;
   totalQuestions: number;
+  completedAt?: string;
 }
 
 interface PerformanceHistoryProps {

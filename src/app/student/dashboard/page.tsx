@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import { getStudentLevelsData } from "../levels/actions";
 import LevelProfile from "@/components/levels/LevelProfile";
+import { StudentDashboard } from "@/components/dashboard/StudentDashboard";
 
 export default function Page() {
   const { data, isLoading, error } = useQuery({
@@ -53,12 +54,15 @@ export default function Page() {
         alt="BG"
         className="object-cover"
       />
-      <div className="relative z-10 min-h-screen p-3 sm:p-6 max-w-7xl mx-auto">
+      <div className="relative z-10 p-3 sm:p-6 max-w-7xl mx-auto">
         <LevelProfile
           profile={profile}
           overallProgress={overallProgress}
           page="dashboard"
         />
+        <div className="bg-">
+          <StudentDashboard studentId={profile.id}/>
+        </div>
       </div>
     </main>
   );

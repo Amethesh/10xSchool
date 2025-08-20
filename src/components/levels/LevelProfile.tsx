@@ -215,21 +215,25 @@ const LevelProfile: React.FC<LevelProfileProps> = ({
           {page === "levels" ? (
             <a
               href="/student/dashboard"
-              className="hidden sm:inline pixel-font text-xs"
+              className="sm:inline pixel-font text-xs"
             >
               <button className="pixel-button pixel-button-purple !p-2 sm:!px-4 sm:!py-2 mb-4 w-full">
                 <ChartColumnDecreasing className="w-3 h-3 sm:w-4 sm:h-4 sm:hidden" />
-                Dashboard
+                <span className="hidden sm:inline pixel-font text-xs">
+                  Dashboard
+                </span>
               </button>
             </a>
           ) : page === "dashboard" ? (
             <a
               href="/student/levels"
-              className="hidden sm:inline pixel-font text-xs"
+              className="sm:inline pixel-font text-xs"
             >
               <button className="pixel-button pixel-button-purple !p-2 sm:!px-4 sm:!py-2 mb-4 w-full">
                 <Home className="w-3 h-3 sm:w-4 sm:h-4 sm:hidden" />
-                Home
+                <span className="hidden sm:inline pixel-font text-xs">
+                  Home
+                </span>
               </button>
             </a>
           ) : null}
