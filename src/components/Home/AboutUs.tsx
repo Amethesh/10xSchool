@@ -1,5 +1,7 @@
 import * as motion from "motion/react-client";
 import Image from "next/image";
+import Link from "next/link";
+import CountUp from "../ui/CountUp";
 
 const AboutSection = () => {
   return (
@@ -83,15 +85,17 @@ const AboutSection = () => {
                 viewport={{ once: true }}
               >
                 <div className="bg-white p-6 rounded-lg border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.8)]">
-                  <motion.h3
-                    className="text-3xl font-bold text-[#0246a4]"
-                    initial={{ opacity: 0 }}
-                    whileInView={{ opacity: 1 }}
-                    transition={{ duration: 1, delay: 0.6 }}
-                    viewport={{ once: true }}
-                  >
-                    1,500+
-                  </motion.h3>
+                  <div className="flex">
+                    <CountUp
+                      from={0}
+                      to={1500}
+                      separator=","
+                      direction="up"
+                      duration={1}
+                      className="count-up-text text-3xl font-bold text-[#0246a4]"
+                    />
+                    <h3 className="text-3xl font-bold text-[#0246a4]">+</h3>
+                  </div>
                   <p className="text-gray-600 font-semibold">
                     Students Impacted
                   </p>
@@ -104,36 +108,46 @@ const AboutSection = () => {
                     transition={{ duration: 1, delay: 0.8 }}
                     viewport={{ once: true }}
                   >
-                    10+ Years
+                    <CountUp
+                      from={0}
+                      to={10}
+                      separator=","
+                      direction="up"
+                      duration={1}
+                      className="count-up-text"
+                    />
+                    + Years
                   </motion.h3>
                   <p className="text-gray-600 font-semibold">Experience</p>
                 </div>
               </motion.div>
 
               {/* View More Button */}
-              <motion.button
-                className="bg-gradient-to-r from-[#bfecff] to-[#a8e6ff] text-black w-fit px-8 py-3 font-semibold text-base border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.8)] cursor-pointer rounded-lg"
-                initial={{ opacity: 0, y: 20 }}
-                whileHover={{
-                  background:
-                    "linear-gradient(45deg, rgba(173, 243, 21, 1), rgba(200, 255, 50, 1))",
-                  transform: "translate(-2px, -2px)",
-                  boxShadow: "6px 6px 0px 0px rgba(0,0,0,0.8)",
-                }}
-                whileTap={{
-                  background: "rgba(255, 255, 255, 1)",
-                  transform: "translate(2px, 2px)",
-                  boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.8)",
-                }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{
-                  duration: 0.3,
-                  ease: "easeOut",
-                }}
-                viewport={{ once: true }}
-              >
-                View More About Us →
-              </motion.button>
+              <Link href="/landing/about">
+                <motion.button
+                  className="bg-gradient-to-r from-[#bfecff] to-[#a8e6ff] text-black w-fit px-8 py-3 font-semibold text-base border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.8)] cursor-pointer rounded-lg"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileHover={{
+                    background:
+                      "linear-gradient(45deg, rgba(173, 243, 21, 1), rgba(200, 255, 50, 1))",
+                    transform: "translate(-2px, -2px)",
+                    boxShadow: "6px 6px 0px 0px rgba(0,0,0,0.8)",
+                  }}
+                  whileTap={{
+                    background: "rgba(255, 255, 255, 1)",
+                    transform: "translate(2px, 2px)",
+                    boxShadow: "2px 2px 0px 0px rgba(0,0,0,0.8)",
+                  }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: 0.3,
+                    ease: "easeOut",
+                  }}
+                  viewport={{ once: true }}
+                >
+                  View More About Us →
+                </motion.button>
+              </Link>
             </motion.div>
 
             {/* Image Section */}
@@ -187,15 +201,7 @@ const AboutSection = () => {
                     </motion.div>
 
                     {/* gradient text */}
-                    <h3
-                      className="
-            text-2xl sm:text-3xl
-            font-bold
-            text-transparent
-            bg-clip-text
-            bg-gradient-to-br from-blue-400 to-purple-500
-          "
-                    >
+                    <h3 className="text-2xl sm:text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-br from-blue-400 to-purple-500">
                       Education Excellence
                     </h3>
                   </div>

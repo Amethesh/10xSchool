@@ -19,15 +19,47 @@ const courses = [
     description:
       "Learn to solve math problems faster and smarter using ancient Indian techniques.",
     bgColor: "bg-sky-300",
-    icon: "📚",
+    icon: "🔢",
   },
   {
     id: 3,
     title: "Phonics Program (Ages 4-8)",
     description:
       "Build early reading fluency and pronunciation skills through fun and interactive learning.",
-    bgColor: "bg-purple-300",
+    bgColor: "bg-pink-300",
     icon: "📖",
+  },
+  {
+    id: 4,
+    title: "School & Institute Tie-Ups",
+    description:
+      "Partner with us to bring The 10X Learning Edge to your school or institute.",
+    bgColor: "bg-orange-300",
+    icon: "🏫",
+  },
+  {
+    id: 5,
+    title: "Drawing for Kids (Ages 5-13)",
+    description:
+      "An innovative course designed to enhance mental speed, memory retention, logical and lateral thinking using.",
+    bgColor: "bg-yellow-300",
+    icon: "🎨",
+  },
+  {
+    id: 6,
+    title: "Teacher training program",
+    description:
+      "Comprehensive training program for educators to master Vedic Maths techniques and teaching methodologies.",
+    bgColor: "bg-green-300",
+    icon: "👩‍🏫",
+  },
+  {
+    id: 7,
+    title: "Tuition Classes for Grades 9-12 (Maths, Physics, Chemistry)",
+    description:
+      "Comprehensive tuition classes for Grades 9-12, focusing on Maths, Physics, and Chemistry for strong academic foundation.",
+    bgColor: "bg-indigo-300",
+    icon: "🎓",
   },
 ];
 
@@ -190,7 +222,7 @@ export default function PowerfulProgramsSection() {
               }}
               whileTap={{ scale: 0.95 }}
             >
-              <a href="/courses">More Details</a>
+              <a href="/landing/courses">More Details</a>
             </motion.button>
           </motion.div>
         </div>

@@ -98,8 +98,9 @@ const AboutUsComponent = () => {
             Transforming Futures
           </motion.h1>
 
-          <motion.button
-            className="bg-blue-200 hover:bg-blue-300 border-2 border-black px-8 py-4 text-xl font-semibold shadow-[4px_4px] transition-all duration-200 transform hover:scale-105"
+          <motion.a
+            href="/landing"
+            className="bg-blue-200 hover:bg-blue-300 border-2 border-black px-8 py-4 text-xl font-semibold shadow-[4px_4px] transition-all duration-200 transform hover:scale-105 inline-block"
             initial={{ opacity: 0, y: 30 }}
             animate={isHeroInView ? { opacity: 1, y: 0 } : {}}
             transition={{ duration: 1, delay: 0.6 }}
@@ -111,7 +112,7 @@ const AboutUsComponent = () => {
             whileTap={{ scale: 0.95 }}
           >
             Explore Our Programs
-          </motion.button>
+          </motion.a>
         </motion.div>
       </div>
 

@@ -170,7 +170,7 @@ const EducationalVisionComponent = () => {
               >
                 Personal development programs
               </motion.h2>
-              <motion.div
+              {/* <motion.div
                 className="bg-white p-2"
                 style={{ boxShadow: "1px 4px 0 0 #000" }}
                 whileHover={{
@@ -181,7 +181,7 @@ const EducationalVisionComponent = () => {
                 whileTap={{ scale: 0.9 }}
               >
                 <ArrowRight className="w-5 h-5 text-black" />
-              </motion.div>
+              </motion.div> */}
             </div>
             <motion.div
               className="space-y-3 text-black"
@@ -231,7 +231,7 @@ const EducationalVisionComponent = () => {
               >
                 School & Institute Tie-Ups
               </motion.h2>
-              <motion.div
+              {/* <motion.div
                 className="bg-white p-2"
                 style={{ boxShadow: "1px 4px 0 0 #000" }}
                 whileHover={{
@@ -242,7 +242,7 @@ const EducationalVisionComponent = () => {
                 whileTap={{ scale: 0.9 }}
               >
                 <ArrowRight className="w-5 h-5 text-black" />
-              </motion.div>
+              </motion.div> */}
             </div>
             <motion.div
               className="space-y-3 text-black"

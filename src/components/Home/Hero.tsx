@@ -53,7 +53,7 @@ const Hero = () => {
                 </span>
               </div>
               <div className="flex justify-center md:justify-start">
-                <Link href={"/courses"}>
+                <Link href={"/landing/courses"}>
                   <motion.button
                     className="bg-gradient-to-r from-[#bfecff] to-[#a8e6ff] text-black w-fit px-8 py-3 font-semibold text-base border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,0.8)] cursor-pointer rounded-lg"
                     initial={{ opacity: 0, y: 20 }}

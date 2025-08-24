@@ -51,15 +51,7 @@ const Navbar = () => {
       <ul className="hidden md:flex items-center space-x-12">
         <li>
           <a
-            href="#classes"
-            className="text-black text-md font-semibold hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
-          >
-            Classes
-          </a>
-        </li>
-        <li>
-          <a
-            href="/courses"
+            href="/landing/courses"
             className="text-black text-md font-semibold hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
           >
             Courses
@@ -67,7 +59,7 @@ const Navbar = () => {
         </li>
         <li>
           <a
-            href="#students"
+            href="/student/levels"
             className="text-black text-md font-semibold hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
           >
             Students
@@ -75,7 +67,7 @@ const Navbar = () => {
         </li>
         <li>
           <a
-            href="/about"
+            href="/landing/about"
             className="text-black text-md font-semibold hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
           >
             About Us
@@ -111,16 +103,7 @@ const Navbar = () => {
           <ul className="flex flex-col items-center space-y-4">
             <li>
               <a
-                href="#classes"
-                className="text-black text-md font-semibold hover:text-primary"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Classes
-              </a>
-            </li>
-            <li>
-              <a
-                href="/courses"
+                href="/landing/courses"
                 className="text-black text-md font-semibold hover:text-primary"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -129,7 +112,7 @@ const Navbar = () => {
             </li>
             <li>
               <a
-                href="#students"
+                href="/student/levels"
                 className="text-black text-md font-semibold hover:text-primary"
                 onClick={() => setIsMenuOpen(false)}
               >
@@ -138,7 +121,7 @@ const Navbar = () => {
             </li>
             <li>
               <a
-                href="/about"
+                href="/landing/about"
                 className="text-black text-md font-semibold hover:text-primary"
                 onClick={() => setIsMenuOpen(false)}
               >

@@ -4,6 +4,8 @@ import React, { useState, useEffect, useTransition } from "react";
 import { Eye, EyeOff, User, Lock, LogIn } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { loginAction } from "@/app/(auth)/login/actions";
+import Image from "next/image";
+import Link from "next/link";
 
 // Your main component
 const PixelLoginForm = () => {
@@ -13,7 +15,6 @@ const PixelLoginForm = () => {
   const [statusType, setStatusType] = useState<"idle" | "error" | "loading">(
     "idle"
   );
-
 
   const [isPending, startTransition] = useTransition();
 
@@ -69,6 +70,23 @@ const PixelLoginForm = () => {
           action={handleSubmit}
           className="pixel-panel p-8 w-full max-w-md mx-auto"
         >
+          {/* 10x School Logo */}
+          <div className="text-center mb-6">
+            <Link href="/" className="inline-block">
+              <div className="flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity">
+                <Image
+                  src="/images/10x_small.png"
+                  alt="10x Academy Logo"
+                  width={40}
+                  height={40}
+                />
+                <p className="text-lg font-bold text-white ml-3 pixel-font tracking-wider">
+                  THE 10X SCHOOL
+                </p>
+              </div>
+            </Link>
+          </div>
+
           <div className="text-center mb-8">
             <h1 className="pixel-font text-2xl sm:text-3xl text-white mb-4 tracking-wider">
               SYSTEM LOGIN

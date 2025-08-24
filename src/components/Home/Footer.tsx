@@ -46,28 +46,28 @@ const Footer = () => {
           <nav className="mb-8">
             <ul className="space-y-8 text-3xl font-light">
               <li>
-                <a href="#" className="hover:text-yellow-400 transition-colors">
+                <a href="/" className="hover:text-yellow-400 transition-colors cursor-pointer">
                   Home
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-yellow-400 transition-colors">
+                <a href="/landing/courses" className="hover:text-yellow-400 transition-colors cursor-pointer">
                   Courses
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-yellow-400 transition-colors">
+                <a href="/student/dashboard" className="hover:text-yellow-400 transition-colors cursor-pointer">
                   Dashboard
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-yellow-400 transition-colors">
+                <a href="/landing/about" className="hover:text-yellow-400 transition-colors cursor-pointer">
                   About Us
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-yellow-400 transition-colors">
-                  Contact US
+                <a href="mailto:admin@10xschool.com" className="hover:text-yellow-400 transition-colors cursor-pointer">
+                  Contact Us
                 </a>
               </li>
             </ul>
@@ -75,7 +75,7 @@ const Footer = () => {
 
           {/* Main title */}
           <h1
-            className="absolute top-24 right-32 text-xl md:text-[200px] font-bold opacity-80 leading-none"
+            className="absolute top-24 right-32 text-xl md:text-[200px] font-bold opacity-80 leading-none pointer-events-none z-0"
             style={{
               WebkitTextStroke: "4px #d3ef9530",
               WebkitTextFillColor: "transparent",
