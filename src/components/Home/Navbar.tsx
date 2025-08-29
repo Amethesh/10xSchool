@@ -6,6 +6,15 @@ import { Button } from "../ui/button";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [currentPath, setCurrentPath] = useState("");
+
+  React.useEffect(() => {
+    setCurrentPath(window.location.pathname);
+  }, []);
+
+  if (currentPath === "/landing/demo") {
+    return null;
+  }
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
@@ -75,26 +84,32 @@ const Navbar = () => {
         </li>
       </ul>
 
-      <div className="hidden md:flex gap-2 items-center">
-        <Button
-          size="lg"
-          className="rounded-2xl  border border-black cursor-pointer"
-        >
-          <a href="/login">Login</a>
-        </Button>
-        <Button
-          size="lg"
-          className="rounded-2xl bg-[#d8f999] hover:bg-[#e4ffb3] text-black border border-black cursor-pointer"
-        >
-          <a
-            // href="https://docs.google.com/forms/d/e/1FAIpQLSenR-uZldf8c2P_KCo49LLZZWM4ewTgb7pNbPWpQ6pASG5X4A/viewform"
-            href="/application"
-            // target="_blank"
-            // rel="noopener noreferrer"
+      <div className="hidden md:flex gap-3 items-center">
+        <a href="/login">
+          <Button
+            size="lg"
+            variant="outline"
+            className="rounded-2xl border-black text-black hover:bg-gray-50"
           >
-            Interested
-          </a>
-        </Button>
+            Login
+          </Button>
+        </a>
+        <a href="/application">
+          <Button
+            size="lg"
+            className="rounded-2xl bg-[#d8f999] hover:bg-[#c8e885] text-black border border-black"
+          >
+            Apply Now
+          </Button>
+        </a>
+        <a href="/landing/demo">
+          <Button
+            size="lg"
+            className="rounded-2xl bg-[#0246A4] hover:bg-[#1a5bc4] text-white border border-[#0246A4]"
+          >
+            Try Demo
+          </Button>
+        </a>
       </div>
 
       {/* Mobile Menu */}
@@ -129,28 +144,35 @@ const Navbar = () => {
               </a>
             </li>
           </ul>
-          <div className="flex flex-col gap-2 items-center mt-4">
-            <Button
-              size="sm"
-              className="rounded-lg bg-primary font-black border border-black cursor-pointer"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <a href="/login">Login</a>
-            </Button>
-            <Button
-              size="lg"
-              className="rounded-2xl border border-black cursor-pointer"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              <a
-                // href="https://docs.google.com/forms/d/e/1FAIpQLSenR-uZldf8c2P_KCo49LLZZWM4ewTgb7pNbPWpQ6pASG5X4A/viewform"
-                href="/application"
-                // target="_blank"
-                // rel="noopener noreferrer"
+          <div className="flex flex-col gap-3 items-center mt-4 w-full px-4">
+            <a href="/login" className="w-full max-w-xs">
+              <Button
+                size="lg"
+                variant="outline"
+                className="w-full rounded-2xl border-black text-black hover:bg-gray-50"
+                onClick={() => setIsMenuOpen(false)}
               >
-                Interested
-              </a>
-            </Button>
+                Login
+              </Button>
+            </a>
+            <a href="/application" className="w-full max-w-xs">
+              <Button
+                size="lg"
+                className="w-full rounded-2xl bg-[#d8f999] hover:bg-[#c8e885] text-black border border-black"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Apply Now
+              </Button>
+            </a>
+            <a href="/landing/demo" className="w-full max-w-xs">
+              <Button
+                size="lg"
+                className="w-full rounded-2xl bg-[#0246A4] hover:bg-[#1a5bc4] text-white border border-[#0246A4]"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Try Demo
+              </Button>
+            </a>
           </div>
         </div>
       )}

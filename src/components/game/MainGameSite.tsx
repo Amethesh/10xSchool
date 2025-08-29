@@ -12,6 +12,7 @@ import {
   LeaderboardEntry,
 } from "@/types/types";
 import useSound from "@/hooks/useSound";
+import { createClient } from "@/lib/supabase/client";
 
 const difficultySettings: DifficultySettings = {
   easy: {
@@ -40,7 +41,7 @@ const MathGameSite: React.FC = () => {
     "setup"
   );
   const [username, setUsername] = useState<string>("");
-  const [userId, setUserId] = useState<string | null>(null); // State to store the user's UUID from Supabase
+  const [userId, setUserId] = useState<string | null>(null);
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard" | "">(
     ""
   );
@@ -174,19 +175,38 @@ const MathGameSite: React.FC = () => {
       return false;
     }
   }, []);
-
+  const supabase = createClient();
   const fetchQuestions = useCallback(
     async (setNum: number): Promise<Question[]> => {
       try {
-        const response = await fetch(`/api/questions?set=${setNum}`);
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.error || "Unknown error fetching questions."
-          );
+        const { data, error } = await supabase.rpc("get_sample_questions");
+
+        if (error) {
+          throw new Error(error.message);
         }
-        const data: Question[] = await response.json();
-        return data;
+
+        if (!data || !Array.isArray(data)) {
+          throw new Error("No questions received from database");
+        }
+
+        // Transform the data to match Question interface
+        const transformedQuestions: Question[] = data.map(
+          (item: any, index: number) => ({
+            id: item.question_no || index + 1,
+            level_no: 1, // Default value since not in RPC response
+            level: "sample", // Default value since not in RPC response
+            week_no: 1, // Default value since not in RPC response
+            question: item.question,
+            option_a: item.option_a || "",
+            option_b: item.option_b || "",
+            option_c: item.option_c || "",
+            option_d: item.option_d || "",
+            correct_answer: item.correct_answer,
+            points: item.point || 10, // Default to 10 points if not specified
+          })
+        );
+
+        return transformedQuestions;
       } catch (error: any) {
         console.error("Frontend: Error fetching questions:", error.message);
         alert(`Error loading questions: ${error.message}`);
@@ -197,61 +217,55 @@ const MathGameSite: React.FC = () => {
     []
   );
 
+  // Submit Game Result (update score)
   const submitGameResult = useCallback(
     async (scoreToSubmit: number, playedSet: number) => {
       if (!userId) {
-        // Ensure userId is available before submitting
-        console.error(
-          "Cannot submit game result: userId is missing. This should not happen if game started correctly."
-        );
-        alert(
-          "A user error occurred. Please try logging in or creating a user again."
-        );
+        console.error("Cannot submit game result: userId is missing.");
+        alert("A user error occurred. Please log in again.");
         setGameState("setup");
         return;
       }
+
       try {
         console.log(username, scoreToSubmit, playedSet, userId);
-        const response = await fetch("/api/submit-game-result", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username,
-            finalScore: scoreToSubmit,
-            playedSetNumber: playedSet,
-            userId,
-          }),
+
+        const { data, error } = await supabase.rpc("update_user_score", {
+          user_id: userId,
+          score_to_add: scoreToSubmit,
         });
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(
-            errorData.error || "Unknown error submitting game result."
-          );
-        }
-        const result = await response.json();
-        console.log("Game result submitted:", result);
+        console.log("Rows updated:", data);        
+
+        if (error) throw error;
+
+        console.log("Game result submitted successfully");
       } catch (error: any) {
         console.error("Frontend: Error submitting game result:", error.message);
         alert(`Error submitting score: ${error.message}. Please try again.`);
       }
     },
     [username, userId]
-  ); // Dependencies for useCallback
+  );
 
-  const fetchLeaderboard = useCallback(async (setNum: number) => {
+  // Fetch Leaderboard (top 10)
+  const fetchLeaderboard = useCallback(async () => {
     try {
-      const response = await fetch(`/api/leaderboard?set=${setNum}`);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.error || "Unknown error fetching leaderboard."
-        );
-      }
-      const data: LeaderboardEntry[] = await response.json();
-      setLeaderboard(data);
+      const { data, error } = await supabase.rpc("get_leaderboard");
+
+      if (error) throw error;
+
+      // Transform the data to match LeaderboardEntry interface
+      const transformedLeaderboard: LeaderboardEntry[] = (data ?? []).map(
+        (entry: any) => ({
+          username: entry.username,
+          score: entry.total_score, // Map total_score to score
+        })
+      );
+
+      setLeaderboard(transformedLeaderboard);
     } catch (error: any) {
       console.error("Frontend: Error fetching leaderboard:", error.message);
-      setLeaderboard([]); // Clear leaderboard on error
+      setLeaderboard([]);
     }
   }, []);
 
@@ -259,6 +273,7 @@ const MathGameSite: React.FC = () => {
 
   const handleStartGame = async () => {
     // Ensure username is checked/created and difficulty is selected
+    console.log(username.trim(),difficulty, userId, usernameCheckStatus)
     if (
       !username.trim() ||
       !difficulty ||
@@ -321,7 +336,7 @@ const MathGameSite: React.FC = () => {
     playWrongSound(); // Play wrong sound on time up
     playLifeLostSound(); // Play life lost sound
     setTimeout(() => setShake(false), 500);
-    console.log("Times Up")
+    console.log("Times Up");
     setTimeout(() => {
       if (lives - 1 <= 0) {
         endGame();
@@ -333,13 +348,23 @@ const MathGameSite: React.FC = () => {
 
   const handleAnswerSelect = (answer: string) => {
     if (showResult || timeLeft <= 0) return;
-    
-    console.log("Answer select")
+
+    console.log("Answer select");
     if (timerRef.current) clearInterval(timerRef.current);
     setSelectedAnswer(answer);
 
     const currentQuestion = gameQuestions[currentQuestionIndex];
-    const correct = answer === currentQuestion.correct_answer; // Use correct_answer from DB
+    // Get the text of the selected option
+    const selectedOptionText =
+      answer === "A"
+        ? currentQuestion.option_a
+        : answer === "B"
+        ? currentQuestion.option_b
+        : answer === "C"
+        ? currentQuestion.option_c
+        : currentQuestion.option_d;
+
+    const correct = selectedOptionText === currentQuestion.correct_answer;
     setIsCorrect(correct);
     setShowResult(true);
 
@@ -390,7 +415,7 @@ const MathGameSite: React.FC = () => {
     // Submit score and fetch leaderboard concurrently
     await Promise.all([
       submitGameResult(score, currentQuestionSet),
-      fetchLeaderboard(currentQuestionSet),
+      fetchLeaderboard(),
     ]);
   };
 

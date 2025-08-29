@@ -3,6 +3,7 @@ import { Geist, Fredoka } from "next/font/google";
 import "./globals.css";
 import { TanStackProvider } from "@/lib/TanstackProvider";
 import { Toaster } from "sonner";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,6 +30,12 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${FredokaFont.variable} antialiased grid-background`}
       >
+        {/* TrustBox script */}
+        <Script
+          src="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js"
+          strategy="afterInteractive"
+          async
+        />
         <TanStackProvider>{children}</TanStackProvider>
         <Toaster />
       </body>

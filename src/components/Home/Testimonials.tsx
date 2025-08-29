@@ -1,6 +1,7 @@
 "use client";
 import * as motion from "motion/react-client";
 import { InfiniteMovingCards } from "../ui/infinite-moving-cards";
+import TrustpilotWidget from "../TrustpilotWidget";
 const Testimonials = () => {
   return (
     <section className="mt-30">
@@ -12,7 +13,7 @@ const Testimonials = () => {
         viewport={{ once: true }}
       >
         <motion.p
-          className="px-12 py-6 text-4xl bg-white border-2 border-black w-fit font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.8)] transition-all duration-300 cursor-pointer"
+          className="px-12 py-6 text-4xl bg-white border-2 border-black w-fit font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.8)] transition-all duration-300"
           whileHover={{
             scale: 1.05,
             rotate: -1,
@@ -22,7 +23,7 @@ const Testimonials = () => {
           Helping students succeed!
         </motion.p>
         <motion.p
-          className="px-12 py-4 text-xl bg-white border-2 border-black w-fit font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.8)] transition-all duration-300 cursor-pointer"
+          className="flex flex-col justify-center items-center gap-2 px-12 py-2 text-xl bg-white border-2 border-black w-fit font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.8)] transition-all duration-300"
           whileHover={{
             scale: 1.05,
             rotate: -1,
@@ -38,6 +39,7 @@ const Testimonials = () => {
               alt="Trust pilot logo"
             />
           </div>
+            <TrustpilotWidget />
         </motion.p>
       </motion.div>
       <div className="h-[30rem] flex flex-col antialiased items-center justify-center relative overflow-hidden ">

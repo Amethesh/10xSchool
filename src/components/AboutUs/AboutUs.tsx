@@ -99,7 +99,7 @@ const AboutUsComponent = () => {
           </motion.h1>
 
           <motion.a
-            href="/landing"
+            href="/landing/courses"
             className="bg-blue-200 hover:bg-blue-300 border-2 border-black px-8 py-4 text-xl font-semibold shadow-[4px_4px] transition-all duration-200 transform hover:scale-105 inline-block"
             initial={{ opacity: 0, y: 30 }}
             animate={isHeroInView ? { opacity: 1, y: 0 } : {}}

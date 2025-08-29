@@ -1,13 +1,13 @@
-"use server"
-import { createClient } from '@/lib/supabase/server';
-import { Database } from '@/lib/supabase/database.types';
-import { Question, StudentRanking } from '@/types/types';
-import { QuizError, categorizeError } from './errors';
-import { withDatabaseRetry, withDatabaseCircuitBreaker } from './retry';
+"use server";
+import { createClient } from "@/lib/supabase/server";
+import { Database } from "@/lib/supabase/database.types";
+import { Question, StudentRanking } from "@/types/types";
+import { QuizError, categorizeError } from "./errors";
+import { withDatabaseRetry, withDatabaseCircuitBreaker } from "./retry";
 
-type Tables = Database['public']['Tables'];
-type QuizAttemptRow = Tables['quiz_attempts']['Row'];
-type QuizAnswerRow = Tables['quiz_answers']['Row'];
+type Tables = Database["public"]["Tables"];
+type QuizAttemptRow = Tables["quiz_attempts"]["Row"];
+type QuizAnswerRow = Tables["quiz_answers"]["Row"];
 
 /**
  * Fetch a random set of questions by level and week number
@@ -52,10 +52,21 @@ export async function fetchQuestionsByLevelAndWeek(
         }
 
         // Transform the data to match the Question interface
-        return data.map(question => ({
-          ...question,
-          level_no: question.level_id // Map level_id to level_no to match Question interface
-        }));
+        return data.map(
+          (question: any): Question => ({
+            id: question.id,
+            level_no: question.level_id || levelId, // Use provided levelId as fallback
+            level: question.level || "unknown",
+            week_no: question.week_no || weekNo, // Use provided weekNo as fallback
+            question: question.question || "",
+            option_a: question.option_a || "",
+            option_b: question.option_b || "",
+            option_c: question.option_c || "",
+            option_d: question.option_d || "",
+            correct_answer: question.correct_answer || "",
+            points: question.points || 10, // Default to 10 points if null
+          })
+        );
       });
     });
   } catch (error) {
@@ -90,7 +101,7 @@ export async function createQuizAttempt(
           .from("quiz_attempts")
           .insert({
             student_id: studentId,
-            level_id: levelId,   // ✅ store by ID, not text
+            level_id: levelId, // ✅ store by ID, not text
             week_no: weekNo,
             difficulty,
             total_questions: totalQuestions,
@@ -155,64 +166,76 @@ export async function updateQuizAttempt(
         const supabase = await createClient();
 
         // Get the current authenticated user
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        const {
+          data: { user },
+          error: authError,
+        } = await supabase.auth.getUser();
 
         if (authError || !user) {
-          throw QuizError.database('User not authenticated', {
+          throw QuizError.database("User not authenticated", {
             attemptId,
-            operation: 'updateQuizAttempt - auth check'
+            operation: "updateQuizAttempt - auth check",
           });
         }
 
         // Update quiz attempt with final results
         const { error: updateAttemptError } = await supabase
-          .from('quiz_attempts')
+          .from("quiz_attempts")
           .update({
             correct_answers: correctAnswers,
             score,
             time_spent: timeSpent,
             completed_at: new Date().toISOString(),
           })
-          .eq('id', attemptId);
+          .eq("id", attemptId);
 
         if (updateAttemptError) {
-          throw QuizError.save(`Failed to update quiz attempt: ${updateAttemptError.message}`, {
-            attemptId,
-            correctAnswers,
-            score,
-            timeSpent,
-            operation: 'updateQuizAttempt - update attempt'
-          });
+          throw QuizError.save(
+            `Failed to update quiz attempt: ${updateAttemptError.message}`,
+            {
+              attemptId,
+              correctAnswers,
+              score,
+              timeSpent,
+              operation: "updateQuizAttempt - update attempt",
+            }
+          );
         }
 
         // Get current student total score and update it
         const { data: studentData, error: studentFetchError } = await supabase
-          .from('students')
-          .select('total_score')
-          .eq('id', user.id)
+          .from("students")
+          .select("total_score")
+          .eq("id", user.id)
           .single();
 
         if (studentFetchError) {
-          throw QuizError.database(`Failed to fetch student data: ${studentFetchError.message}`, {
-            studentId: user.id,
-            operation: 'updateQuizAttempt - fetch student'
-          });
+          throw QuizError.database(
+            `Failed to fetch student data: ${studentFetchError.message}`,
+            {
+              studentId: user.id,
+              operation: "updateQuizAttempt - fetch student",
+            }
+          );
         }
 
         // Update student's total score by adding the correct answers
         const newTotalScore = (studentData?.total_score || 0) + correctAnswers;
         const { error: studentUpdateError } = await supabase
-          .from('students')
+          .from("students")
           .update({ total_score: newTotalScore })
-          .eq('id', user.id);
+          .eq("id", user.id);
 
         if (studentUpdateError) {
-          throw QuizError.save(`Failed to update student total score: ${studentUpdateError.message}`, {
-            studentId: user.id,
-            correctAnswers,
-            newTotalScore,
-            operation: 'updateQuizAttempt - update student score'
-          });
+          throw QuizError.save(
+            `Failed to update student total score: ${studentUpdateError.message}`,
+            {
+              studentId: user.id,
+              correctAnswers,
+              newTotalScore,
+              operation: "updateQuizAttempt - update student score",
+            }
+          );
         }
       });
     });
@@ -225,7 +248,7 @@ export async function updateQuizAttempt(
       correctAnswers,
       score,
       timeSpent,
-      operation: 'updateQuizAttempt'
+      operation: "updateQuizAttempt",
     });
   }
 }
@@ -242,15 +265,13 @@ export async function saveQuizAnswer(
 ): Promise<void> {
   const supabase = await createClient();
 
-  const { error } = await supabase
-    .from('quiz_answers')
-    .insert({
-      attempt_id: attemptId,
-      question_id: questionId,
-      selected_answer: selectedAnswer,
-      is_correct: isCorrect,
-      time_taken: timeTaken,
-    });
+  const { error } = await supabase.from("quiz_answers").insert({
+    attempt_id: attemptId,
+    question_id: questionId,
+    selected_answer: selectedAnswer,
+    is_correct: isCorrect,
+    time_taken: timeTaken,
+  });
 
   if (error) {
     throw new Error(`Failed to save quiz answer: ${error.message}`);
@@ -274,7 +295,7 @@ export async function saveQuizAnswers(
       return await withDatabaseRetry(async () => {
         const supabase = await createClient();
 
-        const answersToInsert = answers.map(answer => ({
+        const answersToInsert = answers.map((answer) => ({
           attempt_id: attemptId,
           question_id: answer.questionId,
           selected_answer: answer.selectedAnswer,
@@ -283,15 +304,18 @@ export async function saveQuizAnswers(
         }));
 
         const { error } = await supabase
-          .from('quiz_answers')
+          .from("quiz_answers")
           .insert(answersToInsert);
 
         if (error) {
-          throw QuizError.save(`Failed to save quiz answers: ${error.message}`, {
-            attemptId,
-            answerCount: answers.length,
-            operation: 'saveQuizAnswers'
-          });
+          throw QuizError.save(
+            `Failed to save quiz answers: ${error.message}`,
+            {
+              attemptId,
+              answerCount: answers.length,
+              operation: "saveQuizAnswers",
+            }
+          );
         }
       });
     });
@@ -302,7 +326,7 @@ export async function saveQuizAnswers(
     throw categorizeError(error as Error, {
       attemptId,
       answerCount: answers.length,
-      operation: 'saveQuizAnswers'
+      operation: "saveQuizAnswers",
     });
   }
 }
@@ -318,17 +342,17 @@ export async function getStudentQuizAttempts(
   const supabase = await createClient();
 
   let query = supabase
-    .from('quiz_attempts')
-    .select('*')
-    .eq('student_id', studentId)
-    .order('completed_at', { ascending: false });
+    .from("quiz_attempts")
+    .select("*")
+    .eq("student_id", studentId)
+    .order("completed_at", { ascending: false });
 
   if (level) {
-    query = query.eq('level', level);
+    query = query.eq("level", level);
   }
 
   if (weekNo) {
-    query = query.eq('week_no', weekNo);
+    query = query.eq("week_no", weekNo);
   }
 
   const { data, error } = await query;
@@ -343,33 +367,31 @@ export async function getStudentQuizAttempts(
 /**
  * Get quiz attempt details with answers
  */
-export async function getQuizAttemptWithAnswers(
-  attemptId: string
-): Promise<{
+export async function getQuizAttemptWithAnswers(attemptId: string): Promise<{
   attempt: QuizAttemptRow;
   answers: QuizAnswerRow[];
 } | null> {
   const supabase = await createClient();
 
   const [attemptResult, answersResult] = await Promise.all([
+    supabase.from("quiz_attempts").select("*").eq("id", attemptId).single(),
     supabase
-      .from('quiz_attempts')
-      .select('*')
-      .eq('id', attemptId)
-      .single(),
-    supabase
-      .from('quiz_answers')
-      .select('*')
-      .eq('attempt_id', attemptId)
-      .order('created_at')
+      .from("quiz_answers")
+      .select("*")
+      .eq("attempt_id", attemptId)
+      .order("created_at"),
   ]);
 
   if (attemptResult.error) {
-    throw new Error(`Failed to fetch quiz attempt: ${attemptResult.error.message}`);
+    throw new Error(
+      `Failed to fetch quiz attempt: ${attemptResult.error.message}`
+    );
   }
 
   if (answersResult.error) {
-    throw new Error(`Failed to fetch quiz answers: ${answersResult.error.message}`);
+    throw new Error(
+      `Failed to fetch quiz answers: ${answersResult.error.message}`
+    );
   }
 
   return {
@@ -446,7 +468,6 @@ export async function calculateStudentRanking(
   };
 }
 
-
 /**
  * Get leaderboard for a specific quiz (level + week + difficulty)
  */
@@ -455,29 +476,33 @@ export async function getQuizLeaderboard(
   weekNo: number,
   difficulty: string,
   limit: number = 10
-): Promise<Array<{
-  studentId: string;
-  studentName: string;
-  score: number;
-  rank: number;
-  completedAt: string;
-}>> {
+): Promise<
+  Array<{
+    studentId: string;
+    studentName: string;
+    score: number;
+    rank: number;
+    completedAt: string;
+  }>
+> {
   const supabase = await createClient();
 
   // Get all attempts with student information
   const { data: attempts, error } = await supabase
-    .from('quiz_attempts')
-    .select(`
+    .from("quiz_attempts")
+    .select(
+      `
       student_id,
       score,
       completed_at,
       students!inner(full_name)
-    `)
-    .eq('level_id', levelId) // ✅ changed from "level" to "level_id"
-    .eq('week_no', weekNo)
-    .eq('difficulty', difficulty)
-    .not('completed_at', 'is', null)
-    .order('score', { ascending: false });
+    `
+    )
+    .eq("level_id", levelId) // ✅ changed from "level" to "level_id"
+    .eq("week_no", weekNo)
+    .eq("difficulty", difficulty)
+    .not("completed_at", "is", null)
+    .order("score", { ascending: false });
 
   if (error) {
     console.error(error.message);
@@ -489,9 +514,9 @@ export async function getQuizLeaderboard(
   }
 
   // Get best score for each student
-  const studentBestAttempts = new Map<string, typeof attempts[0]>();
+  const studentBestAttempts = new Map<string, (typeof attempts)[0]>();
 
-  attempts.forEach(attempt => {
+  attempts.forEach((attempt) => {
     if (!attempt.student_id) return; // Skip if student_id is null
     const current = studentBestAttempts.get(attempt.student_id);
     if (!current || attempt.score > current.score) {
@@ -501,12 +526,12 @@ export async function getQuizLeaderboard(
 
   // Convert to sorted leaderboard
   const leaderboard = Array.from(studentBestAttempts.values())
-    .filter(attempt => attempt.student_id && attempt.completed_at) // Filter out null values
+    .filter((attempt) => attempt.student_id && attempt.completed_at) // Filter out null values
     .sort((a, b) => b.score - a.score)
     .slice(0, limit)
     .map((attempt, index) => ({
       studentId: attempt.student_id!,
-      studentName: (attempt.students as any)?.full_name || 'Unknown Student',
+      studentName: (attempt.students as any)?.full_name || "Unknown Student",
       score: attempt.score,
       rank: index + 1,
       completedAt: attempt.completed_at!,

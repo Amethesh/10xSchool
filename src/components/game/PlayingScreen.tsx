@@ -152,7 +152,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                           ? isCorrect
                             ? "linear-gradient(to bottom, #66bb6a 0%, #4caf50 100%)"
                             : "linear-gradient(to bottom, #f44336 0%, #d32f2f 100%)"
-                          : currentQuestion.correct_answer.toUpperCase() === key
+                          : optionText === currentQuestion.correct_answer
                           ? "linear-gradient(to bottom, #66bb6a 0%, #4caf50 100%)"
                           : "linear-gradient(to bottom, #455a64 0%, #263238 100%)"
                         : "linear-gradient(to bottom, #4fc3f7 0%, #29b6f6 100%)",
@@ -162,14 +162,14 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                           ? isCorrect
                             ? "#4caf50"
                             : "#f44336"
-                          : currentQuestion.correct_answer.toUpperCase() === key
+                          : optionText === currentQuestion.correct_answer
                           ? "#4caf50"
                           : "#607d8b"
                         : "#1565c0",
                       color:
                         showResult &&
                         selectedAnswer !== key &&
-                        currentQuestion.correct_answer.toUpperCase() !== key
+                        optionText !== currentQuestion.correct_answer
                           ? "#757575"
                           : "#ffffff",
                       boxShadow: showResult
@@ -250,11 +250,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                   >
                     CORRECT ANSWER:{" "}
                     <span style={{ color: "#4caf50" }}>
-                      {currentQuestion.correct_answer.toUpperCase()}.{" "}
-                      {currentQuestion.correct_answer.toUpperCase() === 'A' ? currentQuestion.option_a :
-                       currentQuestion.correct_answer.toUpperCase() === 'B' ? currentQuestion.option_b :
-                       currentQuestion.correct_answer.toUpperCase() === 'C' ? currentQuestion.option_c :
-                       currentQuestion.option_d}
+                      {currentQuestion.correct_answer}
                     </span>
                   </div>
                 )}

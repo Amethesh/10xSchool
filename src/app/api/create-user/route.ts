@@ -18,7 +18,7 @@ export async function POST(request: Request) {
   try {
     // Check if user already exists to prevent duplicate creation attempts (or handle gracefully)
     const { data: existingProfile, error: checkError } = await supabase
-      .from("admins")
+      .from("demo_users")
       .select("id")
       .eq("username", trimmedUsername)
       .single();
@@ -46,8 +46,8 @@ export async function POST(request: Request) {
 
     // User does not exist, proceed to create
     const { data: newProfile, error: insertError } = await supabase
-      .from("admins")
-      .insert({ id: trimmedUsername, role: 'student' }) // Create basic profile
+      .from("demo_users")
+      .insert({ username: trimmedUsername }) // Create basic profile
       .select("id") // Select the ID of the newly created profile [39]
       .single(); // Expecting one new record
 

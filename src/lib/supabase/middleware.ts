@@ -70,6 +70,7 @@ export async function updateSession(request: NextRequest) {
     !pathname.startsWith("/login") &&
     !pathname.startsWith("/auth") &&
     !pathname.startsWith("/landing") &&
+    !pathname.startsWith("/application") &&
     pathname !== "/"
   ) {
     const url = request.nextUrl.clone();
