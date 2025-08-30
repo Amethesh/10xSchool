@@ -179,9 +179,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
             {/* Score & Stats Section - now a pixel-panel */}
             <div className="pixel-panel pixel-panel-inner p-4 sm:p-6 mb-4 sm:mb-8 border-cyan-400/50">
               <div className="text-2xl sm:text-2xl pixel-font text-yellow-400 mb-2 flex items-center">
-                <span className="text-3xl pb-3">
-                  ⭐
-                  </span>
+                <span className="text-3xl pb-3">⭐</span>
                 {score} POINTS
               </div>
               <div className="grid grid-cols-2 gap-2 sm:gap-4 text-[10px] sm:text-sm">
@@ -231,17 +229,49 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
               </div>
             </div>
 
-            {/* Play Again Button - using pixel-button style */}
-            <button
-              onClick={resetGame}
-              className="pixel-button pixel-button-green w-full text-center"
-              style={{ padding: "14px 20px" }}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <RotateCcw className="w-3 h-3 sm:w-5 sm:h-5" />
-                PLAY AGAIN
+            {/* Action Buttons - using pixel-button style */}
+            <div className="space-y-3">
+              <button
+                onClick={resetGame}
+                className="pixel-button pixel-button-green w-full text-center"
+                style={{ padding: "14px 20px" }}
+              >
+                <div className="flex items-center justify-center gap-2">
+                  <RotateCcw className="w-3 h-3 sm:w-5 sm:h-5" />
+                  TRY AGAIN
+                </div>
+              </button>
+
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  onClick={() => {
+                    // Add your book demo logic here
+                    window.open("/application", "_blank");
+                  }}
+                  className="pixel-button w-full text-center"
+                  style={{ padding: "12px 16px" }}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    📚
+                    <span className="text-[8px] sm:text-[10px]">BOOK DEMO</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => {
+                    // Add your exit logic here - could navigate to home page
+                    window.location.href = "/";
+                  }}
+                  className="pixel-button w-full text-center"
+                  style={{ padding: "12px 16px" }}
+                >
+                  <div className="flex items-center justify-center gap-1">
+                    🚪
+                    <span className="text-[8px] sm:text-[10px]">EXIT</span>
+                  </div>
+                </button>
               </div>
-            </button>
+            </div>
           </div>
         </div>
       </div>

@@ -13,8 +13,7 @@ interface SetupScreenProps {
   >;
   difficultySettings: DifficultySettings;
   startGame: () => void;
-  checkUsername: (name: string) => Promise<boolean>;
-  createUser: (name: string) => Promise<boolean>;
+  checkOrCreateUser: (name: string) => Promise<boolean>;
   usernameCheckStatus: "idle" | "checking" | "exists" | "not-exists" | "error";
   usernameMessage: string;
   userId: string | null;
@@ -35,8 +34,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
   setDifficulty,
   difficultySettings,
   startGame,
-  checkUsername,
-  createUser,
+  checkOrCreateUser,
   usernameCheckStatus,
   usernameMessage,
   userId,
@@ -47,15 +45,9 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
 }) => {
   const isUsernameValid = username.trim().length >= 3;
 
-  const handleCheckUsername = async () => {
+  const handleCheckOrCreateUser = async () => {
     if (isUsernameValid) {
-      await checkUsername(username);
-    }
-  };
-
-  const handleCreateUser = async () => {
-    if (isUsernameValid) {
-      await createUser(username);
+      await checkOrCreateUser(username);
     }
   };
 
@@ -92,7 +84,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
           >
             <div className="text-center mb-6 sm:mb-8 flex-shrink-0"> {/* flex-shrink-0 prevents title from shrinking */}
               <h1 className="pixel-font text-3xl sm:text-4xl text-white mb-2 sm:mb-4 tracking-wider">
-                MATH QUIZ
+                MATH GAME
               </h1>
               <div className="pixel-font text-xs text-cyan-300 blink">
                 ENTER YOU USERNAME TO BEGIN
@@ -124,13 +116,13 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
                       isUsernameValid &&
                       usernameCheckStatus === "idle"
                     ) {
-                      handleCheckUsername();
+                      handleCheckOrCreateUser();
                     }
                   }}
                 />
 
                 <button
-                  onClick={handleCheckUsername}
+                  onClick={handleCheckOrCreateUser}
                   disabled={
                     !isUsernameValid ||
                     usernameCheckStatus === "checking" ||
@@ -139,8 +131,8 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
                   className="pixel-button w-full mt-2 sm:mt-3"
                 >
                   {usernameCheckStatus === "checking"
-                    ? "CHECKING..."
-                    : "CHECK NAME"}
+                    ? "LOADING..."
+                    : "CONFIRM NAME"}
                 </button>
               </div>
 
@@ -150,28 +142,14 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
                   className={`status-message ${
                     usernameCheckStatus === "exists"
                       ? "success"
-                      : usernameCheckStatus === "not-exists"
-                      ? "warning"
                       : "error"
                   }`}
                 >
                   {usernameMessage}
-                  {usernameCheckStatus === "exists" &&
-                    currentTotalScore > 0 &&
-                    ` TOTAL: ${currentTotalScore} PTS`}
                 </div>
               )}
 
-              {/* Create User Button */}
-              {usernameCheckStatus === "not-exists" && (
-                <button
-                  onClick={handleCreateUser}
-                  disabled={!isUsernameValid}
-                  className="pixel-button pixel-button-purple w-full"
-                >
-                  CREATE USER "{username.trim()}"
-                </button>
-              )}
+
 
               {/* Difficulty Selection */}
               <div>

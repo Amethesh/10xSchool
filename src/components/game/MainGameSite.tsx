@@ -86,11 +86,6 @@ const MathGameSite: React.FC = () => {
     volume: 0.6,
   });
 
-  // Add more sounds as needed, e.g., for button clicks
-  const { play: playClickSound } = useSound("/sounds/click.mp3", {
-    volume: 0.5,
-  });
-
   // Particle system for celebrations
   const createParticles = (count: number = 20) => {
     const newParticles: Particle[] = [];
@@ -113,109 +108,97 @@ const MathGameSite: React.FC = () => {
 
   // --- API Calls orchestrated from Frontend ---
 
-  const checkUsername = useCallback(async (name: string) => {
+  const checkOrCreateUser = useCallback(async (name: string) => {
     setUsernameCheckStatus("checking");
     setUsernameMessage("");
     setUserId(null); // Clear previous userId
     setCurrentTotalScore(0);
+
     try {
-      const response = await fetch(
+      // First, check if user exists
+      const checkResponse = await fetch(
         `/api/check-username?username=${encodeURIComponent(name.trim())}`
       );
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to check username.");
+      const checkData = await checkResponse.json();
+
+      if (!checkResponse.ok) {
+        throw new Error(checkData.error || "Failed to check username.");
       }
 
-      if (data.exists) {
+      if (checkData.exists) {
+        // User exists - show their score
         setUsernameCheckStatus("exists");
         setUsernameMessage(
-          `Welcome back, ${name}! Your total score: ${data.totalScore} pts.`
+          `Welcome back, ${name}! Your total score: ${checkData.totalScore} pts.`
         );
-        setUserId(data.userId);
-        setCurrentTotalScore(data.totalScore);
+        setUserId(checkData.userId);
+        setCurrentTotalScore(checkData.totalScore);
         return true;
       } else {
-        setUsernameCheckStatus("not-exists");
-        setUsernameMessage(
-          `Username "${name}" does not exist. Click "Create User" to register.`
-        );
-        return false;
+        // User doesn't exist - create them automatically
+        const createResponse = await fetch("/api/create-user", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ username: name.trim() }),
+        });
+        const createData = await createResponse.json();
+
+        if (!createResponse.ok) {
+          throw new Error(createData.error || "Failed to create user.");
+        }
+
+        setUsernameCheckStatus("exists");
+        setUsernameMessage(`Welcome, ${name}! New player created.`);
+        setUserId(createData.userId);
+        setCurrentTotalScore(0);
+        return true;
       }
     } catch (error: any) {
-      console.error("Frontend: Error checking username:", error.message);
+      console.error("Frontend: Error checking/creating user:", error.message);
       setUsernameCheckStatus("error");
       setUsernameMessage(`Error: ${error.message}`);
       return false;
     }
   }, []);
 
-  const createUser = useCallback(async (name: string) => {
-    setUsernameCheckStatus("checking"); // Indicate loading during creation
-    setUsernameMessage("");
+  const supabase = createClient();
+  const fetchQuestions = useCallback(async (): Promise<Question[]> => {
     try {
-      const response = await fetch("/api/create-user", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: name.trim() }),
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create user.");
+      const { data, error } = await supabase.rpc("get_sample_questions");
+
+      if (error) {
+        throw new Error(error.message);
       }
-      setUsernameCheckStatus("exists"); // Treat creation as success, user now "exists"
-      setUsernameMessage(`User "${name}" created successfully!`);
-      setUserId(data.userId);
-      setCurrentTotalScore(0); // New user starts with 0 total score
-      return true;
+
+      if (!data || !Array.isArray(data)) {
+        throw new Error("No questions received from database");
+      }
+
+      // Transform the data to match Question interface
+      const transformedQuestions: Question[] = data.map(
+        (item: any, index: number) => ({
+          id: item.question_no || index + 1,
+          level_no: 1, // Default value since not in RPC response
+          level: "sample", // Default value since not in RPC response
+          week_no: 1, // Default value since not in RPC response
+          question: item.question,
+          option_a: item.option_a || "",
+          option_b: item.option_b || "",
+          option_c: item.option_c || "",
+          option_d: item.option_d || "",
+          correct_answer: item.correct_answer,
+          points: item.point || 10, // Default to 10 points if not specified
+        })
+      );
+
+      return transformedQuestions;
     } catch (error: any) {
-      console.error("Frontend: Error creating user:", error.message);
-      setUsernameCheckStatus("error");
-      setUsernameMessage(`Error creating user: ${error.message}`);
-      return false;
+      console.error("Frontend: Error fetching questions:", error.message);
+      alert(`Error loading questions: ${error.message}`);
+      setGameState("setup"); // Go back to setup on critical error
+      return [];
     }
   }, []);
-  const supabase = createClient();
-  const fetchQuestions = useCallback(
-    async (setNum: number): Promise<Question[]> => {
-      try {
-        const { data, error } = await supabase.rpc("get_sample_questions");
-
-        if (error) {
-          throw new Error(error.message);
-        }
-
-        if (!data || !Array.isArray(data)) {
-          throw new Error("No questions received from database");
-        }
-
-        // Transform the data to match Question interface
-        const transformedQuestions: Question[] = data.map(
-          (item: any, index: number) => ({
-            id: item.question_no || index + 1,
-            level_no: 1, // Default value since not in RPC response
-            level: "sample", // Default value since not in RPC response
-            week_no: 1, // Default value since not in RPC response
-            question: item.question,
-            option_a: item.option_a || "",
-            option_b: item.option_b || "",
-            option_c: item.option_c || "",
-            option_d: item.option_d || "",
-            correct_answer: item.correct_answer,
-            points: item.point || 10, // Default to 10 points if not specified
-          })
-        );
-
-        return transformedQuestions;
-      } catch (error: any) {
-        console.error("Frontend: Error fetching questions:", error.message);
-        alert(`Error loading questions: ${error.message}`);
-        setGameState("setup"); // Go back to setup on critical error
-        return [];
-      }
-    },
-    []
-  );
 
   // Submit Game Result (update score)
   const submitGameResult = useCallback(
@@ -234,7 +217,7 @@ const MathGameSite: React.FC = () => {
           user_id: userId,
           score_to_add: scoreToSubmit,
         });
-        console.log("Rows updated:", data);        
+        console.log("Rows updated:", data);
 
         if (error) throw error;
 
@@ -273,7 +256,7 @@ const MathGameSite: React.FC = () => {
 
   const handleStartGame = async () => {
     // Ensure username is checked/created and difficulty is selected
-    console.log(username.trim(),difficulty, userId, usernameCheckStatus)
+    console.log(username.trim(), difficulty, userId, usernameCheckStatus);
     if (
       !username.trim() ||
       !difficulty ||
@@ -289,7 +272,7 @@ const MathGameSite: React.FC = () => {
     const initialSet = 1; // You can make this dynamic later, e.g., user selects set
     setCurrentQuestionSet(initialSet);
 
-    const fetchedQuestions = await fetchQuestions(initialSet);
+    const fetchedQuestions = await fetchQuestions();
     if (fetchedQuestions.length === 0) {
       return; // Error already handled in fetchQuestions, will revert to setup.
     }
@@ -498,8 +481,7 @@ const MathGameSite: React.FC = () => {
           setDifficulty={setDifficulty}
           difficultySettings={difficultySettings}
           startGame={handleStartGame} // Pass the handler from here
-          checkUsername={checkUsername}
-          createUser={createUser}
+          checkOrCreateUser={checkOrCreateUser}
           usernameCheckStatus={usernameCheckStatus}
           usernameMessage={usernameMessage}
           userId={userId} // Pass userId to disable start if not set
