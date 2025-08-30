@@ -13,9 +13,10 @@ import {
   TrendingUp,
   Search,
   Plus,
-  BadgeCheck
+  BadgeCheck,
+  Bell,
 } from "lucide-react";
-import { getAllStudentsData } from "./actions";
+import { getAllStudentsData, getPendingRequestsCount } from "./actions";
 import EditStudentModal from "@/components/admin/EditStudentModal";
 import { logout } from "@/app/(auth)/actions";
 import Image from "next/image";
@@ -35,7 +36,8 @@ const AdminDashboardPage = () => {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   // UPDATED: Sort keys now match the Student type
-  const [sortBy, setSortBy] = useState<keyof Omit<Student, 'grantedLevels'>>("total_score");
+  const [sortBy, setSortBy] =
+    useState<keyof Omit<Student, "grantedLevels">>("total_score");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   const {
@@ -47,29 +49,42 @@ const AdminDashboardPage = () => {
     queryFn: getAllStudentsData,
   });
 
+  const { data: pendingRequestsCount, isLoading: isLoadingRequests } = useQuery(
+    {
+      queryKey: ["admin-pending-requests-count"],
+      queryFn: getPendingRequestsCount,
+      refetchInterval: 30000, // Refetch every 30 seconds
+    }
+  );
+
   // Filter and sort students
   const filteredAndSortedStudents = React.useMemo(() => {
     if (!students) return [];
 
-    let filtered = students.filter(student =>
-      // UPDATED: Use student.full_name
-      (student.full_name?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (student.student_id?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-      (student.email?.toLowerCase() || '').includes(searchTerm.toLowerCase())
+    let filtered = students.filter(
+      (student) =>
+        // UPDATED: Use student.full_name
+        (student.full_name?.toLowerCase() || "").includes(
+          searchTerm.toLowerCase()
+        ) ||
+        (student.student_id?.toLowerCase() || "").includes(
+          searchTerm.toLowerCase()
+        ) ||
+        (student.email?.toLowerCase() || "").includes(searchTerm.toLowerCase())
     );
 
     return filtered.sort((a, b) => {
       const aValue = a[sortBy];
       const bValue = b[sortBy];
 
-      if (typeof aValue === 'string' && typeof bValue === 'string') {
-        return sortOrder === 'asc'
+      if (typeof aValue === "string" && typeof bValue === "string") {
+        return sortOrder === "asc"
           ? aValue.localeCompare(bValue)
           : bValue.localeCompare(aValue);
       }
-      
+
       // Default to number comparison
-      return sortOrder === 'asc'
+      return sortOrder === "asc"
         ? (aValue as number) - (bValue as number)
         : (bValue as number) - (aValue as number);
     });
@@ -77,18 +92,25 @@ const AdminDashboardPage = () => {
 
   // Calculate stats
   const stats = React.useMemo(() => {
-    if (!students || students.length === 0) return { total: 0, avgScore: 0, maxLevel: 0, topRank: "N/A" };
+    if (!students || students.length === 0)
+      return { total: 0, avgScore: 0, maxLevel: 0, topRank: "N/A" };
 
     return {
       total: students.length,
       // UPDATED: Use s.total_score
-      avgScore: Math.round(students.reduce((sum, s) => sum + (s.total_score || 0), 0) / students.length),
-      maxLevel: Math.max(...students.map(s => s.level || 0)),
-      topRank: students.find(s => s.rank === "LEGEND")?.rank || students[0]?.rank || "N/A"
+      avgScore: Math.round(
+        students.reduce((sum, s) => sum + (s.total_score || 0), 0) /
+          students.length
+      ),
+      maxLevel: Math.max(...students.map((s) => s.level || 0)),
+      topRank:
+        students.find((s) => s.rank === "LEGEND")?.rank ||
+        students[0]?.rank ||
+        "N/A",
     };
   }, [students]);
 
-  const handleSort = (field: keyof Omit<Student, 'grantedLevels'>) => {
+  const handleSort = (field: keyof Omit<Student, "grantedLevels">) => {
     if (sortBy === field) {
       setSortOrder(sortOrder === "asc" ? "desc" : "asc");
     } else {
@@ -124,9 +146,7 @@ const AdminDashboardPage = () => {
           <div className="pixel-font text-red-400 text-lg mb-4">
             SYSTEM ERROR
           </div>
-          <div className="pixel-font text-red-300 text-xs">
-            {error.message}
-          </div>
+          <div className="pixel-font text-red-300 text-xs">{error.message}</div>
         </div>
       </div>
     );
@@ -186,10 +206,19 @@ const AdminDashboardPage = () => {
                 </a>
                 <a
                   href="/admin/access-requests"
-                  className="pixel-button pixel-button-purple pixel-button-green flex items-center gap-2 justify-center"
+                  className="pixel-button pixel-button-purple pixel-button-green flex items-center gap-2 justify-center relative"
                 >
                   <BadgeCheck className="w-4 h-4" />
                   Manage Requests
+                  {!isLoadingRequests &&
+                    pendingRequestsCount &&
+                    pendingRequestsCount > 0 && (
+                      <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center pixel-font animate-pulse">
+                        {pendingRequestsCount > 99
+                          ? "99+"
+                          : pendingRequestsCount}
+                      </span>
+                    )}
                 </a>
                 <form action={logout}>
                   <button className="pixel-button pixel-button-secondary  w-full sm:w-auto">
@@ -201,13 +230,15 @@ const AdminDashboardPage = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <div className="pixel-panel backdrop-blur-lg p-4 bg-gradient-to-br from-blue-900/30 to-blue-800/30">
               <div className="flex items-center gap-3">
                 <Users className="w-8 h-8 text-blue-400" />
                 <div>
                   <div className="pixel-font text-xs text-gray-300">TOTAL</div>
-                  <div className="pixel-font text-lg text-white">{stats.total}</div>
+                  <div className="pixel-font text-lg text-white">
+                    {stats.total}
+                  </div>
                 </div>
               </div>
             </div>
@@ -216,8 +247,12 @@ const AdminDashboardPage = () => {
               <div className="flex items-center gap-3">
                 <Target className="w-8 h-8 text-green-400" />
                 <div>
-                  <div className="pixel-font text-xs text-gray-300">AVG SCORE</div>
-                  <div className="pixel-font text-lg text-white">{stats.avgScore}</div>
+                  <div className="pixel-font text-xs text-gray-300">
+                    AVG SCORE
+                  </div>
+                  <div className="pixel-font text-lg text-white">
+                    {stats.avgScore}
+                  </div>
                 </div>
               </div>
             </div>
@@ -226,8 +261,12 @@ const AdminDashboardPage = () => {
               <div className="flex items-center gap-3">
                 <TrendingUp className="w-8 h-8 text-purple-400" />
                 <div>
-                  <div className="pixel-font text-xs text-gray-300">MAX LVL</div>
-                  <div className="pixel-font text-lg text-white">{stats.maxLevel}</div>
+                  <div className="pixel-font text-xs text-gray-300">
+                    MAX LVL
+                  </div>
+                  <div className="pixel-font text-lg text-white">
+                    {stats.maxLevel}
+                  </div>
                 </div>
               </div>
             </div>
@@ -236,8 +275,26 @@ const AdminDashboardPage = () => {
               <div className="flex items-center gap-3">
                 <Trophy className="w-8 h-8 text-yellow-400" />
                 <div>
-                  <div className="pixel-font text-xs text-gray-300">TOP RANK</div>
-                  <div className="pixel-font text-xs text-white">{stats.topRank}</div>
+                  <div className="pixel-font text-xs text-gray-300">
+                    TOP RANK
+                  </div>
+                  <div className="pixel-font text-xs text-white">
+                    {stats.topRank}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="pixel-panel backdrop-blur-lg p-4 bg-gradient-to-br from-orange-900/30 to-red-800/30">
+              <div className="flex items-center gap-3">
+                <Bell className="w-8 h-8 text-orange-400" />
+                <div>
+                  <div className="pixel-font text-xs text-gray-300">
+                    PENDING
+                  </div>
+                  <div className="pixel-font text-lg text-white">
+                    {isLoadingRequests ? "..." : pendingRequestsCount || 0}
+                  </div>
                 </div>
               </div>
             </div>
@@ -271,9 +328,13 @@ const AdminDashboardPage = () => {
                 </select>
 
                 <button
-                  onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+                  onClick={() =>
+                    setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                  }
                   className="pixel-button px-3"
-                  title={`Sort ${sortOrder === "asc" ? "Descending" : "Ascending"}`}
+                  title={`Sort ${
+                    sortOrder === "asc" ? "Descending" : "Ascending"
+                  }`}
                 >
                   {sortOrder === "asc" ? "↑" : "↓"}
                 </button>
@@ -281,94 +342,107 @@ const AdminDashboardPage = () => {
             </div>
           </div>
 
-        {/* Students Table */}
-        <div className="pixel-panel backdrop-blur-lg p-6 bg-gradient-to-br from-gray-900/40 to-black/40">
-          <div className="overflow-x-auto custom-scrollbar">
-            <table className="w-full pixel-font text-xs text-white">
-              <thead>
-                <tr className="border-b-2 border-cyan-400">
-                  {/* UPDATED: onClick and sortBy checks use snake_case */}
-                  <th
-                    className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
-                    onClick={() => handleSort("full_name")}
-                  >
-                    FULL NAME {sortBy === "full_name" && (sortOrder === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th className="p-4 text-left">STUDENT ID</th>
-                  <th
-                    className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
-                    onClick={() => handleSort("level")}
-                  >
-                    LEVEL {sortBy === "level" && (sortOrder === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
-                    onClick={() => handleSort("total_score")}
-                  >
-                    SCORE {sortBy === "total_score" && (sortOrder === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th
-                    className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
-                    onClick={() => handleSort("rank")}
-                  >
-                    RANK {sortBy === "rank" && (sortOrder === "asc" ? "↑" : "↓")}
-                  </th>
-                  <th className="p-4 text-center">ACTIONS</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredAndSortedStudents.map((student, index) => (
-                  <tr
-                    key={student.id}
-                    className={`border-b border-gray-700/50 hover:bg-gradient-to-r hover:from-cyan-900/20 hover:to-blue-900/20 transition-all duration-200 ${index % 2 === 0 ? 'bg-gray-900/20' : 'bg-transparent'}`}
-                  >
-                    {/* UPDATED: Use student.full_name */}
-                    <td className="p-4 font-medium">{student.full_name}</td>
-                    <td className="p-4">
-                      <span className="px-2 py-1 bg-yellow-900/30 text-yellow-300 rounded border border-yellow-600/50">
-                        {student.student_id}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className="px-2 py-1 bg-purple-900/30 text-purple-300 rounded border border-purple-600/50">
-                        LVL {student.level}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className="px-2 py-1 bg-green-900/30 text-green-300 rounded border border-green-600/50">
-                        {/* UPDATED: Use student.total_score */}
-                        {(student.total_score || 0).toLocaleString()}
-                      </span>
-                    </td>
-                    <td className="p-4">
-                      <span className={`px-2 py-1 rounded border ${student.rank === "LEGEND"
-                          ? "bg-yellow-900/30 text-yellow-300 border-yellow-600/50"
-                          : student.rank === "MASTER"
-                            ? "bg-purple-900/30 text-purple-300 border-purple-600/50"
-                            : "bg-cyan-900/30 text-cyan-300 border-cyan-600/50"
-                        }`}>
-                        {student.rank}
-                      </span>
-                    </td>
-                    <td className="p-4 text-center">
-                      <button
-                        onClick={() => setEditingStudent(student)}
-                        className="pixel-button text-xs p-2 hover:scale-105 transition-transform"
-                        title="Edit Student"
-                      >
-                        <Edit className="w-3 h-3" />
-                      </button>
-                    </td>
+          {/* Students Table */}
+          <div className="pixel-panel backdrop-blur-lg p-6 bg-gradient-to-br from-gray-900/40 to-black/40">
+            <div className="overflow-x-auto custom-scrollbar">
+              <table className="w-full pixel-font text-xs text-white">
+                <thead>
+                  <tr className="border-b-2 border-cyan-400">
+                    {/* UPDATED: onClick and sortBy checks use snake_case */}
+                    <th
+                      className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
+                      onClick={() => handleSort("full_name")}
+                    >
+                      FULL NAME{" "}
+                      {sortBy === "full_name" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th className="p-4 text-left">STUDENT ID</th>
+                    <th
+                      className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
+                      onClick={() => handleSort("level")}
+                    >
+                      LEVEL{" "}
+                      {sortBy === "level" && (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th
+                      className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
+                      onClick={() => handleSort("total_score")}
+                    >
+                      SCORE{" "}
+                      {sortBy === "total_score" &&
+                        (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th
+                      className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
+                      onClick={() => handleSort("rank")}
+                    >
+                      RANK{" "}
+                      {sortBy === "rank" && (sortOrder === "asc" ? "↑" : "↓")}
+                    </th>
+                    <th className="p-4 text-center">ACTIONS</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredAndSortedStudents.map((student, index) => (
+                    <tr
+                      key={student.id}
+                      className={`border-b border-gray-700/50 hover:bg-gradient-to-r hover:from-cyan-900/20 hover:to-blue-900/20 transition-all duration-200 ${
+                        index % 2 === 0 ? "bg-gray-900/20" : "bg-transparent"
+                      }`}
+                    >
+                      {/* UPDATED: Use student.full_name */}
+                      <td className="p-4 font-medium">{student.full_name}</td>
+                      <td className="p-4">
+                        <span className="px-2 py-1 bg-yellow-900/30 text-yellow-300 rounded border border-yellow-600/50">
+                          {student.student_id}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span className="px-2 py-1 bg-purple-900/30 text-purple-300 rounded border border-purple-600/50">
+                          LVL {student.level}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span className="px-2 py-1 bg-green-900/30 text-green-300 rounded border border-green-600/50">
+                          {/* UPDATED: Use student.total_score */}
+                          {(student.total_score || 0).toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="p-4">
+                        <span
+                          className={`px-2 py-1 rounded border ${
+                            student.rank === "LEGEND"
+                              ? "bg-yellow-900/30 text-yellow-300 border-yellow-600/50"
+                              : student.rank === "MASTER"
+                              ? "bg-purple-900/30 text-purple-300 border-purple-600/50"
+                              : "bg-cyan-900/30 text-cyan-300 border-cyan-600/50"
+                          }`}
+                        >
+                          {student.rank}
+                        </span>
+                      </td>
+                      <td className="p-4 text-center">
+                        <button
+                          onClick={() => setEditingStudent(student)}
+                          className="pixel-button text-xs p-2 hover:scale-105 transition-transform"
+                          title="Edit Student"
+                        >
+                          <Edit className="w-3 h-3" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
 
               {filteredAndSortedStudents.length === 0 && (
                 <div className="text-center py-12">
                   <Users className="w-16 h-16 text-gray-600 mx-auto mb-4" />
                   <p className="pixel-font text-gray-500 text-sm">
-                    {searchTerm ? "NO STUDENTS MATCH YOUR SEARCH" : "NO STUDENTS FOUND"}
+                    {searchTerm
+                      ? "NO STUDENTS MATCH YOUR SEARCH"
+                      : "NO STUDENTS FOUND"}
                   </p>
                   {searchTerm && (
                     <button
@@ -386,7 +460,8 @@ const AdminDashboardPage = () => {
             {filteredAndSortedStudents.length > 0 && (
               <div className="mt-4 pt-4 border-t border-gray-700/50">
                 <p className="pixel-font text-xs text-gray-400 text-center">
-                  SHOWING {filteredAndSortedStudents.length} OF {students?.length || 0} STUDENTS
+                  SHOWING {filteredAndSortedStudents.length} OF{" "}
+                  {students?.length || 0} STUDENTS
                 </p>
               </div>
             )}

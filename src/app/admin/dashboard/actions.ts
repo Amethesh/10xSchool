@@ -83,6 +83,26 @@ export async function getAllStudentsData() {
 }
 
 /**
+ * Get the count of pending access requests.
+ * Admin-only.
+ */
+export async function getPendingRequestsCount() {
+  await verifyAdmin();
+  const supabase = await createClient();
+
+  const { count, error } = await supabase
+    .from("access_requests")
+    .select("*", { count: 'exact', head: true })
+    .eq("status", "pending");
+
+  if (error) {
+    throw new Error(`Failed to fetch pending requests count: ${error.message}`);
+  }
+
+  return count || 0;
+}
+
+/**
  * Updates a student's profile (not their level access).
  * Admin-only.
  */

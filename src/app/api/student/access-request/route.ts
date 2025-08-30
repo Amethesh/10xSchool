@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
       .select('id, difficulty_level')
       .ilike('name', levelName)
       .single();
-
+    console.log(levelData)
     if (levelError || !levelData) {
       return NextResponse.json({ error: 'Level not found' }, { status: 404 });
     }
