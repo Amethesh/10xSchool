@@ -246,7 +246,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
                 <button
                   onClick={() => {
                     // Add your book demo logic here
-                    window.open("/application", "_blank");
+                    window.open("/book-demo", "_blank");
                   }}
                   className="pixel-button w-full text-center"
                   style={{ padding: "12px 16px" }}

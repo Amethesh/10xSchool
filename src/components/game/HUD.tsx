@@ -72,7 +72,7 @@ const HUD: React.FC<HUDProps> = ({
 
             {/* 8-bit pixel hearts */}
             <div className="flex items-center gap-1">
-              {Array.from({ length: 3 }).map((_, i) => (
+              {Array.from({ length: 5 }).map((_, i) => (
                 <PixelHeart key={i} filled={i < lives} />
               ))}
             </div>

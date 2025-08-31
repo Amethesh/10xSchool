@@ -1,12 +1,14 @@
 "use client";
 import React, { useState } from "react";
-import { motion } from "motion/react";
+import { motion } from "motion/react"; // Note: The correct import is 'framer-motion'
 
 const GetStarted = () => {
+  // We don't need isHovered for Option 1 or 2, but it's needed for Option 3.
+  // Let's keep it here in case you switch.
   const [isHovered, setIsHovered] = useState(false);
 
   return (
-    <section className="mt-20w-screen bg-[#ff7cb5] h-[600px] flex flex-col items-center justify-center text-center relative overflow-hidden">
+    <section className="mt-20 w-screen bg-[#ff7cb5] h-[600px] flex flex-col items-center justify-center text-center relative overflow-hidden">
       {/* Animated background elements */}
       <motion.div
         className="absolute top-10 left-10 w-20 h-20 bg-[#fff07c] rounded-full opacity-20"
@@ -47,83 +49,56 @@ const GetStarted = () => {
       {/* Main content */}
       <motion.div
         initial={{ opacity: 0, y: 50 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
         transition={{ duration: 0.8, ease: "easeOut" }}
-        className="z-10"
+        className="z-10 flex flex-col items-center" // Centering container
       >
         <motion.p
           className="text-2xl font-semibold mb-8 text-black"
           initial={{ opacity: 0, y: 30 }}
-          animate={{ opacity: 1, y: 0 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2, ease: "easeOut" }}
         >
           Ready to Unlock Your Child&apos;s 10X Potential?
         </motion.p>
 
+        {/* --- REPLACEMENT BUTTON (Using Option 2: 3D Push) --- */}
         <motion.button
-          className="border-2 font-semibold border-black bg-[#fff07c] text-6xl mt-4 px-28 py-18 transition-all duration-300 cursor-pointer relative overflow-hidden"
+          className="font-semibold bg-[#fff07c] text-black text-5xl px-20 py-8 rounded-2xl border-b-8 border-t-2 border-x-2 border-[#e0c800]"
+          whileHover={{ y: -4 }}
+          whileTap={{ y: 6, borderBottomWidth: "2px", borderTopWidth: "2px" }}
           initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.6, delay: 0.4, ease: "easeOut" }}
-          whileHover={{
-            scale: 1.05,
-            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.3)",
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          transition={{
+            duration: 0.6,
+            delay: 0.4,
+            ease: "easeOut",
+            type: "spring",
+            stiffness: 500,
+            damping: 30,
           }}
-          whileTap={{
-            scale: 0.95,
-          }}
-          onHoverStart={() => setIsHovered(true)}
-          onHoverEnd={() => setIsHovered(false)}
         >
-          {/* Button background animation */}
-          <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-[#fff07c] to-[#ffed4a]"
-            initial={{ x: "-100%" }}
-            animate={{ x: isHovered ? "0%" : "-100%" }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          />
-
-          {/* Button text */}
-          <motion.span
+          <a
+            href="/book-demo"
+            // href="https://docs.google.com/forms/d/e/1FAIpQLSek5rcxkKm8IFUl1oQ45SXhnMv0JZBw3r4qX7VX8ho-pYclAA/viewform?usp=dialog"
+            target="_blank"
+            rel="noopener noreferrer"
             className="relative z-10"
-            animate={{
-              color: isHovered ? "#000" : "#000",
-            }}
-            transition={{ duration: 0.3 }}
           >
-            <a
-              href="https://docs.google.com/forms/d/e/1FAIpQLSek5rcxkKm8IFUl1oQ45SXhnMv0JZBw3r4qX7VX8ho-pYclAA/viewform?usp=dialog"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Book a Demo
-            </a>
-          </motion.span>
-
-          {/* Floating particles on hover */}
-          {isHovered && (
-            <>
-              <motion.div
-                className="absolute top-2 left-4 w-2 h-2 bg-white rounded-full"
-                initial={{ opacity: 0, y: 0 }}
-                animate={{ opacity: [0, 1, 0], y: -20 }}
-                transition={{ duration: 1, repeat: Infinity }}
-              />
-              <motion.div
-                className="absolute bottom-2 right-4 w-2 h-2 bg-white rounded-full"
-                initial={{ opacity: 0, y: 0 }}
-                animate={{ opacity: [0, 1, 0], y: 20 }}
-                transition={{ duration: 1, repeat: Infinity, delay: 0.5 }}
-              />
-            </>
-          )}
+            Book a Demo
+          </a>
         </motion.button>
+        {/* --- END REPLACEMENT BUTTON --- */}
 
         {/* Animated arrow pointing to button */}
         <motion.div
           className="mt-6"
           initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.8 }}
         >
           <motion.div
@@ -142,11 +117,12 @@ const GetStarted = () => {
         </motion.div>
       </motion.div>
 
-      {/* Pulsing ring animation around the section */}
+      {/* Pulsing ring animation around the section - not needed with new button styles but kept for effect */}
       <motion.div
-        className="absolute inset-0 border-4 border-white rounded-full opacity-20"
+        className="absolute inset-0 border-4 border-white rounded-full opacity-20 pointer-events-none"
         animate={{
-          scale: [1, 1.1, 1],
+          scale: [1, 1.05, 1],
+          opacity: [0.1, 0.3, 0.1],
         }}
         transition={{
           duration: 4,

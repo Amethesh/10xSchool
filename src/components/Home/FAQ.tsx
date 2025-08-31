@@ -47,14 +47,14 @@ const FAQComponent = () => {
       question:
         "My child is not very strong in Math. Will they struggle in this course?",
       answer:
-        "Not at all! This course focuses on money sense, not just numbers. We use stories, games, role-plays, and real-life situations to teach finance — not complex math formulas.",
+        "Not at all! This course focuses on improving child’s math ability at the pace of their understanding and learning capability. We also explain the concept through  stories, role plays, and real-life situations.",
       icon: <CalendarCheck className="w-6 h-6" />,
     },
     {
       id: 5,
       question: "What topics will my child learn in this course?",
       answer:
-        "Your child will explore right from history of Money, budgeting, savings, Banking…….. to Money mindset & Discipline",
+        "You child will learn Abacus, Vedic math, memory techniques, Brain exercises and Money management. With respective to Money management, your child will learn age appropriate chapters. The student of 7 to 9 years will learn right from History of Money, Needs vs Wants, Savings, Budgeting, Value of money etc. The senior kids (beyond 10 years) will learn additionally on Investment and passive income",
       icon: <GraduationCap className="w-6 h-6" />,
     },
     {
@@ -230,14 +230,25 @@ const FAQComponent = () => {
         )}
 
         {visibleCount > 5 && (
-          <motion.button
-            className="underline underline-offset-4 font-semibold cursor-pointer"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={showLess}
-          >
-            Show Less
-          </motion.button>
+          <>
+            <motion.button
+              className="px-6 py-2 bg-blue-300 text-black font-semibold rounded-lg hover:bg-blue-400 transition-colors duration-300 shadow-md"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => (window.location.href = "/application")}
+            >
+              I am interested
+            </motion.button>
+
+            <motion.button
+              className="underline underline-offset-4 font-semibold cursor-pointer"
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={showLess}
+            >
+              Show Less
+            </motion.button>
+          </>
         )}
       </motion.div>
     </section>

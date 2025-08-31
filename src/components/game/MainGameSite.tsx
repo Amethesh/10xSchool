@@ -46,7 +46,7 @@ const MathGameSite: React.FC = () => {
     ""
   );
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState<number>(0);
-  const [lives, setLives] = useState<number>(3);
+  const [lives, setLives] = useState<number>(5);
   const [score, setScore] = useState<number>(0);
   const [timeLeft, setTimeLeft] = useState<number>(0);
   const [selectedAnswer, setSelectedAnswer] = useState<string>("");
@@ -284,7 +284,7 @@ const MathGameSite: React.FC = () => {
     setGameQuestions(shuffledQuestions);
     setGameState("playing");
     setCurrentQuestionIndex(0);
-    setLives(3);
+    setLives(5);
     setScore(0);
     setCombo(0);
     setMaxCombo(0);
@@ -409,7 +409,7 @@ const MathGameSite: React.FC = () => {
     setUserId(null); // Clear userId
     setDifficulty("");
     setCurrentQuestionIndex(0);
-    setLives(3);
+    setLives(5);
     setScore(0);
     setCombo(0);
     setMaxCombo(0);

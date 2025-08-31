@@ -107,7 +107,7 @@ const Navbar = () => {
             size="lg"
             className="rounded-2xl bg-[#0246A4] hover:bg-[#1a5bc4] text-white border border-[#0246A4]"
           >
-            Try Demo
+            Math Game
           </Button>
         </a>
       </div>
@@ -170,7 +170,7 @@ const Navbar = () => {
                 className="w-full rounded-2xl bg-[#0246A4] hover:bg-[#1a5bc4] text-white border border-[#0246A4]"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Try Demo
+                Math Game
               </Button>
             </a>
           </div>
