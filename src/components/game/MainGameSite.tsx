@@ -65,7 +65,7 @@ const MathGameSite: React.FC = () => {
     "idle" | "checking" | "exists" | "not-exists" | "error"
   >("idle");
   const [usernameMessage, setUsernameMessage] = useState<string>("");
-  const [currentTotalScore, setCurrentTotalScore] = useState<number>(0); // User's accumulated score
+  const [currentTotalScore, setCurrentTotalScore] = useState<number>(0);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -107,45 +107,37 @@ const MathGameSite: React.FC = () => {
   };
 
   // --- API Calls orchestrated from Frontend ---
-
+  const supabase = createClient();
   const checkOrCreateUser = useCallback(async (name: string) => {
     setUsernameCheckStatus("checking");
     setUsernameMessage("");
-    setUserId(null); // Clear previous userId
+    setUserId(null);
     setCurrentTotalScore(0);
-
     try {
-      // First, check if user exists
       const checkResponse = await fetch(
         `/api/check-username?username=${encodeURIComponent(name.trim())}`
       );
       const checkData = await checkResponse.json();
-
-      if (!checkResponse.ok) {
+      if (!checkResponse.ok)
         throw new Error(checkData.error || "Failed to check username.");
-      }
 
       if (checkData.exists) {
-        // User exists - show their score
         setUsernameCheckStatus("exists");
         setUsernameMessage(
-          `Welcome back, ${name}! Your total score: ${checkData.totalScore} pts.`
+          `Welcome back, ${name}! Your total score: ${checkData.total_score} pts.`
         );
         setUserId(checkData.userId);
         setCurrentTotalScore(checkData.totalScore);
         return true;
       } else {
-        // User doesn't exist - create them automatically
         const createResponse = await fetch("/api/create-user", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ username: name.trim() }),
         });
         const createData = await createResponse.json();
-
-        if (!createResponse.ok) {
+        if (!createResponse.ok)
           throw new Error(createData.error || "Failed to create user.");
-        }
 
         setUsernameCheckStatus("exists");
         setUsernameMessage(`Welcome, ${name}! New player created.`);
@@ -161,102 +153,78 @@ const MathGameSite: React.FC = () => {
     }
   }, []);
 
-  const supabase = createClient();
   const fetchQuestions = useCallback(async (): Promise<Question[]> => {
     try {
       const { data, error } = await supabase.rpc("get_sample_questions");
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      if (!data || !Array.isArray(data)) {
+      if (error) throw new Error(error.message);
+      if (!data || !Array.isArray(data))
         throw new Error("No questions received from database");
-      }
 
-      // Transform the data to match Question interface
       const transformedQuestions: Question[] = data.map(
         (item: any, index: number) => ({
           id: item.question_no || index + 1,
-          level_no: 1, // Default value since not in RPC response
-          level: "sample", // Default value since not in RPC response
-          week_no: 1, // Default value since not in RPC response
+          level_no: 1,
+          level: "sample",
+          week_no: 1,
           question: item.question,
           option_a: item.option_a || "",
           option_b: item.option_b || "",
           option_c: item.option_c || "",
           option_d: item.option_d || "",
           correct_answer: item.correct_answer,
-          points: item.point || 10, // Default to 10 points if not specified
+          points: item.point || 10,
         })
       );
-
       return transformedQuestions;
     } catch (error: any) {
       console.error("Frontend: Error fetching questions:", error.message);
       alert(`Error loading questions: ${error.message}`);
-      setGameState("setup"); // Go back to setup on critical error
+      setGameState("setup");
       return [];
     }
-  }, []);
+  }, [supabase]);
 
-  // Submit Game Result (update score)
   const submitGameResult = useCallback(
     async (scoreToSubmit: number, playedSet: number) => {
       if (!userId) {
         console.error("Cannot submit game result: userId is missing.");
-        alert("A user error occurred. Please log in again.");
         setGameState("setup");
         return;
       }
-
       try {
-        console.log(username, scoreToSubmit, playedSet, userId);
-
         const { data, error } = await supabase.rpc("update_user_score", {
           user_id: userId,
           score_to_add: scoreToSubmit,
         });
-        console.log("Rows updated:", data);
-
         if (error) throw error;
-
-        console.log("Game result submitted successfully");
+        console.log("Game result submitted successfully. Rows updated:", data);
       } catch (error: any) {
         console.error("Frontend: Error submitting game result:", error.message);
         alert(`Error submitting score: ${error.message}. Please try again.`);
       }
     },
-    [username, userId]
+    [userId, supabase]
   );
 
-  // Fetch Leaderboard (top 10)
   const fetchLeaderboard = useCallback(async () => {
     try {
       const { data, error } = await supabase.rpc("get_leaderboard");
-
       if (error) throw error;
-
-      // Transform the data to match LeaderboardEntry interface
       const transformedLeaderboard: LeaderboardEntry[] = (data ?? []).map(
         (entry: any) => ({
           username: entry.username,
-          score: entry.total_score, // Map total_score to score
+          score: entry.total_score,
         })
       );
-
       setLeaderboard(transformedLeaderboard);
     } catch (error: any) {
       console.error("Frontend: Error fetching leaderboard:", error.message);
       setLeaderboard([]);
     }
-  }, []);
+  }, [supabase]);
 
   // --- Game Logic ---
-
   const handleStartGame = async () => {
-    // Ensure username is checked/created and difficulty is selected
-    console.log(username.trim(), difficulty, userId, usernameCheckStatus);
     if (
       !username.trim() ||
       !difficulty ||
@@ -268,18 +236,10 @@ const MathGameSite: React.FC = () => {
       );
       return;
     }
-
-    const initialSet = 1; // You can make this dynamic later, e.g., user selects set
-    setCurrentQuestionSet(initialSet);
-
     const fetchedQuestions = await fetchQuestions();
-    if (fetchedQuestions.length === 0) {
-      return; // Error already handled in fetchQuestions, will revert to setup.
-    }
+    if (fetchedQuestions.length === 0) return;
 
-    // Randomize the order of fetched questions for variety
     const shuffledQuestions = fetchedQuestions.sort(() => Math.random() - 0.5);
-
     playGameStart();
     setGameQuestions(shuffledQuestions);
     setGameState("playing");
@@ -291,12 +251,12 @@ const MathGameSite: React.FC = () => {
     setTimeLeft(difficultySettings[difficulty].time);
     setSelectedAnswer("");
     setShowResult(false);
-    startTimer();
+    setCurrentQuestionSet(1);
+    // REMOVED: startTimer() call is now handled by useEffect
   };
 
   const startTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current);
-
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
@@ -310,18 +270,22 @@ const MathGameSite: React.FC = () => {
 
   const handleTimeUp = () => {
     if (timerRef.current) clearInterval(timerRef.current);
+
+    // FIX: Check if game is over BEFORE updating state to avoid stale state issues
+    const isGameOver = lives <= 1;
+    console.log("HANDLE TIME UP");
     setLives((prev) => prev - 1);
     setMaxCombo((prev) => Math.max(prev, combo));
     setCombo(0);
     setShowResult(true);
     setIsCorrect(false);
     setShake(true);
-    playWrongSound(); // Play wrong sound on time up
-    playLifeLostSound(); // Play life lost sound
+    playWrongSound();
+    playLifeLostSound();
     setTimeout(() => setShake(false), 500);
-    console.log("Times Up");
+
     setTimeout(() => {
-      if (lives - 1 <= 0) {
+      if (isGameOver) {
         endGame();
       } else {
         nextQuestion();
@@ -331,13 +295,10 @@ const MathGameSite: React.FC = () => {
 
   const handleAnswerSelect = (answer: string) => {
     if (showResult || timeLeft <= 0) return;
-
-    console.log("Answer select");
     if (timerRef.current) clearInterval(timerRef.current);
-    setSelectedAnswer(answer);
 
+    setSelectedAnswer(answer);
     const currentQuestion = gameQuestions[currentQuestionIndex];
-    // Get the text of the selected option
     const selectedOptionText =
       answer === "A"
         ? currentQuestion.option_a
@@ -352,32 +313,36 @@ const MathGameSite: React.FC = () => {
     setShowResult(true);
 
     if (correct) {
-      const bonusPoints = Math.min((combo + 1) * 2, 20); // Max bonus points cap
+      const bonusPoints = Math.min((combo + 1) * 2, 20);
       setScore((prev) => prev + currentQuestion.points + bonusPoints);
       setCombo((prev) => prev + 1);
       setMaxCombo((prev) => Math.max(prev, combo + 1));
       createParticles(15);
-      playCorrectSound(); // Play correct sound
+      playCorrectSound();
+      setTimeout(() => nextQuestion(), 2000);
     } else {
+      // FIX: Check if game is over BEFORE updating state
+      const isGameOver = lives <= 1;
       setLives((prev) => prev - 1);
       setMaxCombo((prev) => Math.max(prev, combo));
       setCombo(0);
       setShake(true);
-      playWrongSound(); // Play wrong sound
-      playLifeLostSound(); // Play life lost sound
+      playWrongSound();
+      playLifeLostSound();
       setTimeout(() => setShake(false), 500);
-    }
 
-    setTimeout(() => {
-      if (!correct && lives - 1 <= 0) {
-        endGame();
-      } else {
-        nextQuestion();
-      }
-    }, 2000);
+      setTimeout(() => {
+        if (isGameOver) {
+          endGame();
+        } else {
+          nextQuestion();
+        }
+      }, 2000);
+    }
   };
 
   const nextQuestion = () => {
+    // FIX: Check if we are at the end of the question set
     if (currentQuestionIndex + 1 >= gameQuestions.length) {
       endGame();
       return;
@@ -387,15 +352,13 @@ const MathGameSite: React.FC = () => {
     setTimeLeft(difficultySettings[difficulty].time);
     setSelectedAnswer("");
     setShowResult(false);
-    startTimer();
+    // REMOVED: startTimer() call is now handled by useEffect
   };
 
   const endGame = async () => {
     if (timerRef.current) clearInterval(timerRef.current);
     setGameState("gameOver");
-    playGameOverSound(); // Play game over sound
-
-    // Submit score and fetch leaderboard concurrently
+    playGameOverSound();
     await Promise.all([
       submitGameResult(score, currentQuestionSet),
       fetchLeaderboard(),
@@ -406,7 +369,7 @@ const MathGameSite: React.FC = () => {
     if (timerRef.current) clearInterval(timerRef.current);
     setGameState("setup");
     setUsername("");
-    setUserId(null); // Clear userId
+    setUserId(null);
     setDifficulty("");
     setCurrentQuestionIndex(0);
     setLives(5);
@@ -420,10 +383,25 @@ const MathGameSite: React.FC = () => {
     setParticles([]);
     setLeaderboard([]);
     setCurrentQuestionSet(1);
-    setUsernameCheckStatus("idle"); // Reset check status
-    setUsernameMessage(""); // Clear message
-    setCurrentTotalScore(0); // Reset total score
+    setUsernameCheckStatus("idle");
+    setUsernameMessage("");
+    setCurrentTotalScore(0);
   };
+
+  // --- UseEffect Hooks ---
+
+  // FIX: Centralized timer management to prevent race conditions
+  useEffect(() => {
+    if (gameState === "playing") {
+      startTimer();
+    }
+    // Cleanup function ensures the timer is cleared when question changes or game state changes
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [currentQuestionIndex, gameState]); // Re-run effect when question or game state changes
 
   // Particle animation logic
   useEffect(() => {
@@ -432,13 +410,13 @@ const MathGameSite: React.FC = () => {
       particleInterval = setInterval(() => {
         setParticles((prev) =>
           prev
-            .map((particle) => ({
-              ...particle,
-              x: particle.x + particle.speedX,
-              y: particle.y + particle.speedY,
-              life: particle.life - 0.02,
+            .map((p) => ({
+              ...p,
+              x: p.x + p.speedX,
+              y: p.y + p.speedY,
+              life: p.life - 0.02,
             }))
-            .filter((particle) => particle.life > 0)
+            .filter((p) => p.life > 0)
         );
       }, 50);
     }
@@ -447,16 +425,8 @@ const MathGameSite: React.FC = () => {
     };
   }, [particles]);
 
-  // Cleanup timer on component unmount
-  useEffect(() => {
-    return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-    };
-  }, []);
-
   return (
     <div className="min-h-screen bg-black relative overflow-hidden">
-      {/* Global Particle System */}
       {particles.map((particle: Particle) => (
         <div
           key={particle.id}
@@ -480,12 +450,14 @@ const MathGameSite: React.FC = () => {
           difficulty={difficulty}
           setDifficulty={setDifficulty}
           difficultySettings={difficultySettings}
-          startGame={handleStartGame} // Pass the handler from here
+          startGame={handleStartGame}
           checkOrCreateUser={checkOrCreateUser}
           usernameCheckStatus={usernameCheckStatus}
           usernameMessage={usernameMessage}
-          userId={userId} // Pass userId to disable start if not set
+          userId={userId}
           currentTotalScore={currentTotalScore}
+          // Pass these setters to SetupScreen to implement the username desync fix
+          // In SetupScreen.tsx, your input's onChange should call these setters to reset the status
           setUserId={setUserId}
           setUsernameCheckStatus={setUsernameCheckStatus}
           setUsernameMessage={setUsernameMessage}
@@ -514,7 +486,8 @@ const MathGameSite: React.FC = () => {
         <GameOverScreen
           username={username}
           score={score}
-          questionsAnswered={currentQuestionIndex + (lives === 0 ? 1 : 0)}
+          // FIX: This now accurately reflects the number of questions completed
+          questionsAnswered={currentQuestionIndex + 1}
           totalQuestions={gameQuestions.length}
           maxCombo={maxCombo}
           difficulty={difficulty}

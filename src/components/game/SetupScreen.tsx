@@ -83,10 +83,10 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
             }}
           >
             <div className="text-center mb-6 sm:mb-8 flex-shrink-0"> {/* flex-shrink-0 prevents title from shrinking */}
-              <h1 className="pixel-font text-3xl sm:text-4xl text-white mb-2 sm:mb-4 tracking-wider">
+              <h1 className="tahoma-font text-3xl sm:text-4xl text-white mb-2 sm:mb-4 tracking-wider">
                 MATH GAME
               </h1>
-              <div className="pixel-font text-xs text-cyan-300 blink">
+              <div className="tahoma-font text-xs text-cyan-300 blink">
                 ENTER YOU USERNAME TO BEGIN
               </div>
             </div>
@@ -95,7 +95,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
             <div className="space-y-4 sm:space-y-6 flex-grow"> {/* flex-grow allows this section to fill remaining height if needed */}
               {/* Username Input Section */}
               <div>
-                <div className="pixel-font text-xs text-white mb-2 sm:mb-3 text-center">
+                <div className="tahoma-font text-xs text-white mb-2 sm:mb-3 text-center">
                   ENTER YOUR NAME:
                 </div>
                 <input
@@ -153,7 +153,7 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
 
               {/* Difficulty Selection */}
               <div>
-                <div className="pixel-font text-xs text-white mb-3 sm:mb-4 text-center">
+                <div className="tahoma-font text-xs text-white mb-3 sm:mb-4 text-center">
                   SELECT DIFFICULTY:
                 </div>
                 <div className="space-y-1 sm:space-y-2">
@@ -193,10 +193,10 @@ const SetupScreen: React.FC<SetupScreenProps> = ({
 
               {/* Game Rules */}
               <div className="pixel-panel p-3 sm:p-4 mt-4 sm:mt-6">
-                <div className="pixel-font text-xs text-white text-center mb-1 sm:mb-2">
+                <div className="tahoma-font text-xs text-white text-center mb-1 sm:mb-2">
                   GAME RULES:
                 </div>
-                <div className="pixel-font text-[8px] sm:text-xs text-cyan-300 leading-relaxed"> {/* Made font size slightly smaller for rules on tiny screens */}
+                <div className="tahoma-font text-[8px] sm:text-xs text-cyan-300 leading-relaxed"> {/* Made font size slightly smaller for rules on tiny screens */}
                   • SOLVE MATH PROBLEMS
                   <br />
                   • BEAT THE TIMER

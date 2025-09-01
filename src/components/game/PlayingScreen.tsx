@@ -42,7 +42,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
         shake ? "animate-pulse" : ""
       }`}
       style={{
-        fontFamily: '"Press Start 2P", monospace',
+        fontFamily: '"Tahoma", sans-serif',
         imageRendering: "pixelated",
         WebkitFontSmoothing: "none",
         fontSmooth: "never",
@@ -102,12 +102,11 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
 
             <div className="text-center mb-8">
               <div
-                className="text-7xl font-bold mb-6 leading-tight"
+                className="text-4xl font-bold mb-6 leading-tight"
                 style={{
                   color: "#4fc3f7",
                   textShadow:
                     "3px 3px 0px #1565c0, 6px 6px 0px rgba(13, 71, 161, 0.5)",
-                  fontSize: "clamp(26px, 4vw, 32px)",
                 }}
               >
                 {currentQuestion.question}
@@ -136,7 +135,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                     onClick={() => handleAnswerSelect(key)}
                     disabled={showResult}
                     className={`
-                      relative p-4 font-bold text-xl transition-all transform
+                      relative p-4 font-bold text-2xl transition-all transform
                       ${
                         showResult
                           ? "pointer-events-none"
@@ -144,8 +143,8 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                       }
                     `}
                     style={{
-                      fontFamily: '"Press Start 2P", monospace',
-                      fontSize: "20px",
+                      fontFamily: '"Tahoma", sans-serif',
+                      fontSize: "28px",
                       lineHeight: "1.4",
                       background: showResult
                         ? selectedAnswer === key
@@ -198,7 +197,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                     }}
                   >
                     <div className="flex items-center gap-3">
-                      <div
+                      {/* <div
                         className="w-8 h-8 flex items-center justify-center font-bold text-sm flex-shrink-0"
                         style={{
                           background: "#81c784",
@@ -209,7 +208,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
                         }}
                       >
                         {key}
-                      </div>
+                      </div> */}
                       <span className="text-left flex-1">
                         {optionText}
                       </span>
@@ -273,7 +272,7 @@ const PlayingScreen: React.FC<PlayingScreenProps> = ({
       </div>
 
       <style jsx>{`
-        @import url("https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap");
+        @import url("https://fonts.googleapis.com/css2?family=Tahoma&display=swap");
 
         @keyframes pulse {
           0%,
