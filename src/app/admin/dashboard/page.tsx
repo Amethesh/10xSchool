@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Edit,
   ShieldCheck,
@@ -15,8 +15,14 @@ import {
   Plus,
   BadgeCheck,
   Bell,
+  Trash2,
 } from "lucide-react";
-import { getAllStudentsData, getPendingRequestsCount } from "./actions";
+import {
+  getAllStudentsData,
+  getPendingRequestsCount,
+  deleteStudentByAdmin,
+  getAllLevels,
+} from "./actions";
 import EditStudentModal from "@/components/admin/EditStudentModal";
 import { logout } from "@/app/(auth)/actions";
 import Image from "next/image";
@@ -29,16 +35,35 @@ export type Student = {
   email: string;
   total_score: number;
   level: number;
+  level_no: number | null;
   rank: string;
+  currentLevel?: {
+    id: number;
+    name: string;
+    type: string;
+    difficulty_level: number;
+  } | null;
+};
+
+export type Level = {
+  id: number;
+  name: string;
+  type: string;
+  difficulty_level: number;
 };
 
 const AdminDashboardPage = () => {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [deletingStudentId, setDeletingStudentId] = useState<string | null>(
+    null
+  );
   // UPDATED: Sort keys now match the Student type
   const [sortBy, setSortBy] =
     useState<keyof Omit<Student, "grantedLevels">>("total_score");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+
+  const queryClient = useQueryClient();
 
   const {
     data: students,
@@ -56,6 +81,14 @@ const AdminDashboardPage = () => {
       refetchInterval: 30000, // Refetch every 30 seconds
     }
   );
+
+  const { mutate: deleteStudent, isPending: isDeleting } = useMutation({
+    mutationFn: deleteStudentByAdmin,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-students-list"] });
+      setDeletingStudentId(null);
+    },
+  });
 
   // Filter and sort students
   const filteredAndSortedStudents = React.useMemo(() => {
@@ -116,6 +149,17 @@ const AdminDashboardPage = () => {
     } else {
       setSortBy(field);
       setSortOrder("desc");
+    }
+  };
+
+  const handleQuickDelete = (studentId: string, studentName: string) => {
+    if (
+      window.confirm(
+        `Are you sure you want to delete ${studentName}? This action cannot be undone.`
+      )
+    ) {
+      setDeletingStudentId(studentId);
+      deleteStudent(studentId);
     }
   };
 
@@ -399,9 +443,16 @@ const AdminDashboardPage = () => {
                         </span>
                       </td>
                       <td className="p-4">
-                        <span className="px-2 py-1 bg-purple-900/30 text-purple-300 rounded border border-purple-600/50">
-                          LVL {student.level}
-                        </span>
+                        <div className="space-y-1">
+                          <span className="px-2 py-1 bg-purple-900/30 text-purple-300 rounded border border-purple-600/50 block text-center">
+                            {student.currentLevel ? student.currentLevel.name : `LVL ${student.level}`}
+                          </span>
+                          {student.currentLevel && (
+                            <div className="pixel-font text-xs text-gray-400 text-center">
+                              Difficulty: {student.currentLevel.difficulty_level}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="p-4">
                         <span className="px-2 py-1 bg-green-900/30 text-green-300 rounded border border-green-600/50">
@@ -423,13 +474,31 @@ const AdminDashboardPage = () => {
                         </span>
                       </td>
                       <td className="p-4 text-center">
-                        <button
-                          onClick={() => setEditingStudent(student)}
-                          className="pixel-button text-xs p-2 hover:scale-105 transition-transform"
-                          title="Edit Student"
-                        >
-                          <Edit className="w-3 h-3" />
-                        </button>
+                        <div className="flex gap-2 justify-center">
+                          <button
+                            onClick={() => setEditingStudent(student)}
+                            className="pixel-button text-xs p-2 hover:scale-105 transition-transform"
+                            title="Edit Student"
+                          >
+                            <Edit className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleQuickDelete(student.id, student.full_name)
+                            }
+                            disabled={
+                              isDeleting && deletingStudentId === student.id
+                            }
+                            className="pixel-button pixel-button-red text-xs p-2 hover:scale-105 transition-transform"
+                            title="Delete Student"
+                          >
+                            {isDeleting && deletingStudentId === student.id ? (
+                              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                            ) : (
+                              <Trash2 className="w-3 h-3" />
+                            )}
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}

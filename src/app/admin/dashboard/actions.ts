@@ -53,6 +53,13 @@ export async function getAllStudentsData() {
       total_score,
       rank,
       level,
+      level_no,
+      levels:level_no (
+        id,
+        name,
+        type,
+        difficulty_level
+      ),
       access_requests (
         level_id,
         levels ( name )
@@ -74,6 +81,13 @@ export async function getAllStudentsData() {
     total_score: student.total_score,
     rank: student.rank,
     level: student.level,
+    level_no: student.level_no,
+    currentLevel: student.levels ? {
+      id: student.levels.id,
+      name: student.levels.name,
+      type: student.levels.type,
+      difficulty_level: student.levels.difficulty_level,
+    } : null,
     // The structure for granted levels is mapped from the new query
     grantedLevels: student.access_requests?.map((req) => ({
       levelId: req.level_id,
@@ -103,15 +117,36 @@ export async function getPendingRequestsCount() {
 }
 
 /**
- * Updates a student's profile (not their level access).
+ * Fetch all available levels from the database.
+ * Admin-only.
+ */
+export async function getAllLevels() {
+  await verifyAdmin();
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("levels")
+    .select("id, name, type, difficulty_level")
+    .order("difficulty_level", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to fetch levels: ${error.message}`);
+  }
+
+  return data || [];
+}
+
+/**
+ * Updates a student's profile including level.
  * Admin-only.
  */
 export async function updateStudentByAdmin(formData: FormData) {
   await verifyAdmin();
 
   const studentId = formData.get("id") as string;
-  const full_name = formData.get("full_name") as string; // Match form data name
-  const total_score = Number(formData.get("total_score")); // Match form data name
+  const full_name = formData.get("full_name") as string;
+  const total_score = Number(formData.get("total_score"));
+  const level_no = formData.get("level_no") ? Number(formData.get("level_no")) : null;
   const rank = formData.get("rank") as string;
 
   if (!studentId || !full_name) {
@@ -123,14 +158,20 @@ export async function updateStudentByAdmin(formData: FormData) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // UPDATED: Use snake_case column names to match the database schema
+  const updateData: any = {
+    full_name: full_name,
+    total_score: total_score,
+    rank,
+  };
+
+  // Only update level_no if provided
+  if (level_no !== null) {
+    updateData.level_no = level_no;
+  }
+
   const { error } = await supabaseAdmin
     .from("students")
-    .update({
-      full_name: full_name,
-      total_score: total_score,
-      rank,
-    })
+    .update(updateData)
     .eq("id", studentId);
 
   if (error) {
@@ -140,4 +181,51 @@ export async function updateStudentByAdmin(formData: FormData) {
   revalidatePath("/admin/dashboard");
 
   return { success: true, message: `${full_name} updated successfully.` };
+}
+
+/**
+ * Deletes a student and all related data.
+ * Admin-only.
+ */
+export async function deleteStudentByAdmin(studentId: string) {
+  await verifyAdmin();
+
+  if (!studentId) {
+    throw new Error("Student ID is required.");
+  }
+
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  // Get student name for success message
+  const { data: student } = await supabaseAdmin
+    .from("students")
+    .select("full_name")
+    .eq("id", studentId)
+    .single();
+
+  // Delete related access requests first (if any)
+  await supabaseAdmin
+    .from("access_requests")
+    .delete()
+    .eq("student_id", studentId);
+
+  // Delete the student
+  const { error } = await supabaseAdmin
+    .from("students")
+    .delete()
+    .eq("id", studentId);
+
+  if (error) {
+    throw new Error(`Failed to delete student: ${error.message}`);
+  }
+
+  revalidatePath("/admin/dashboard");
+
+  return { 
+    success: true, 
+    message: `${student?.full_name || 'Student'} deleted successfully.` 
+  };
 }
