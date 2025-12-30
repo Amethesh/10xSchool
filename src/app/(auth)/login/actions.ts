@@ -28,9 +28,24 @@ export async function loginAction(studentId: string, password: string) {
 
   // Check if the logged in user is admin
   const { data: { user } } = await supabase.auth.getUser();
-  
-  if (user?.email === "admin@10xschool.com") {
+
+  if (!user) {
+    return { error: "Login failed" };
+  }
+
+  if (user.email === "admin@10xschool.com") {
     redirect("/admin/dashboard");
+  }
+
+  // Check if the logged in user is a teacher
+  const { data: teacher } = await supabase
+    .from("teachers")
+    .select("id")
+    .eq("id", user.id)
+    .single();
+
+  if (teacher) {
+    redirect("/teacher/dashboard");
   }
   // 4. On success, redirect.
   redirect("/student/levels");

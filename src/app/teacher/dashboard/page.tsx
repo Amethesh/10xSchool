@@ -1,66 +1,26 @@
-// /app/admin/dashboard/page.tsx
-
 "use client";
 
 import React, { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Edit,
-  ShieldCheck,
   Users,
   Trophy,
   Target,
   TrendingUp,
   Search,
-  Plus,
-  BadgeCheck,
-  Bell,
-  Trash2,
 } from "lucide-react";
 import {
-  getAllStudentsData,
-  getPendingRequestsCount,
-  deleteStudentByAdmin,
-  getAllLevels,
+  getTeacherStudents,
 } from "./actions";
-import EditStudentModal from "@/components/admin/EditStudentModal";
+import TeacherEditStudentModal from "@/components/teacher/EditStudentModal";
 import { logout } from "@/app/(auth)/actions";
 import Image from "next/image";
+import { Student } from "@/app/admin/dashboard/page"; // Connect to shared type
 
-// Define the Student type for type safety
-export type Student = {
-  id: string;
-  full_name: string;
-  student_id: string;
-  email: string;
-  total_score: number;
-  level: number;
-  level_no: number | null;
-  rank: string;
-  currentLevel?: {
-    id: number;
-    name: string;
-    type: string;
-    difficulty_level: number;
-  } | null;
-  teacher_id?: string | null;
-  teacher_name?: string | null;
-};
-
-export type Level = {
-  id: number;
-  name: string;
-  type: string;
-  difficulty_level: number;
-};
-
-const AdminDashboardPage = () => {
+const TeacherDashboardPage = () => {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [deletingStudentId, setDeletingStudentId] = useState<string | null>(
-    null
-  );
-  // UPDATED: Sort keys now match the Student type
   const [sortBy, setSortBy] =
     useState<keyof Omit<Student, "grantedLevels">>("total_score");
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -72,24 +32,8 @@ const AdminDashboardPage = () => {
     isLoading,
     error,
   } = useQuery({
-    queryKey: ["admin-students-list"],
-    queryFn: getAllStudentsData,
-  });
-
-  const { data: pendingRequestsCount, isLoading: isLoadingRequests } = useQuery(
-    {
-      queryKey: ["admin-pending-requests-count"],
-      queryFn: getPendingRequestsCount,
-      refetchInterval: 30000, // Refetch every 30 seconds
-    }
-  );
-
-  const { mutate: deleteStudent, isPending: isDeleting } = useMutation({
-    mutationFn: deleteStudentByAdmin,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-students-list"] });
-      setDeletingStudentId(null);
-    },
+    queryKey: ["teacher-students-list"],
+    queryFn: getTeacherStudents,
   });
 
   // Filter and sort students
@@ -97,8 +41,7 @@ const AdminDashboardPage = () => {
     if (!students) return [];
 
     let filtered = students.filter(
-      (student) =>
-        // UPDATED: Use student.full_name
+      (student: Student) =>
         (student.full_name?.toLowerCase() || "").includes(
           searchTerm.toLowerCase()
         ) ||
@@ -108,7 +51,7 @@ const AdminDashboardPage = () => {
         (student.email?.toLowerCase() || "").includes(searchTerm.toLowerCase())
     );
 
-    return filtered.sort((a, b) => {
+    return filtered.sort((a: Student, b: Student) => {
       const aValue = a[sortBy];
       const bValue = b[sortBy];
 
@@ -132,14 +75,13 @@ const AdminDashboardPage = () => {
 
     return {
       total: students.length,
-      // UPDATED: Use s.total_score
       avgScore: Math.round(
-        students.reduce((sum, s) => sum + (s.total_score || 0), 0) /
+        students.reduce((sum: number, s: Student) => sum + (s.total_score || 0), 0) /
           students.length
       ),
-      maxLevel: Math.max(...students.map((s) => s.level || 0)),
+      maxLevel: Math.max(...students.map((s: Student) => s.level || 0)),
       topRank:
-        students.find((s) => s.rank === "LEGEND")?.rank ||
+        students.find((s: Student) => s.rank === "LEGEND")?.rank ||
         students[0]?.rank ||
         "N/A",
     };
@@ -154,30 +96,12 @@ const AdminDashboardPage = () => {
     }
   };
 
-  const handleQuickDelete = (studentId: string, studentName: string) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete ${studentName}? This action cannot be undone.`
-      )
-    ) {
-      setDeletingStudentId(studentId);
-      deleteStudent(studentId);
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
-        <Image
-          src={"/images/8bitBG6.png"}
-          fill
-          alt="BG"
-          className="object-fill"
-        />
-        <div className="absolute inset-0 bg-black opacity-40"></div>
         <div className="pixel-panel p-8 text-center">
           <div className="pixel-font text-white text-lg mb-4">
-            LOADING ADMIN DASHBOARD...
+            LOADING TEACHER DASHBOARD...
           </div>
           <div className="w-16 h-16 mx-auto border-4 border-cyan-400 border-t-transparent rounded-full animate-spin"></div>
         </div>
@@ -208,73 +132,28 @@ const AdminDashboardPage = () => {
           className="object-fill"
         />
         <div className="absolute inset-0 bg-black opacity-40"></div>
-        {/* Animated background elements */}
-        <div className="fixed inset-0 overflow-hidden pointer-events-none z-10">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="pixel-stars absolute animate-pulse"
-              style={{
-                left: `${Math.random() * 100}%`,
-                top: `${Math.random() * 100}%`,
-                animationDelay: `${Math.random() * 3}s`,
-              }}
-            />
-          ))}
-        </div>
-
+        
         <div className="relative z-10 max-w-7xl mx-auto">
           {/* Header */}
-          <div className="pixel-panel backdrop-blur-lg p-6 mb-6 bg-gradient-to-r from-blue-900/20 to-cyan-900/20">
+          <div className="pixel-panel backdrop-blur-lg p-6 mb-6 bg-gradient-to-r from-purple-900/20 to-blue-900/20">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <ShieldCheck className="w-12 h-12 text-cyan-400 floating-icon" />
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full animate-pulse"></div>
+                  <Users className="w-12 h-12 text-purple-400 floating-icon" />
                 </div>
                 <div>
                   <h1 className="pixel-font text-xl sm:text-2xl lg:text-3xl text-white mb-1 tracking-wider">
-                    ADMIN DASHBOARD
+                    TEACHER DASHBOARD
                   </h1>
-                  <p className="pixel-font text-xs text-cyan-300">
-                    STUDENT MANAGEMENT SYSTEM v1.0
+                  <p className="pixel-font text-xs text-purple-300">
+                    STUDENT PROGRESS TRACKER
                   </p>
                 </div>
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3">
-                <a
-                  href="/admin/create-student"
-                  className="pixel-button pixel-button-green flex items-center gap-2 justify-center"
-                >
-                  <Plus className="w-4 h-4" />
-                  CREATE STUDENT
-                </a>
-                <a
-                  href="/admin/create-teacher"
-                  className="pixel-button pixel-button-blue flex items-center gap-2 justify-center"
-                >
-                  <Plus className="w-4 h-4" />
-                  CREATE TEACHER
-                </a>
-                <a
-                  href="/admin/access-requests"
-                  className="pixel-button pixel-button-purple pixel-button-green flex items-center gap-2 justify-center relative"
-                >
-                  <BadgeCheck className="w-4 h-4" />
-                  Manage Requests
-                  {!isLoadingRequests &&
-                    pendingRequestsCount &&
-                    pendingRequestsCount > 0 && (
-                      <span className="absolute top-0 right-0 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center pixel-font animate-pulse">
-                        {pendingRequestsCount > 99
-                          ? "99+"
-                          : pendingRequestsCount}
-                      </span>
-                    )}
-                </a>
                 <form action={logout}>
-                  <button className="pixel-button pixel-button-secondary  w-full sm:w-auto">
+                  <button className="pixel-button pixel-button-secondary w-full sm:w-auto">
                     LOG OUT
                   </button>
                 </form>
@@ -283,7 +162,7 @@ const AdminDashboardPage = () => {
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div className="pixel-panel backdrop-blur-lg p-4 bg-gradient-to-br from-blue-900/30 to-blue-800/30">
               <div className="flex items-center gap-3">
                 <Users className="w-8 h-8 text-blue-400" />
@@ -337,20 +216,6 @@ const AdminDashboardPage = () => {
                 </div>
               </div>
             </div>
-
-            <div className="pixel-panel backdrop-blur-lg p-4 bg-gradient-to-br from-orange-900/30 to-red-800/30">
-              <div className="flex items-center gap-3">
-                <Bell className="w-8 h-8 text-orange-400" />
-                <div>
-                  <div className="pixel-font text-xs text-gray-300">
-                    PENDING
-                  </div>
-                  <div className="pixel-font text-lg text-white">
-                    {isLoadingRequests ? "..." : pendingRequestsCount || 0}
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Controls */}
@@ -368,7 +233,6 @@ const AdminDashboardPage = () => {
               </div>
 
               <div className="flex gap-2">
-                {/* UPDATED: Select values now use snake_case */}
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as keyof Student)}
@@ -400,10 +264,9 @@ const AdminDashboardPage = () => {
             <div className="overflow-x-auto custom-scrollbar">
               <table className="w-full pixel-font text-xs text-white">
                 <thead>
-                  <tr className="border-b-2 border-cyan-400">
-                    {/* UPDATED: onClick and sortBy checks use snake_case */}
+                  <tr className="border-b-2 border-purple-400">
                     <th
-                      className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
+                      className="p-4 text-left cursor-pointer hover:text-purple-300 transition-colors"
                       onClick={() => handleSort("full_name")}
                     >
                       FULL NAME{" "}
@@ -412,14 +275,14 @@ const AdminDashboardPage = () => {
                     </th>
                     <th className="p-4 text-left">STUDENT ID</th>
                     <th
-                      className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
+                      className="p-4 text-left cursor-pointer hover:text-purple-300 transition-colors"
                       onClick={() => handleSort("level")}
                     >
                       LEVEL{" "}
                       {sortBy === "level" && (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th
-                      className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
+                      className="p-4 text-left cursor-pointer hover:text-purple-300 transition-colors"
                       onClick={() => handleSort("total_score")}
                     >
                       SCORE{" "}
@@ -427,7 +290,7 @@ const AdminDashboardPage = () => {
                         (sortOrder === "asc" ? "↑" : "↓")}
                     </th>
                     <th
-                      className="p-4 text-left cursor-pointer hover:text-cyan-300 transition-colors"
+                      className="p-4 text-left cursor-pointer hover:text-purple-300 transition-colors"
                       onClick={() => handleSort("rank")}
                     >
                       RANK{" "}
@@ -437,14 +300,13 @@ const AdminDashboardPage = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredAndSortedStudents.map((student, index) => (
+                  {filteredAndSortedStudents.map((student: Student, index: number) => (
                     <tr
                       key={student.id}
-                      className={`border-b border-gray-700/50 hover:bg-gradient-to-r hover:from-cyan-900/20 hover:to-blue-900/20 transition-all duration-200 ${
+                      className={`border-b border-gray-700/50 hover:bg-gradient-to-r hover:from-purple-900/20 hover:to-blue-900/20 transition-all duration-200 ${
                         index % 2 === 0 ? "bg-gray-900/20" : "bg-transparent"
                       }`}
                     >
-                      {/* UPDATED: Use student.full_name */}
                       <td className="p-4 font-medium">{student.full_name}</td>
                       <td className="p-4">
                         <span className="px-2 py-1 bg-yellow-900/30 text-yellow-300 rounded border border-yellow-600/50">
@@ -456,16 +318,10 @@ const AdminDashboardPage = () => {
                           <span className="px-2 py-1 bg-purple-900/30 text-purple-300 rounded border border-purple-600/50 block text-center">
                             {student.currentLevel ? student.currentLevel.name : `LVL ${student.level}`}
                           </span>
-                          {student.currentLevel && (
-                            <div className="pixel-font text-xs text-gray-400 text-center">
-                              Difficulty: {student.currentLevel.difficulty_level}
-                            </div>
-                          )}
                         </div>
                       </td>
                       <td className="p-4">
                         <span className="px-2 py-1 bg-green-900/30 text-green-300 rounded border border-green-600/50">
-                          {/* UPDATED: Use student.total_score */}
                           {(student.total_score || 0).toLocaleString()}
                         </span>
                       </td>
@@ -491,22 +347,6 @@ const AdminDashboardPage = () => {
                           >
                             <Edit className="w-3 h-3" />
                           </button>
-                          <button
-                            onClick={() =>
-                              handleQuickDelete(student.id, student.full_name)
-                            }
-                            disabled={
-                              isDeleting && deletingStudentId === student.id
-                            }
-                            className="pixel-button pixel-button-red text-xs p-2 hover:scale-105 transition-transform"
-                            title="Delete Student"
-                          >
-                            {isDeleting && deletingStudentId === student.id ? (
-                              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
-                            ) : (
-                              <Trash2 className="w-3 h-3" />
-                            )}
-                          </button>
                         </div>
                       </td>
                     </tr>
@@ -520,36 +360,17 @@ const AdminDashboardPage = () => {
                   <p className="pixel-font text-gray-500 text-sm">
                     {searchTerm
                       ? "NO STUDENTS MATCH YOUR SEARCH"
-                      : "NO STUDENTS FOUND"}
+                      : "NO STUDENTS ASSIGNED"}
                   </p>
-                  {searchTerm && (
-                    <button
-                      onClick={() => setSearchTerm("")}
-                      className="pixel-button pixel-button-blue mt-4 text-xs"
-                    >
-                      CLEAR SEARCH
-                    </button>
-                  )}
                 </div>
               )}
             </div>
-
-            {/* Results summary */}
-            {filteredAndSortedStudents.length > 0 && (
-              <div className="mt-4 pt-4 border-t border-gray-700/50">
-                <p className="pixel-font text-xs text-gray-400 text-center">
-                  SHOWING {filteredAndSortedStudents.length} OF{" "}
-                  {students?.length || 0} STUDENTS
-                </p>
-              </div>
-            )}
           </div>
         </div>
       </div>
 
-      {/* Edit Modal */}
       {editingStudent && (
-        <EditStudentModal
+        <TeacherEditStudentModal
           student={editingStudent}
           onClose={() => setEditingStudent(null)}
         />
@@ -558,4 +379,4 @@ const AdminDashboardPage = () => {
   );
 };
 
-export default AdminDashboardPage;
+export default TeacherDashboardPage;

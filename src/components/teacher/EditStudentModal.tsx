@@ -1,5 +1,3 @@
-// /app/admin/dashboard/EditStudentModal.tsx
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -8,29 +6,24 @@ import {
   X,
   Save,
   User,
-  Trophy,
   Star,
   Crown,
-  Trash2,
-  AlertTriangle,
   BookOpen,
 } from "lucide-react";
-import { Student, Level } from "@/app/admin/dashboard/page";
+import { Student } from "@/app/admin/dashboard/page"; // Reuse type
 import {
-  updateStudentByAdmin,
-  deleteStudentByAdmin,
-  getAllLevels,
-  getAllTeachers,
-} from "@/app/admin/dashboard/actions";
+  updateStudentByTeacher,
+  getAllLevelsForTeacher,
+} from "@/app/teacher/dashboard/actions";
 
 type EditStudentModalProps = {
   student: Student;
   onClose: () => void;
 };
 
-const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
+const TeacherEditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
   const [formData, setFormData] = useState<
-    Omit<Student, "student_id" | "email">
+    Omit<Student, "student_id" | "email" | "teacher_id" | "teacher_name">
   >({
     id: "",
     full_name: "",
@@ -38,22 +31,14 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
     level: 0,
     level_no: null,
     rank: "",
-    teacher_id: null,
   });
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const queryClient = useQueryClient();
 
   // Fetch all available levels
   const { data: levels, isLoading: levelsLoading } = useQuery({
-    queryKey: ["admin-levels"],
-    queryFn: getAllLevels,
-  });
-
-  // Fetch all available teachers
-  const { data: teachers, isLoading: teachersLoading } = useQuery({
-    queryKey: ["admin-teachers"],
-    queryFn: getAllTeachers,
+    queryKey: ["teacher-levels"],
+    queryFn: getAllLevelsForTeacher,
   });
 
   // Populate form when the student prop changes
@@ -65,7 +50,6 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
       level: student.level,
       level_no: student.level_no,
       rank: student.rank,
-      teacher_id: student.teacher_id || null,
     });
   }, [student]);
 
@@ -79,21 +63,9 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
     isPending: isUpdating,
     error: updateError,
   } = useMutation({
-    mutationFn: updateStudentByAdmin,
+    mutationFn: updateStudentByTeacher,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-students-list"] });
-      onClose();
-    },
-  });
-
-  const {
-    mutate: deleteStudent,
-    isPending: isDeleting,
-    error: deleteError,
-  } = useMutation({
-    mutationFn: deleteStudentByAdmin,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["admin-students-list"] });
+      queryClient.invalidateQueries({ queryKey: ["teacher-students-list"] });
       onClose();
     },
   });
@@ -108,14 +80,7 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
       data.append("level_no", String(formData.level_no));
     }
     data.append("rank", formData.rank);
-    if (formData.teacher_id) {
-      data.append("teacher_id", formData.teacher_id);
-    }
     updateStudent(data);
-  };
-
-  const handleDelete = () => {
-    deleteStudent(formData.id);
   };
 
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -130,52 +95,6 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
     }
   };
 
-  if (showDeleteConfirm) {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-        <div className="pixel-panel p-6 max-w-md w-full relative border-red-500">
-          <div className="text-center">
-            <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-            <h3 className="pixel-font text-lg text-white mb-4">
-              DELETE STUDENT
-            </h3>
-            <p className="pixel-font text-sm text-gray-300 mb-6">
-              Are you sure you want to delete{" "}
-              <span className="text-red-400">{formData.full_name}</span>?
-              <br />
-              <span className="text-red-300 text-xs">
-                This action cannot be undone.
-              </span>
-            </p>
-
-            {deleteError && (
-              <p className="pixel-font text-xs text-red-400 mb-4">
-                {deleteError.message}
-              </p>
-            )}
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isDeleting}
-                className="pixel-button pixel-button-secondary flex-1"
-              >
-                CANCEL
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="pixel-button pixel-button-red flex-1"
-              >
-                {isDeleting ? "DELETING..." : "DELETE"}
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
       <div className="pixel-panel p-6 max-w-lg w-full relative">
@@ -187,7 +106,7 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
         </button>
 
         <h3 className="pixel-font text-lg text-white mb-6 text-center">
-          EDIT STUDENT
+          EDIT STUDENT (TEACHER)
         </h3>
 
         {levelsLoading && (
@@ -222,7 +141,7 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
               disabled={levelsLoading}
             >
               <option value="">Select Level</option>
-              {levels?.map((level) => (
+              {levels?.map((level:any) => (
                 <option key={level.id} value={level.id}>
                   {level.name} (Difficulty: {level.difficulty_level})
                 </option>
@@ -280,45 +199,16 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
             </select>
           </div>
 
-          {/* Teacher Selection */}
-          <div className="input-container">
-            <User className="input-icon w-4 h-4" />
-            <select
-              name="teacher_id"
-              value={formData.teacher_id || ""}
-              onChange={handleSelectChange}
-              className="pixel-select w-full"
-              disabled={teachersLoading}
-            >
-              <option value="">No Teacher Assigned</option>
-              {teachers?.map((teacher: any) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.full_name} ({teacher.teacher_id})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {(updateError || deleteError) && (
+          {updateError && (
             <p className="pixel-font text-xs text-red-400 text-center">
-              {updateError?.message || deleteError?.message}
+              {updateError?.message}
             </p>
           )}
 
           <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={isUpdating || isDeleting}
-              className="pixel-button pixel-button-red flex items-center justify-center gap-2"
-            >
-              <Trash2 className="w-4 h-4" />
-              DELETE
-            </button>
-
-            <button
+             <button
               type="submit"
-              disabled={isUpdating || isDeleting}
+              disabled={isUpdating}
               className="pixel-button pixel-button-green flex-1 flex items-center justify-center gap-2"
             >
               <Save className="w-4 h-4" />
@@ -331,4 +221,4 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
   );
 };
 
-export default EditStudentModal;
+export default TeacherEditStudentModal;

@@ -63,7 +63,9 @@ export async function getAllStudentsData() {
       access_requests (
         level_id,
         levels ( name )
-      )
+      ),
+      teacher_id,
+      teachers ( full_name )
     `)
     .eq('access_requests.status', 'approved') // <-- Filter for approved levels
     .order("full_name", { ascending: true });
@@ -93,6 +95,8 @@ export async function getAllStudentsData() {
       levelId: req.level_id,
       levelName: req.levels?.name,
     })) ?? [],
+    teacher_id: student.teacher_id,
+    teacher_name: student.teachers?.full_name,
   }));
 }
 
@@ -137,6 +141,26 @@ export async function getAllLevels() {
 }
 
 /**
+ * Fetch all teachers.
+ * Admin-only.
+ */
+export async function getAllTeachers() {
+  await verifyAdmin();
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("teachers")
+    .select("id, full_name, teacher_id")
+    .order("full_name", { ascending: true });
+
+  if (error) {
+    throw new Error(`Failed to fetch teachers: ${error.message}`);
+  }
+
+  return data || [];
+}
+
+/**
  * Updates a student's profile including level.
  * Admin-only.
  */
@@ -148,6 +172,7 @@ export async function updateStudentByAdmin(formData: FormData) {
   const total_score = Number(formData.get("total_score"));
   const level_no = formData.get("level_no") ? Number(formData.get("level_no")) : null;
   const rank = formData.get("rank") as string;
+  const teacher_id = formData.get("teacher_id") as string;
 
   if (!studentId || !full_name) {
     throw new Error("Student ID and Full Name are required.");
@@ -162,6 +187,7 @@ export async function updateStudentByAdmin(formData: FormData) {
     full_name: full_name,
     total_score: total_score,
     rank,
+    teacher_id: teacher_id || null, 
   };
 
   // Only update level_no if provided
