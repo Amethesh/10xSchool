@@ -17,11 +17,14 @@ export async function POST(request: Request) {
 
   try {
     // Check if user already exists to prevent duplicate creation attempts (or handle gracefully)
-    const { data: existingProfile, error: checkError } = await supabase
+    const existingRes = await supabase
       .from("demo_users")
       .select("id")
       .eq("username", trimmedUsername)
-      .single();
+      .maybeSingle();
+
+    const existingProfile = existingRes.data as { id: string } | null;
+    const checkError = existingRes.error;
 
     if (existingProfile) {
       // If user exists, return their ID. This handles race conditions or re-attempts gracefully.
@@ -45,11 +48,14 @@ export async function POST(request: Request) {
     }
 
     // User does not exist, proceed to create
-    const { data: newProfile, error: insertError } = await supabase
+    const insertRes = await supabase
       .from("demo_users")
-      .insert({ username: trimmedUsername }) // Create basic profile
-      .select("id") // Select the ID of the newly created profile [39]
-      .single(); // Expecting one new record
+      .insert([{ username: trimmedUsername }] as any) // cast to any to satisfy TS when DB typings are not provided
+      .select("id")
+      .single();
+
+    const newProfile = insertRes.data as { id: string } | null;
+    const insertError = insertRes.error;
 
     if (insertError) {
       console.error(
@@ -71,7 +77,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json(
-      { success: true, userId: newProfile.id },
+      { success: true, userId: newProfile?.id },
       { status: 201 }
     ); // 201 Created
   } catch (e: any) {

@@ -22,7 +22,7 @@ async function verifyAdmin() {
     .from("admins")
     .select("role")
     .eq("id", user.id)
-    .single();
+    .single() as { data: { role: string } | null; error: any };
 
   // The logic remains the same, just the table name changed
   if (error || adminProfile?.role !== "admin") {
@@ -68,7 +68,7 @@ export async function getAllStudentsData() {
       teachers ( full_name )
     `)
     .eq('access_requests.status', 'approved') // <-- Filter for approved levels
-    .order("full_name", { ascending: true });
+    .order("full_name", { ascending: true }) as { data: any[] | null; error: any };
 
   if (error) {
     throw new Error(`Failed to fetch students: ${error.message}`);
@@ -91,7 +91,7 @@ export async function getAllStudentsData() {
       difficulty_level: student.levels.difficulty_level,
     } : null,
     // The structure for granted levels is mapped from the new query
-    grantedLevels: student.access_requests?.map((req) => ({
+    grantedLevels: student.access_requests?.map((req: any) => ({
       levelId: req.level_id,
       levelName: req.levels?.name,
     })) ?? [],

@@ -18,9 +18,9 @@ export async function createTeacherAction(formData: FormData) {
     .from("admins")
     .select("role")
     .eq("id", user.id)
-    .single();
+    .single() as { data: { role: string } | null; error: any };
 
-  if (isAdmin.error || isAdmin.data.role !== "admin") {
+  if (isAdmin.error || isAdmin.data?.role !== "admin") {
     return { error: "Unauthorized: You are not an admin." };
   }
 

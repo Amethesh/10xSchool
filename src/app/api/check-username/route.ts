@@ -32,7 +32,7 @@ export async function GET(request: Request) {
       .from("demo_users")
       .select("id, total_score")
       .eq("username", username.trim())
-      .single();
+      .maybeSingle() as { data: { id: string; total_score: number } | null; error: any };
 
     if (error && error.code !== "PGRST116") {
       // PGRST116 is 'No rows found'
