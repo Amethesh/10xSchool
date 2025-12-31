@@ -47,7 +47,7 @@ export default function Page() {
     totalWeeks > 0 ? Math.round((completedWeeks / totalWeeks) * 100) : 0;
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
+    <main className="min-h-screen bg-linear-to-br from-slate-900 via-blue-900 to-indigo-900 relative overflow-hidden">
       <Image
         src={"/images/8bitBG2.png"}
         fill
