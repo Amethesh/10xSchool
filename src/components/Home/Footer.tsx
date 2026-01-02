@@ -56,6 +56,11 @@ const Footer = () => {
                 </a>
               </li>
               <li>
+                <a href="/gallery" className="hover:text-yellow-400 transition-colors cursor-pointer">
+                  Gallery
+                </a>
+              </li>
+              <li>
                 <a href="/student/dashboard" className="hover:text-yellow-400 transition-colors cursor-pointer">
                   Dashboard
                 </a>

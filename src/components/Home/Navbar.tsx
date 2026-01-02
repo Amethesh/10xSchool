@@ -68,6 +68,14 @@ const Navbar = () => {
         </li>
         <li>
           <a
+            href="/gallery"
+            className="text-black text-md font-semibold hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
+          >
+            Gallery
+          </a>
+        </li>
+        <li>
+          <a
             href="/student/levels"
             className="text-black text-md font-semibold hover:text-primary relative after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
           >
