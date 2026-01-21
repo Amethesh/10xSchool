@@ -4,6 +4,7 @@ import Footer from "@/components/Home/Footer";
 import GetStarted from "@/components/Home/GetStarted";
 import Hero from "@/components/Home/Hero";
 import Testimonials from "@/components/Home/Testimonials";
+import VideoTestimonials from "@/components/Home/VideoTestimonials";
 import WhatWeDoSection from "@/components/Home/WhatWeDo";
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
       <AboutSection />
       <WhatWeDoSection />
       <Testimonials />
+      <VideoTestimonials />
       <FAQComponent />
       <GetStarted />
       <Footer />

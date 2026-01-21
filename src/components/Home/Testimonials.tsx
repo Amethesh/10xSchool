@@ -1,4 +1,4 @@
-"use client";
+// "use client";
 import * as motion from "motion/react-client";
 import { InfiniteMovingCards } from "../ui/infinite-moving-cards";
 import TrustpilotWidget from "../TrustpilotWidget";
@@ -22,7 +22,7 @@ const Testimonials = () => {
         >
           Helping students succeed!
         </motion.p>
-        <motion.p
+        <motion.div
           className="flex flex-col justify-center items-center gap-2 px-12 py-2 text-xl bg-white border-2 border-black w-fit font-bold shadow-[2px_2px_0px_0px_rgba(0,0,0,0.8)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.8)] transition-all duration-300"
           whileHover={{
             scale: 1.05,
@@ -40,7 +40,7 @@ const Testimonials = () => {
             />
           </div>
             <TrustpilotWidget />
-        </motion.p>
+        </motion.div>
       </motion.div>
       <div className="h-[30rem] flex flex-col antialiased items-center justify-center relative overflow-hidden ">
         <InfiniteMovingCards

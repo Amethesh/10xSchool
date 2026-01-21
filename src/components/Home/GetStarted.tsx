@@ -1,14 +1,9 @@
-"use client";
-import React, { useState } from "react";
-import { motion } from "motion/react"; // Note: The correct import is 'framer-motion'
+import * as motion from "motion/react-client";
 
 const GetStarted = () => {
-  // We don't need isHovered for Option 1 or 2, but it's needed for Option 3.
-  // Let's keep it here in case you switch.
-  const [isHovered, setIsHovered] = useState(false);
-
+ 
   return (
-    <section className="mt-20 w-screen bg-[#ff7cb5] h-[600px] flex flex-col items-center justify-center text-center relative overflow-hidden">
+    <section className="mt-20 w-full bg-[#ff7cb5] h-[600px] flex flex-col items-center justify-center text-center relative overflow-hidden">
       {/* Animated background elements */}
       <motion.div
         className="absolute top-10 left-10 w-20 h-20 bg-[#fff07c] rounded-full opacity-20"

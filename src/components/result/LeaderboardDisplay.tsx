@@ -15,12 +15,16 @@ interface LeaderboardDisplayProps {
   leaderboard: LeaderboardEntry[] | null;
   isLoading: boolean;
   currentStudentId: string;
+  selectedDifficulty: string;
+  onSelectDifficulty: (difficulty: string) => void;
 }
 
 export function LeaderboardDisplay({
   leaderboard,
   isLoading,
   currentStudentId,
+  selectedDifficulty,
+  onSelectDifficulty,
 }: LeaderboardDisplayProps) {
   const getRankColor = (index: number) => {
     if (index === 0) return "bg-yellow-500";
@@ -28,6 +32,8 @@ export function LeaderboardDisplay({
     if (index === 2) return "bg-orange-600";
     return "bg-gray-600";
   };
+
+  const difficulties = ["easy", "medium", "hard"];
 
   const renderContent = () => {
     if (isLoading) {
@@ -88,11 +94,29 @@ export function LeaderboardDisplay({
 
   return (
     <div className="pixel-panel p-4 sm:p-6 backdrop-blur-lg bg-black/20 h-full">
-      <div className="flex items-center mb-4">
-        <div className="p-2 rounded-lg bg-yellow-400/20 text-yellow-400 mr-2">
-          <Trophy className="w-5 h-5" />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-4">
+        <div className="flex items-center">
+          <div className="p-2 rounded-lg bg-yellow-400/20 text-yellow-400 mr-2">
+            <Trophy className="w-5 h-5" />
+          </div>
+          <h3 className="pixel-font text-sm text-white">LEADERBOARD</h3>
         </div>
-        <h3 className="pixel-font text-sm text-white">LEADERBOARD</h3>
+        
+        <div className="flex items-center gap-2 bg-black/20 p-1 rounded-lg">
+          {difficulties.map((diff) => (
+            <button
+              key={diff}
+              onClick={() => onSelectDifficulty(diff)}
+              className={`px-3 py-1 rounded text-xs pixel-font transition-all ${
+                selectedDifficulty === diff
+                  ? "bg-cyan-500 text-white shadow-[0_0_10px_rgba(6,182,212,0.5)]"
+                  : "text-gray-400 hover:text-white hover:bg-white/10"
+              }`}
+            >
+              {diff.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </div>
       <div>{renderContent()}</div>
     </div>

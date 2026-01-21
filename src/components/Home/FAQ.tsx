@@ -201,7 +201,8 @@ const FAQComponent = () => {
               <motion.div
                 animate={{ rotate: openIndex === index ? 45 : 0 }}
                 transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="text-gray-600 hover:text-blue-600 transition-colors duration-300"
+                className="text-gray-600 hover:text-blue-600 transition-colors duration-300 h-fit flex items-center justify-center origin-center"
+                style={{ transformOrigin: "center center" }}
               >
                 <Plus className="w-5 h-5" />
               </motion.div>

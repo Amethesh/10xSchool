@@ -26,6 +26,7 @@ export function ResultsDisplay({
 }: ResultsDisplayProps) {
   const { width, height } = useWindowSize();
   const [showConfetti, setShowConfetti] = useState(false);
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>(results.difficulty.name);
 
   const {
     ranking,
@@ -38,7 +39,7 @@ export function ResultsDisplay({
     studentId: results.studentId,
     levelId: results.levelId,
     weekNo: results.weekNo,
-    difficulty: results.difficulty.name,
+    difficulty: selectedDifficulty,
   });
 
   const isGoodScore = results.score >= 70;
@@ -120,6 +121,8 @@ export function ResultsDisplay({
               leaderboard={leaderboard ?? null}
               isLoading={leaderboardLoading}
               currentStudentId={results.studentId}
+              selectedDifficulty={selectedDifficulty}
+              onSelectDifficulty={setSelectedDifficulty}
             />
             <PerformanceHistory
               history={history || []}

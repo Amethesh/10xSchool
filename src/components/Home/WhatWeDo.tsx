@@ -158,7 +158,7 @@ export default function PowerfulProgramsSection() {
         <motion.div className="sticky top-0 h-screen">
           <div className="relative bg-black w-full h-[calc(100vh-200px)] flex flex-col justify-center items-center">
             <motion.p
-              className="absolute text-[22rem] font-bold mb-10 select-none"
+              className="absolute text-8xl sm:text-[15rem] md:text-[22rem] font-bold mb-10 select-none"
               style={{
                 WebkitTextStroke: "2px #D3EF95",
                 color: "transparent",
