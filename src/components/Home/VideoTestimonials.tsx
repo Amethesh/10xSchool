@@ -36,7 +36,7 @@ const teachers: Teacher[] = [
     desc: "Produced Top Ranks in JEE",
     tag: "IIT.D",
     tagColor: "bg-[#bfecff]", // Light Blue
-    img: "https://vnwacjzpzyblrvastejt.supabase.co/storage/v1/object/public/gallary/testimonal/31134de7-f2cd-4003-bb82-ad73bd93abd9.jpg",
+    img: "https://vnwacjzpzyblrvastejt.supabase.co/storage/v1/object/public/gallary/testimonal/WhatsApp%20Video%202026-01-22%20at%206.22.27%20AM.mp4",
   },
   {
     id: "vikas",

@@ -70,6 +70,7 @@ export async function updateSession(request: NextRequest) {
     !pathname.startsWith("/login") &&
     !pathname.startsWith("/auth") &&
     !pathname.startsWith("/landing") &&
+    !pathname.startsWith("/certificates") &&
     !pathname.startsWith("/application") &&
     !pathname.startsWith("/book-demo") &&
     !pathname.startsWith("/gallery") &&
