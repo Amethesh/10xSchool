@@ -2,7 +2,9 @@
 
 import React, { useState } from "react";
 import * as motion from "motion/react-client";
+import { AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
+import { Maximize2, X, Play } from "lucide-react";
 
 // --- Types ---
 interface Teacher {
@@ -30,63 +32,64 @@ const stats: Stat[] = [
 
 const teachers: Teacher[] = [
   {
-    id: "abhisek",
-    name: "Abhisek Sir",
-    role: "6 Years of Teaching",
-    desc: "Produced Top Ranks in JEE",
-    tag: "IIT.D",
+    id: "migali",
+    name: "Migali Muthukannan",
+    role: "7 Years, Level 4",
+    desc: "Fastest Finger",
+    tag: "Level 4",
     tagColor: "bg-[#bfecff]", // Light Blue
     img: "https://vnwacjzpzyblrvastejt.supabase.co/storage/v1/object/public/gallary/testimonal/WhatsApp%20Video%202026-01-22%20at%206.22.27%20AM.mp4",
   },
   {
-    id: "vikas",
-    name: "Vikas Sir",
-    role: "5+ Years of Teaching",
-    desc: "4 Times Star Teacher",
-    tag: "NIT.S",
+    id: "daksh",
+    name: "Daksh H Gujjar",
+    role: "9 Years, Level 6",
+    desc: "Master in Mental Arithmetic",
+    tag: "Level 6",
     tagColor: "bg-[#ffd6cc]", // Light Peach
     img: "https://vnwacjzpzyblrvastejt.supabase.co/storage/v1/object/public/gallary/testimonal/Daksh-Age10%20Cmprsd.mp4",
   },
   {
-    id: "subham",
-    name: "Subham Sir",
-    role: "9 Years of Teaching",
-    desc: "Oda Star Teacher",
-    tag: "NIT.R",
+    id: "lena",
+    name: "Lena Park",
+    role: "6 Years, Level 3",
+    desc: "Young Genius",
+    tag: "Level 3",
     tagColor: "bg-[#D3EF95]", // Light Green
     img: "https://vnwacjzpzyblrvastejt.supabase.co/storage/v1/object/public/gallary/testimonal/Lena%20Park%20Cmprsd.mp4",
   },
   {
-    id: "mansha",
-    name: "Mansha Ma'am",
-    role: "5 Years of Teaching",
-    desc: "98% Good Rate",
-    tag: "NIT.S",
+    id: "yazhini",
+    name: "Yazhini",
+    role: "8 Years, Level 6",
+    desc: "Master in Mental Arithmetic",
+    tag: "Level 6",
     tagColor: "bg-[#bfecff]",
     img: "https://vnwacjzpzyblrvastejt.supabase.co/storage/v1/object/public/gallary/testimonal/Yazhini-Age-8.mp4",
   },
   {
-    id: "shivani",
-    name: "Shivani",
-    role: "6 Years of Teaching",
-    desc: "7 Times Star Teacher",
-    tag: "BIT",
+    id: "harshan",
+    name: "Harshan Saravanan",
+    role: "8 Years, Level 4",
+    desc: "Master in Precision",
+    tag: "Level 4",
     tagColor: "bg-[#ffd6cc]",
-    img: "https://vnwacjzpzyblrvastejt.supabase.co/storage/v1/object/public/gallary/testimonal/933bebf3-572d-4838-b535-8126fb741a57.jpg",
+    img: "https://vnwacjzpzyblrvastejt.supabase.co/storage/v1/object/public/gallary/testimonal/31134de7-f2cd-4003-bb82-ad73bd93abd9.jpg",
   },
   {
-    id: "s",
-    name: "Shivani",
-    role: "6 Years of Teaching",
-    desc: "7 Times Star Teacher",
-    tag: "BIT",
-    tagColor: "bg-[#ffd6cc]",
-    img: "https://vnwacjzpzyblrvastejt.supabase.co/storage/v1/object/public/gallary/testimonal/97d730f8-85ec-4752-b24f-c8fa4e36a560.jpg",
+    id: "poorniksha",
+    name: "Poorniksha",
+    role: "11 Years, Level 6",
+    desc: "Rapid Finisher",
+    tag: "Level 6",
+    tagColor: "bg-[#D3EF95]",
+    img: "https://vnwacjzpzyblrvastejt.supabase.co/storage/v1/object/public/gallary/testimonal/933bebf3-572d-4838-b535-8126fb741a57.jpg",
   },
 ];
 
 export default function VideoTestimonials() {
-  const [activeId, setActiveId] = useState<string>("subham");
+  const [activeId, setActiveId] = useState<string>("migali");
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
 
   return (
     <section className="w-full max-w-[80vw] mx-auto px-4 py-12 font-sans">
@@ -109,7 +112,7 @@ export default function VideoTestimonials() {
         </motion.p>
       </motion.div>
       {/* --- Top Stats Section --- */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 px-4 md:px-12">
+     {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 px-4 md:px-12">
         {stats.map((stat, index) => (
           <div 
             key={index} 
@@ -123,7 +126,7 @@ export default function VideoTestimonials() {
             </p>
           </div>
         ))}
-      </div>
+      </div>*/}
 
       {/* --- Cards Container --- */}
       <div className="flex flex-col md:flex-row h-[800px] w-full gap-4 overflow-hidden px-2 py-2">
@@ -133,9 +136,57 @@ export default function VideoTestimonials() {
             data={teacher}
             isActive={activeId === teacher.id}
             onHover={() => setActiveId(teacher.id)}
+            onExpand={() => setSelectedTeacher(teacher)}
           />
         ))}
       </div>
+
+      <AnimatePresence>
+        {selectedTeacher && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm"
+            onClick={() => setSelectedTeacher(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10"
+            >
+              <button
+                onClick={() => setSelectedTeacher(null)}
+                className="absolute top-4 right-4 z-10 p-2 bg-black/50 hover:bg-black/70 text-white rounded-full transition-colors"
+              >
+                <X size={24} />
+              </button>
+
+              {selectedTeacher.img.toLowerCase().endsWith(".mp4") ? (
+                <video
+                  src={selectedTeacher.img}
+                  className="w-full h-full object-contain"
+                  controls
+                  autoPlay
+                />
+              ) : (
+                <img
+                  src={selectedTeacher.img}
+                  alt={selectedTeacher.name}
+                  className="w-full h-full object-contain"
+                />
+              )}
+              
+              <div className="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/80 to-transparent pointer-events-none">
+                <h3 className="text-2xl font-bold text-white">{selectedTeacher.name}</h3>
+                <p className="text-gray-300">{selectedTeacher.role}</p>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 }
@@ -144,9 +195,10 @@ interface CardProps {
   data: Teacher;
   isActive: boolean;
   onHover: () => void;
+  onExpand: () => void;
 }
 
-function Card({ data, isActive, onHover }: CardProps) {
+function Card({ data, isActive, onHover, onExpand }: CardProps) {
   return (
     <motion.div
       layout
@@ -185,6 +237,24 @@ function Card({ data, isActive, onHover }: CardProps) {
           isActive ? "opacity-100" : "opacity-60 hover:opacity-80"
         )}
       />
+
+      {/* Expand/Play Button */}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onExpand();
+        }}
+        className={cn(
+          "absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 w-16 h-16 flex items-center justify-center bg-white/20 backdrop-blur-md rounded-full text-white transition-all duration-300 hover:scale-110 hover:bg-white/30 border border-white/30",
+          isActive ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        )}
+      >
+        {data.img.toLowerCase().endsWith(".mp4") ? (
+            <Play size={32} fill="currentColor" className="ml-1" />
+        ) : (
+            <Maximize2 size={32} />
+        )}
+      </button>
 
       {/* Content Container */}
       <div className="absolute bottom-0 left-0 w-full p-6 flex flex-col items-center text-center">
