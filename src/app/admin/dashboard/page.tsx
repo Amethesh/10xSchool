@@ -16,6 +16,8 @@ import {
   BadgeCheck,
   Bell,
   Trash2,
+  Eye,
+  ChartAreaIcon,
 } from "lucide-react";
 import {
   getAllStudentsData,
@@ -484,12 +486,19 @@ const AdminDashboardPage = () => {
                       </td>
                       <td className="p-4 text-center">
                         <div className="flex gap-2 justify-center">
+                          <a
+                            href={`/student/dashboard?studentId=${student.id}`}
+                            className="pixel-button pixel-button-blue hover:scale-105 transition-transform"
+                            title="View Dashboard"
+                          >
+                            <ChartAreaIcon className="w-4 h-4" />
+                          </a>
                           <button
                             onClick={() => setEditingStudent(student)}
-                            className="pixel-button text-xs p-2 hover:scale-105 transition-transform"
+                            className="pixel-button hover:scale-105 transition-transform"
                             title="Edit Student"
                           >
-                            <Edit className="w-3 h-3" />
+                            <Edit className="w-4 h-4" />
                           </button>
                           <button
                             onClick={() =>
@@ -498,13 +507,13 @@ const AdminDashboardPage = () => {
                             disabled={
                               isDeleting && deletingStudentId === student.id
                             }
-                            className="pixel-button pixel-button-red text-xs p-2 hover:scale-105 transition-transform"
+                            className="pixel-button pixel-button-red hover:scale-105 transition-transform"
                             title="Delete Student"
                           >
                             {isDeleting && deletingStudentId === student.id ? (
-                              <div className="w-3 h-3 border border-white border-t-transparent rounded-full animate-spin"></div>
+                              <div className="w-4 h-4 border border-white border-t-transparent rounded-full animate-spin"></div>
                             ) : (
-                              <Trash2 className="w-3 h-3" />
+                              <Trash2 className="w-4 h-4" />
                             )}
                           </button>
                         </div>

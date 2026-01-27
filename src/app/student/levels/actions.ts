@@ -3,19 +3,22 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 
-export async function getStudentLevelsData() {
+export async function getStudentLevelsData(studentId?: string) {
   const supabase = await createClient();
 
-  // 1️⃣ Get User and Profile (No changes here)
+  // 1️⃣ Get User and Profile
   const { data: { user } } = await supabase.auth.getUser();
   if (!user?.id) {
     throw new Error("You must be logged in to view this page.");
   }
 
+  // Use provided studentId or fall back to logged-in user
+  const targetStudentId = studentId || user.id;
+
   const { data: profile, error: profileError } = await supabase
     .from("students")
     .select("id, full_name, total_score, email, student_id")
-    .eq("id", user.id)
+    .eq("id", targetStudentId)
     .single();
   if (profileError) throw profileError;
 
@@ -26,11 +29,11 @@ export async function getStudentLevelsData() {
     .order("difficulty_level", { ascending: true });
   if (levelsError) throw levelsError;
 
-  // 3️⃣ Get student's access requests (No changes here)
+  // 3️⃣ Get student's access requests
   const { data: accessRequests, error: accessError } = await supabase
     .from("access_requests")
     .select("level_id, status")
-    .eq("student_id", user.id);
+    .eq("student_id", targetStudentId);
   if (accessError) throw accessError;
 
   // 4️⃣ Compute approved & pending level IDs (No changes here)
@@ -57,11 +60,11 @@ export async function getStudentLevelsData() {
     questionGroups.set(key, { count: item.question_count });
   });
 
-  // 6️⃣ Get quiz attempts (No changes here, this is already efficient)
+  // 6️⃣ Get quiz attempts
   const { data: attempts, error: attemptError } = await supabase
     .from("quiz_attempts")
     .select("level_id, week_no, score, correct_answers, total_questions, completed_at")
-    .eq("student_id", user.id)
+    .eq("student_id", targetStudentId)
     .not("completed_at", "is", null)
     .order("completed_at", { ascending: false });
   if (attemptError) throw attemptError;
