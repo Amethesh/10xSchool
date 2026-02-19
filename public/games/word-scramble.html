@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Word Scramble 🔤</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--cyan:#00e5ff;--pink:#ff2d78;--yellow:#ffe600;--green:#39ff14;--purple:#bf5fff;--orange:#ff6b35;--bg:#07071a;--glass:rgba(255,255,255,.05);--glass-b:rgba(255,255,255,.1);}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Fredoka','Nunito',sans-serif;background:var(--bg);}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 60% at 20% 80%,rgba(191,95,255,.09) 0%,transparent 55%),radial-gradient(ellipse 60% 50% at 80% 20%,rgba(57,255,20,.07) 0%,transparent 55%);}
+
+/* HUD */
+#hud{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;gap:12px;background:rgba(7,7,26,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-b);flex-wrap:wrap;}
+.hud-pill{display:flex;align-items:center;gap:8px;background:var(--glass);border:1px solid var(--glass-b);border-radius:50px;padding:6px 16px;}
+.hud-lbl{font-size:10px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;}
+.hud-val{font-size:22px;font-weight:800;color:#fff;line-height:1;}
+.hud-val.c{color:var(--cyan);text-shadow:0 0 14px var(--cyan);}
+.hud-val.y{color:var(--yellow);text-shadow:0 0 14px var(--yellow);}
+.hud-val.g{color:var(--green);text-shadow:0 0 14px var(--green);}
+.hud-val.p{color:var(--purple);text-shadow:0 0 14px var(--purple);}
+
+/* Timer ring */
+#timer-wrap{position:relative;width:52px;height:52px;flex-shrink:0;}
+#timer-svg{transform:rotate(-90deg);}
+#timer-arc{stroke:var(--cyan);stroke-dasharray:138;stroke-dashoffset:0;stroke-linecap:round;transition:stroke-dashoffset .1s linear,stroke .4s;filter:drop-shadow(0 0 5px var(--cyan));}
+#timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;}
+
+/* Game area */
+#game-area{position:fixed;inset:0;top:72px;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;gap:20px;}
+
+/* Category badge */
+#cat-badge{padding:6px 20px;border-radius:50px;background:rgba(191,95,255,.15);border:1px solid rgba(191,95,255,.4);font-size:13px;color:var(--purple);font-weight:700;letter-spacing:1px;}
+
+/* Hint */
+#hint-box{font-size:15px;color:rgba(255,255,255,.55);text-align:center;max-width:500px;line-height:1.5;padding:10px 20px;background:var(--glass);border:1px solid var(--glass-b);border-radius:14px;}
+
+/* Scrambled letters */
+#scramble-area{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin:8px 0;}
+.s-tile{
+  width:52px;height:62px;border-radius:12px;
+  background:linear-gradient(135deg,rgba(191,95,255,.25),rgba(0,229,255,.15));
+  border:2px solid rgba(191,95,255,.5);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;font-weight:900;color:#fff;
+  cursor:pointer;transition:all .18s;
+  box-shadow:0 0 16px rgba(191,95,255,.3);
+  user-select:none;
+}
+.s-tile:hover{transform:translateY(-4px) scale(1.08);box-shadow:0 0 28px rgba(191,95,255,.6);border-color:var(--purple);}
+.s-tile.used{opacity:.25;pointer-events:none;transform:none;}
+
+/* Answer slots */
+#answer-area{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;}
+.a-slot{
+  width:52px;height:62px;border-radius:12px;
+  background:rgba(255,255,255,.04);
+  border:2px dashed rgba(255,255,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;font-weight:900;color:#fff;
+  cursor:pointer;transition:all .18s;
+  position:relative;
+}
+.a-slot.filled{border-style:solid;border-color:var(--cyan);background:rgba(0,229,255,.1);box-shadow:0 0 16px rgba(0,229,255,.3);}
+.a-slot.correct-slot{border-color:var(--green);background:rgba(57,255,20,.15);box-shadow:0 0 20px rgba(57,255,20,.4);}
+.a-slot.wrong-slot{border-color:var(--pink);background:rgba(255,45,120,.15);animation:slotShake .4s ease-out;}
+@keyframes slotShake{0%,100%{transform:translateX(0);}25%{transform:translateX(-6px);}75%{transform:translateX(6px);};}
+
+/* Hint button */
+#hint-btn{padding:8px 20px;border-radius:50px;border:1px solid rgba(255,230,0,.4);background:rgba(255,230,0,.1);color:var(--yellow);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;transition:all .2s;}
+#hint-btn:hover{background:rgba(255,230,0,.2);}
+#hint-btn:disabled{opacity:.3;cursor:default;}
+
+/* Overlays */
+.overlay{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:rgba(7,7,26,.93);backdrop-filter:blur(24px);}
+.ov-card{background:rgba(255,255,255,.04);border:1px solid var(--glass-b);border-radius:28px;padding:44px 52px;text-align:center;max-width:520px;width:92%;box-shadow:0 0 80px rgba(191,95,255,.1);}
+.ov-emoji{font-size:64px;display:block;margin-bottom:14px;}
+.ov-title{font-size:36px;font-weight:900;color:#fff;margin-bottom:8px;}
+.ov-sub{font-size:15px;color:rgba(255,255,255,.5);margin-bottom:24px;line-height:1.6;}
+.ov-score{font-size:68px;font-weight:900;color:var(--purple);text-shadow:0 0 30px var(--purple);margin-bottom:4px;}
+.ov-score-lbl{font-size:12px;color:rgba(255,255,255,.38);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;}
+.ov-best{font-size:17px;color:var(--yellow);margin-bottom:28px;}
+
+.ov-input{
+  width:100%;padding:12px 20px;border-radius:14px;
+  background:rgba(255,255,255,.06);border:1px solid var(--glass-b);
+  color:#fff;font-family:inherit;font-size:16px;font-weight:700;
+  text-align:center;margin-bottom:20px;outline:none;transition:all .2s;
+}
+.ov-input:focus{border-color:var(--purple);box-shadow:0 0 16px rgba(191,95,255,.2);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 32px;border:none;border-radius:50px;font-family:inherit;font-size:17px;font-weight:800;cursor:pointer;transition:all .22s;}
+.btn-primary{background:linear-gradient(135deg,var(--purple),var(--pink));color:#fff;box-shadow:0 0 28px rgba(191,95,255,.45);}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 0 48px rgba(191,95,255,.65);}
+.btn-sec{background:var(--glass);border:1px solid var(--glass-b);color:#fff;margin-left:10px;}
+.btn-sec:hover{background:rgba(255,255,255,.1);}
+
+/* Category pills on start */
+.cat-pills{display:flex;gap:8px;justify-content:center;margin-bottom:24px;flex-wrap:wrap;}
+.cat-pill{padding:8px 18px;border-radius:50px;border:2px solid var(--glass-b);background:var(--glass);color:rgba(255,255,255,.6);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
+.cat-pill.sel{border-color:var(--purple);background:rgba(191,95,255,.15);color:var(--purple);}
+.cat-pill:hover{background:rgba(255,255,255,.1);}
+
+/* Leaderboard */
+#lb-screen .ov-card{max-width:560px;}
+.lb-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:12px;background:var(--glass);border:1px solid var(--glass-b);margin-bottom:8px;}
+.lb-rank{font-size:20px;width:32px;text-align:center;}
+.lb-name{flex:1;font-size:15px;color:#fff;font-weight:700;text-align:left;}
+.lb-score{font-size:18px;font-weight:900;color:var(--cyan);}
+
+/* Score pop */
+.score-pop{position:fixed;z-index:400;font-size:28px;font-weight:900;pointer-events:none;animation:sPop 1s ease-out forwards;}
+@keyframes sPop{0%{transform:translateY(0) scale(1);opacity:1;}100%{transform:translateY(-80px) scale(1.3);opacity:0;}}
+
+/* Confetti */
+.confetti{position:fixed;pointer-events:none;z-index:300;width:9px;height:9px;border-radius:2px;animation:cfFall .85s ease-out forwards;}
+@keyframes cfFall{0%{transform:translate(0,0) rotate(0);opacity:1;}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--dr));opacity:0;}}
+
+/* Level flash */
+#lvl-flash{position:fixed;inset:0;z-index:350;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;}
+#lvl-flash.show{animation:lvlFlash 1.6s ease-out forwards;}
+@keyframes lvlFlash{0%{opacity:0;}20%{opacity:1;}80%{opacity:1;}100%{opacity:0;}}
+#lvl-text{font-size:56px;font-weight:900;color:var(--yellow);text-shadow:0 0 40px var(--yellow);letter-spacing:4px;}
+
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+.feat{background:var(--glass);border:1px solid var(--glass-b);border-radius:14px;padding:10px 14px;font-size:13px;color:rgba(255,255,255,.65);display:flex;align-items:center;gap:8px;}
+.feat span{font-size:20px;}
+</style>
+</head>
+<body>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-pill"><div><div class="hud-lbl">Score</div><div class="hud-val c" id="h-score">0</div></div></div>
+  <div class="hud-pill"><div><div class="hud-lbl">Best</div><div class="hud-val y" id="h-best">0</div></div></div>
+  <div id="timer-wrap" class="hud-pill" style="padding:4px 10px;">
+    <svg id="timer-svg" width="52" height="52" viewBox="0 0 52 52">
+      <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="4"/>
+      <circle id="timer-arc" cx="26" cy="26" r="22" fill="none" stroke-width="4"/>
+    </svg>
+    <div id="timer-num">90</div>
+  </div>
+  <div class="hud-pill"><div><div class="hud-lbl">Streak</div><div class="hud-val g" id="h-streak">0</div></div></div>
+  <div class="hud-pill"><div><div class="hud-lbl">Level</div><div class="hud-val p" id="h-level">1</div></div></div>
+  <button onclick="showLeaderboard()" style="padding:6px 14px;border-radius:50px;border:1px solid rgba(255,230,0,.4);background:rgba(255,230,0,.1);color:#ffe600;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;">🏆 Board</button>
+</div>
+
+<!-- Game Area -->
+<div id="game-area">
+  <div id="cat-badge">SCIENCE</div>
+  <div id="hint-box">Hint will appear here</div>
+  <div id="scramble-area"></div>
+  <div id="answer-area"></div>
+  <div style="display:flex;gap:12px;align-items:center;">
+    <button id="hint-btn" onclick="useHint()">💡 Hint (-5 pts)</button>
+    <button onclick="clearAnswer()" style="padding:8px 20px;border-radius:50px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);color:rgba(255,255,255,.7);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;">↩ Clear</button>
+  </div>
+</div>
+
+<!-- Level flash -->
+<div id="lvl-flash"><div id="lvl-text">⭐ LEVEL UP! ⭐</div></div>
+
+<!-- START SCREEN -->
+<div class="overlay" id="start-screen">
+  <div class="ov-card">
+    <span class="ov-emoji">🔤</span>
+    <div class="ov-title">Word Scramble!</div>
+    <div class="ov-sub">Unscramble science, math & geography words. Click letters to build the answer!</div>
+    <div class="feat-grid">
+      <div class="feat"><span>🔬</span> Science Words</div>
+      <div class="feat"><span>🌍</span> Geography</div>
+      <div class="feat"><span>💡</span> Hint System</div>
+      <div class="feat"><span>🏆</span> Leaderboard</div>
+    </div>
+    <div style="font-size:13px;color:rgba(255,255,255,.45);margin-bottom:10px;">Choose Category</div>
+    <div class="cat-pills">
+      <button class="cat-pill sel" id="cp-all"     onclick="selectCat('all')">🌟 All</button>
+      <button class="cat-pill"     id="cp-science" onclick="selectCat('science')">🔬 Science</button>
+      <button class="cat-pill"     id="cp-math"    onclick="selectCat('math')">🧮 Math</button>
+      <button class="cat-pill"     id="cp-geo"     onclick="selectCat('geo')">🌍 Geography</button>
+    </div>
+    <button class="btn btn-primary" onclick="startGame()">🚀 Start!</button>
+  </div>
+</div>
+
+<!-- GAME OVER SCREEN -->
+<div class="overlay" id="go-screen" style="display:none;">
+  <div class="ov-card">
+    <span class="ov-emoji" id="go-emoji">🏆</span>
+    <div class="ov-title" id="go-title">Time's Up!</div>
+    <div class="ov-sub"  id="go-sub">Keep practicing!</div>
+    <div class="ov-score" id="go-score">0</div>
+    <div class="ov-score-lbl">Final Score</div>
+    <div class="ov-best" id="go-best">🏆 Best: 0</div>
+    
+    <div style="margin-top:10px;">
+      <div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Leaderboard Name</div>
+      <input type="text" id="go-name" class="ov-input" placeholder="Player" maxlength="15"/>
+    </div>
+
+    <div>
+      <button class="btn btn-primary" onclick="restartGame()">🔄 Play Again</button>
+      <button class="btn btn-sec"     onclick="showLeaderboard()">🏆 Leaderboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD SCREEN -->
+<div class="overlay" id="lb-screen" style="display:none;">
+  <div class="ov-card" id="lb-screen">
+    <span class="ov-emoji">🏆</span>
+    <div class="ov-title">Leaderboard</div>
+    <div id="lb-list" style="margin:16px 0;max-height:280px;overflow-y:auto;"></div>
+    <div>
+      <button class="btn btn-primary" onclick="hideLB()">▶ Play</button>
+      <button class="btn btn-sec"     onclick="clearLB()">🗑 Clear</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── WORD BANK ──────────────────────────────────────────────────────────────
+const WORDS = {
+  science:[
+    {w:'PHOTOSYNTHESIS',hint:'Plants make food using sunlight through this process'},
+    {w:'EVAPORATION',hint:'Liquid turning into gas when heated'},
+    {w:'CHROMOSOME',hint:'Thread-like structure carrying genetic information'},
+    {w:'ATMOSPHERE',hint:'Layer of gases surrounding Earth'},
+    {w:'MAGNETISM',hint:'Force that attracts iron and other metals'},
+    {w:'ECOSYSTEM',hint:'Community of living things and their environment'},
+    {w:'HYPOTHESIS',hint:'A testable prediction or educated guess'},
+    {w:'VERTEBRATE',hint:'Animal with a backbone'},
+    {w:'CONDENSATION',hint:'Water vapor turning into liquid'},
+    {w:'METAMORPHOSIS',hint:'Transformation of a caterpillar into a butterfly'},
+    {w:'GRAVITATIONAL',hint:'Force that pulls objects toward Earth'},
+    {w:'RESPIRATION',hint:'Process of breathing and releasing energy'},
+    {w:'COMBUSTION',hint:'Chemical reaction that produces fire and heat'},
+    {w:'OSMOSIS',hint:'Movement of water through a semi-permeable membrane'},
+    {w:'NUCLEUS',hint:'Control center of a cell'},
+  ],
+  math:[
+    {w:'DENOMINATOR',hint:'Bottom number in a fraction'},
+    {w:'PERPENDICULAR',hint:'Lines that meet at a right angle'},
+    {w:'CIRCUMFERENCE',hint:'Distance around a circle'},
+    {w:'PROBABILITY',hint:'Likelihood of an event occurring'},
+    {w:'QUADRILATERAL',hint:'A shape with four sides'},
+    {w:'COEFFICIENT',hint:'Number multiplied by a variable in algebra'},
+    {w:'PARALLELOGRAM',hint:'Quadrilateral with two pairs of parallel sides'},
+    {w:'EXPONENT',hint:'Power to which a number is raised'},
+    {w:'POLYNOMIAL',hint:'Expression with multiple terms'},
+    {w:'SYMMETRICAL',hint:'Having equal halves on both sides'},
+    {w:'PERCENTAGE',hint:'A fraction expressed as parts per hundred'},
+    {w:'HYPOTENUSE',hint:'Longest side of a right triangle'},
+    {w:'VARIABLE',hint:'Letter representing an unknown number in algebra'},
+    {w:'INTEGERS',hint:'Whole numbers including negatives and zero'},
+  ],
+  geo:[
+    {w:'EQUATOR',hint:'Imaginary line dividing Earth into north and south'},
+    {w:'PENINSULA',hint:'Land surrounded by water on three sides'},
+    {w:'ARCHIPELAGO',hint:'Group of islands'},
+    {w:'HEMISPHERE',hint:'Half of the Earth'},
+    {w:'CONTINENTAL',hint:'Relating to a large landmass'},
+    {w:'LONGITUDE',hint:'Vertical lines on a map measuring east-west position'},
+    {w:'LATITUDE',hint:'Horizontal lines on a map measuring north-south position'},
+    {w:'TROPOSPHERE',hint:'Lowest layer of Earth\'s atmosphere'},
+    {w:'MEDITERRANEAN',hint:'Sea between Europe and Africa'},
+    {w:'PRECIPITATION',hint:'Rain, snow, sleet, or hail falling from clouds'},
+    {w:'TECTONIC',hint:'Relating to large plates of Earth\'s crust'},
+    {w:'SAVANNA',hint:'Flat grassland in tropical regions'},
+    {w:'TRIBUTARY',hint:'Smaller river that flows into a larger one'},
+  ],
+};
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+const TOTAL_TIME=90, CIRCUMFERENCE=138.2;
+let score=0,streak=0,level=1,wordsAnswered=0;
+let timeLeft=TOTAL_TIME,timerInterval=null;
+let gameRunning=false;
+let currentWord='',currentHint='',scrambled=[];
+let answerArr=[];
+let category='all';
+let hintsUsed=0;
+let bestScore=parseInt(localStorage.getItem('wordScrambleBest')||'0');
+let leaderboard=JSON.parse(localStorage.getItem('wordScrambleLB')||'[]');
+const CONFETTI_COLORS=['#ff2d78','#00e5ff','#ffe600','#39ff14','#bf5fff','#ff6b35','#fff'];
+
+// ── CATEGORY SELECT ────────────────────────────────────────────────────────
+function selectCat(c){
+  category=c;
+  ['all','science','math','geo'].forEach(x=>document.getElementById('cp-'+x).classList.toggle('sel',x===c));
+}
+
+// ── WORD PICK ──────────────────────────────────────────────────────────────
+let usedWords=new Set();
+function pickWord(){
+  let pool=[];
+  if(category==='all') pool=[...WORDS.science,...WORDS.math,...WORDS.geo];
+  else pool=[...WORDS[category]];
+  // filter by level length
+  const minLen=level<=2?5:level<=4?7:level<=6?9:11;
+  let filtered=pool.filter(w=>w.w.length>=minLen&&!usedWords.has(w.w));
+  if(filtered.length===0){usedWords.clear();filtered=pool.filter(w=>w.w.length>=minLen);}
+  const item=filtered[Math.floor(Math.random()*filtered.length)];
+  usedWords.add(item.w);
+  return item;
+}
+
+function scrambleWord(w){
+  const arr=w.split('');
+  // ensure scrambled != original
+  let s;
+  do{s=shuffle([...arr]);}while(s.join('')===w&&w.length>1);
+  return s;
+}
+
+// ── RENDER ROUND ──────────────────────────────────────────────────────────
+function renderRound(){
+  const item=pickWord();
+  currentWord=item.w;
+  currentHint=item.hint;
+  scrambled=scrambleWord(currentWord);
+  answerArr=new Array(currentWord.length).fill(null);
+  hintsUsed=0;
+  document.getElementById('hint-btn').disabled=false;
+
+  // Category badge
+  const catMap={science:'🔬 SCIENCE',math:'🧮 MATH',geo:'🌍 GEOGRAPHY'};
+  const catKey=WORDS.science.find(x=>x.w===currentWord)?'science':WORDS.math.find(x=>x.w===currentWord)?'math':'geo';
+  document.getElementById('cat-badge').textContent=catMap[catKey]||'🌟 MIXED';
+
+  document.getElementById('hint-box').textContent=`💭 ${currentHint}`;
+
+  renderScramble();
+  renderAnswer();
+}
+
+function renderScramble(){
+  const area=document.getElementById('scramble-area');
+  area.innerHTML='';
+  scrambled.forEach((ch,i)=>{
+    const t=document.createElement('div');
+    t.className='s-tile'+(answerArr.includes(i)?' used':'');
+    t.textContent=ch;
+    t.dataset.idx=i;
+    t.onclick=()=>placeLetter(i);
+    area.appendChild(t);
+  });
+}
+
+function renderAnswer(){
+  const area=document.getElementById('answer-area');
+  area.innerHTML='';
+  answerArr.forEach((srcIdx,pos)=>{
+    const s=document.createElement('div');
+    s.className='a-slot'+(srcIdx!==null?' filled':'');
+    s.textContent=srcIdx!==null?scrambled[srcIdx]:'';
+    s.dataset.pos=pos;
+    s.onclick=()=>removeLetter(pos);
+    area.appendChild(s);
+  });
+}
+
+function placeLetter(srcIdx){
+  if(!gameRunning)return;
+  const emptyPos=answerArr.indexOf(null);
+  if(emptyPos===-1)return;
+  answerArr[emptyPos]=srcIdx;
+  renderScramble();
+  renderAnswer();
+  // auto-check when full
+  if(!answerArr.includes(null)) checkAnswer();
+}
+
+function removeLetter(pos){
+  if(!gameRunning||answerArr[pos]===null)return;
+  answerArr[pos]=null;
+  renderScramble();
+  renderAnswer();
+}
+
+function clearAnswer(){
+  answerArr=new Array(currentWord.length).fill(null);
+  renderScramble();
+  renderAnswer();
+}
+
+function checkAnswer(){
+  const attempt=answerArr.map(i=>scrambled[i]).join('');
+  if(attempt===currentWord){
+    // Correct!
+    const slots=document.querySelectorAll('.a-slot');
+    slots.forEach(s=>s.classList.add('correct-slot'));
+    const pts=Math.max(10,currentWord.length*5+streak*3+level*4-(hintsUsed*5));
+    score+=pts;streak++;wordsAnswered++;
+    updateHUD();
+    showScorePop(pts);
+    spawnConfetti();
+    playTone(880,.15);
+    checkLevelUp();
+    setTimeout(()=>{if(gameRunning)renderRound();},900);
+  } else {
+    // Wrong
+    const slots=document.querySelectorAll('.a-slot');
+    slots.forEach(s=>s.classList.add('wrong-slot'));
+    setTimeout(()=>{slots.forEach(s=>s.classList.remove('wrong-slot'));},500);
+    score=Math.max(0,score-2);streak=0;
+    timeLeft=Math.max(1,timeLeft-3);
+    updateHUD();
+    playTone(220,.2);
+    clearAnswer();
+  }
+}
+
+function useHint(){
+  if(hintsUsed>=3){return;}
+  // Reveal one correct letter in the first empty slot
+  const emptyPos=answerArr.indexOf(null);
+  if(emptyPos===-1)return;
+  const correctCh=currentWord[emptyPos];
+  // find that char in scrambled that's not yet used
+  const srcIdx=scrambled.findIndex((c,i)=>c===correctCh&&!answerArr.includes(i));
+  if(srcIdx===-1)return;
+  answerArr[emptyPos]=srcIdx;
+  hintsUsed++;
+  score=Math.max(0,score-5);
+  updateHUD();
+  renderScramble();
+  renderAnswer();
+  if(!answerArr.includes(null))checkAnswer();
+  if(hintsUsed>=3)document.getElementById('hint-btn').disabled=true;
+}
+
+// ── LEVEL UP ──────────────────────────────────────────────────────────────
+function checkLevelUp(){
+  if(wordsAnswered>0&&wordsAnswered%5===0){
+    level++;
+    document.getElementById('h-level').textContent=level;
+    const fl=document.getElementById('lvl-flash');
+    document.getElementById('lvl-text').textContent=`⭐ LEVEL ${level}! ⭐`;
+    fl.classList.remove('show');void fl.offsetWidth;fl.classList.add('show');
+    setTimeout(()=>fl.classList.remove('show'),1600);
+    playTone(1200,.25);
+  }
+}
+
+// ── TIMER ─────────────────────────────────────────────────────────────────
+function startTimer(){
+  clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    timeLeft=Math.max(0,timeLeft-.1);
+    const pct=timeLeft/TOTAL_TIME;
+    const arc=document.getElementById('timer-arc');
+    arc.style.strokeDashoffset=CIRCUMFERENCE*(1-pct);
+    arc.style.stroke=pct>.5?'#00e5ff':pct>.25?'#ffe600':'#ff2d78';
+    arc.style.filter=`drop-shadow(0 0 5px ${pct>.5?'#00e5ff':pct>.25?'#ffe600':'#ff2d78'})`;
+    document.getElementById('timer-num').textContent=Math.ceil(timeLeft);
+    if(timeLeft<=0){clearInterval(timerInterval);endGame();}
+  },100);
+}
+
+// ── HUD ───────────────────────────────────────────────────────────────────
+function updateHUD(){
+  document.getElementById('h-score').textContent=score;
+  document.getElementById('h-streak').textContent=streak;
+  document.getElementById('h-level').textContent=level;
+  document.getElementById('h-best').textContent=Math.max(bestScore,score);
+}
+
+// ── GAME FLOW ─────────────────────────────────────────────────────────────
+function startGame(){
+  document.getElementById('start-screen').style.display='none';
+  score=0;streak=0;level=1;wordsAnswered=0;timeLeft=TOTAL_TIME;usedWords.clear();
+  gameRunning=true;updateHUD();startTimer();renderRound();
+}
+function restartGame(){
+  document.getElementById('go-screen').style.display='none';
+  saveScore();
+  startGame();
+}
+function endGame(){
+  gameRunning=false;
+  if(score>bestScore){bestScore=score;localStorage.setItem('wordScrambleBest',bestScore);}
+  
+  // Set name field from last used or default
+  document.getElementById('go-name').value = localStorage.getItem('lastPlayerName') || 'Player';
+
+  document.getElementById('go-emoji').textContent=score>=200?'🏆':score>=100?'⭐':'🔤';
+  document.getElementById('go-title').textContent=score>=200?'Vocabulary Master!':score>=100?'Great Job!':'Time\'s Up!';
+  document.getElementById('go-sub').textContent=`You unscrambled ${wordsAnswered} words and reached Level ${level}!`;
+  document.getElementById('go-score').textContent=score;
+  document.getElementById('go-best').textContent=`🏆 Best: ${bestScore}`;
+  document.getElementById('go-screen').style.display='flex';
+  postScore();
+}
+
+function saveScore(){
+  const name=document.getElementById('go-name').value.trim() || 'Player';
+  localStorage.setItem('lastPlayerName', name);
+  leaderboard.push({name,score,level,date:new Date().toLocaleDateString()});
+  leaderboard.sort((a,b)=>b.score-a.score);
+  leaderboard=leaderboard.slice(0,10);
+  localStorage.setItem('wordScrambleLB',JSON.stringify(leaderboard));
+}
+
+// ── LEADERBOARD ───────────────────────────────────────────────────────────
+function showLeaderboard(){
+  saveScore();
+  document.getElementById('go-screen').style.display='none';
+  const medals=['🥇','🥈','🥉'];
+  const list=document.getElementById('lb-list');
+  if(leaderboard.length===0){list.innerHTML='<div style="color:rgba(255,255,255,.4);padding:20px;">No scores yet. Play to get on the board!</div>';}
+  else{
+    list.innerHTML=leaderboard.map((e,i)=>`
+      <div class="lb-row">
+        <div class="lb-rank">${medals[i]||`#${i+1}`}</div>
+        <div class="lb-name">${e.name}<span style="font-size:11px;color:rgba(255,255,255,.35);margin-left:8px;">Lv.${e.level} · ${e.date}</span></div>
+        <div class="lb-score">${e.score}</div>
+      </div>`).join('');
+  }
+  document.getElementById('lb-screen').style.display='flex';
+}
+function hideLB(){
+  document.getElementById('lb-screen').style.display='none';
+  if(!gameRunning)document.getElementById('start-screen').style.display='flex';
+}
+function clearLB(){
+  if(confirm('Clear all scores?')){leaderboard=[];localStorage.removeItem('wordScrambleLB');showLeaderboard();}
+}
+
+// ── EFFECTS ───────────────────────────────────────────────────────────────
+function showScorePop(pts){
+  const p=document.createElement('div');p.className='score-pop';
+  p.textContent=`+${pts}`;
+  p.style.cssText=`left:50%;top:50%;transform:translateX(-50%);color:#39ff14;text-shadow:0 0 14px #39ff14;`;
+  document.body.appendChild(p);setTimeout(()=>p.remove(),1100);
+}
+function spawnConfetti(){
+  for(let i=0;i<16;i++){
+    const c=document.createElement('div');c.className='confetti';
+    const angle=(i/16)*360,dist=60+Math.random()*60;
+    const dx=Math.cos(angle*Math.PI/180)*dist,dy=Math.sin(angle*Math.PI/180)*dist-50;
+    c.style.cssText=`left:50%;top:50%;background:${CONFETTI_COLORS[i%CONFETTI_COLORS.length]};--dx:${dx}px;--dy:${dy}px;--dr:${Math.random()*360}deg;`;
+    document.body.appendChild(c);setTimeout(()=>c.remove(),900);
+  }
+}
+let audioCtx=null;
+function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playTone(freq,dur){try{const ctx=getAudio(),o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.setValueAtTime(freq,ctx.currentTime);g.gain.setValueAtTime(.15,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+dur);o.start();o.stop(ctx.currentTime+dur);}catch(e){}}
+function postScore(){try{window.parent.postMessage({type:'WORD_SCRAMBLE_SCORE',score,level,best:bestScore},'*');}catch(e){}}
+function shuffle(arr){for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];}return arr;}
+
+document.getElementById('h-best').textContent=bestScore;
+</script>
+</body>
+</html>

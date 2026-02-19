@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Number Ninja 🥷</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--cyan:#00e5ff;--pink:#ff2d78;--yellow:#ffe600;--green:#39ff14;--purple:#bf5fff;--orange:#ff6b35;--bg:#07071a;--glass:rgba(255,255,255,.05);--glass-b:rgba(255,255,255,.1);}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Fredoka','Nunito',sans-serif;background:var(--bg);}
+body::after{content:'';position:fixed;inset:0;z-index:0;pointer-events:none;background:radial-gradient(ellipse 80% 60% at 5% 95%,rgba(255,45,120,.09) 0%,transparent 55%),radial-gradient(ellipse 60% 50% at 95% 5%,rgba(57,255,20,.07) 0%,transparent 55%);}
+
+/* HUD */
+#hud{position:fixed;top:0;left:0;right:0;z-index:200;display:flex;align-items:center;justify-content:space-between;padding:10px 20px;gap:12px;background:rgba(7,7,26,.88);backdrop-filter:blur(20px);border-bottom:1px solid var(--glass-b);flex-wrap:wrap;}
+.hud-pill{display:flex;align-items:center;gap:8px;background:var(--glass);border:1px solid var(--glass-b);border-radius:50px;padding:6px 16px;}
+.hud-lbl{font-size:10px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:1px;}
+.hud-val{font-size:22px;font-weight:800;color:#fff;line-height:1;}
+.hud-val.c{color:var(--cyan);text-shadow:0 0 14px var(--cyan);}
+.hud-val.y{color:var(--yellow);text-shadow:0 0 14px var(--yellow);}
+.hud-val.g{color:var(--green);text-shadow:0 0 14px var(--green);}
+.hud-val.pk{color:var(--pink);text-shadow:0 0 14px var(--pink);}
+
+/* Timer ring */
+#timer-wrap{position:relative;width:52px;height:52px;flex-shrink:0;}
+#timer-svg{transform:rotate(-90deg);}
+#timer-arc{stroke:var(--pink);stroke-dasharray:138;stroke-dashoffset:0;stroke-linecap:round;transition:stroke-dashoffset .1s linear,stroke .4s;filter:drop-shadow(0 0 5px var(--pink));}
+#timer-num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#fff;}
+
+/* Game area */
+#game-area{position:fixed;inset:0;top:72px;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;padding:20px;}
+
+/* Equation card */
+#eq-card{
+  text-align:center;padding:32px 52px;border-radius:28px;
+  background:rgba(255,45,120,.06);border:2px solid rgba(255,45,120,.3);
+  box-shadow:0 0 50px rgba(255,45,120,.15),inset 0 0 30px rgba(255,45,120,.04);
+  max-width:90vw;
+  animation:eqPulse 2s ease-in-out infinite;
+  transition:border-color .3s,background .3s;
+}
+@keyframes eqPulse{0%,100%{box-shadow:0 0 40px rgba(255,45,120,.15);}50%{box-shadow:0 0 70px rgba(255,45,120,.3);}}
+#eq-card.true-card{border-color:rgba(57,255,20,.5);background:rgba(57,255,20,.06);box-shadow:0 0 50px rgba(57,255,20,.2);}
+#eq-card.false-card{border-color:rgba(255,45,120,.5);background:rgba(255,45,120,.06);box-shadow:0 0 50px rgba(255,45,120,.2);}
+#eq-label{font-size:12px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:2px;margin-bottom:10px;}
+#eq-text{font-size:48px;font-weight:900;color:#fff;letter-spacing:3px;line-height:1.1;}
+#eq-sub{font-size:14px;color:rgba(255,255,255,.35);margin-top:10px;}
+
+/* Swipe hint */
+#swipe-hint{display:flex;align-items:center;gap:24px;font-size:14px;color:rgba(255,255,255,.4);}
+.sh-item{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.sh-key{padding:6px 16px;border-radius:10px;background:var(--glass);border:1px solid var(--glass-b);font-size:13px;font-weight:700;color:rgba(255,255,255,.6);}
+
+/* TRUE / FALSE buttons */
+#tf-buttons{display:flex;gap:20px;width:100%;max-width:420px;}
+.tf-btn{
+  flex:1;padding:22px 0;border-radius:22px;border:none;
+  font-family:inherit;font-size:26px;font-weight:900;cursor:pointer;
+  transition:all .18s;
+}
+.tf-btn.true-btn{background:linear-gradient(135deg,rgba(57,255,20,.2),rgba(0,229,255,.2));border:2px solid rgba(57,255,20,.5);color:var(--green);box-shadow:0 0 24px rgba(57,255,20,.2);}
+.tf-btn.true-btn:hover{background:linear-gradient(135deg,rgba(57,255,20,.35),rgba(0,229,255,.25));box-shadow:0 0 40px rgba(57,255,20,.4);transform:translateY(-3px) scale(1.03);}
+.tf-btn.false-btn{background:linear-gradient(135deg,rgba(255,45,120,.2),rgba(255,107,53,.2));border:2px solid rgba(255,45,120,.5);color:var(--pink);box-shadow:0 0 24px rgba(255,45,120,.2);}
+.tf-btn.false-btn:hover{background:linear-gradient(135deg,rgba(255,45,120,.35),rgba(255,107,53,.25));box-shadow:0 0 40px rgba(255,45,120,.4);transform:translateY(-3px) scale(1.03);}
+.tf-btn:active{transform:scale(.95);}
+
+/* Per-question progress */
+#q-progress{width:min(420px,80vw);height:6px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden;}
+#q-bar{height:100%;border-radius:3px;background:linear-gradient(90deg,var(--pink),var(--purple));transition:width .08s linear;}
+
+/* Overlays */
+.overlay{position:fixed;inset:0;z-index:500;display:flex;align-items:center;justify-content:center;background:rgba(7,7,26,.93);backdrop-filter:blur(24px);}
+.ov-card{background:rgba(255,255,255,.04);border:1px solid var(--glass-b);border-radius:28px;padding:44px 52px;text-align:center;max-width:520px;width:92%;box-shadow:0 0 80px rgba(255,45,120,.08);}
+.ov-emoji{font-size:64px;display:block;margin-bottom:14px;}
+.ov-title{font-size:36px;font-weight:900;color:#fff;margin-bottom:8px;}
+.ov-sub{font-size:15px;color:rgba(255,255,255,.5);margin-bottom:24px;line-height:1.6;}
+.ov-score{font-size:68px;font-weight:900;color:var(--pink);text-shadow:0 0 30px var(--pink);margin-bottom:4px;}
+.ov-score-lbl{font-size:12px;color:rgba(255,255,255,.38);margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;}
+.ov-best{font-size:17px;color:var(--yellow);margin-bottom:28px;}
+
+.ov-input{
+  width:100%;padding:12px 20px;border-radius:14px;
+  background:rgba(255,255,255,.06);border:1px solid var(--glass-b);
+  color:#fff;font-family:inherit;font-size:16px;font-weight:700;
+  text-align:center;margin-bottom:20px;outline:none;transition:all .2s;
+}
+.ov-input:focus{border-color:var(--pink);box-shadow:0 0 16px rgba(255,45,120,.2);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 32px;border:none;border-radius:50px;font-family:inherit;font-size:17px;font-weight:800;cursor:pointer;transition:all .22s;}
+.btn-primary{background:linear-gradient(135deg,var(--pink),var(--purple));color:#fff;box-shadow:0 0 28px rgba(255,45,120,.45);}
+.btn-primary:hover{transform:translateY(-3px);box-shadow:0 0 48px rgba(255,45,120,.65);}
+.btn-sec{background:var(--glass);border:1px solid var(--glass-b);color:#fff;margin-left:10px;}
+.btn-sec:hover{background:rgba(255,255,255,.1);}
+
+.feat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+.feat{background:var(--glass);border:1px solid var(--glass-b);border-radius:14px;padding:10px 14px;font-size:13px;color:rgba(255,255,255,.65);display:flex;align-items:center;gap:8px;}
+.feat span{font-size:20px;}
+.diff-pills{display:flex;gap:8px;justify-content:center;margin-bottom:24px;flex-wrap:wrap;}
+.diff-pill{padding:8px 18px;border-radius:50px;border:2px solid var(--glass-b);background:var(--glass);color:rgba(255,255,255,.6);font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;transition:all .2s;}
+.diff-pill.sel{border-color:var(--pink);background:rgba(255,45,120,.15);color:var(--pink);}
+.diff-pill:hover{background:rgba(255,255,255,.1);}
+
+/* Score pop */
+.score-pop{position:fixed;z-index:400;font-size:28px;font-weight:900;pointer-events:none;animation:sPop 1s ease-out forwards;}
+@keyframes sPop{0%{transform:translateY(0) scale(1);opacity:1;}100%{transform:translateY(-80px) scale(1.3);opacity:0;}}
+.confetti{position:fixed;pointer-events:none;z-index:300;width:9px;height:9px;border-radius:2px;animation:cfFall .85s ease-out forwards;}
+@keyframes cfFall{0%{transform:translate(0,0) rotate(0);opacity:1;}100%{transform:translate(var(--dx),var(--dy)) rotate(var(--dr));opacity:0;}}
+#lvl-flash{position:fixed;inset:0;z-index:350;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:0;}
+#lvl-flash.show{animation:lvlFlash 1.6s ease-out forwards;}
+@keyframes lvlFlash{0%{opacity:0;}20%{opacity:1;}80%{opacity:1;}100%{opacity:0;}}
+#lvl-text{font-size:56px;font-weight:900;color:var(--yellow);text-shadow:0 0 40px var(--yellow);letter-spacing:4px;}
+
+/* Screen flash */
+.screen-flash{position:fixed;inset:0;z-index:450;pointer-events:none;animation:sfAnim .4s ease-out forwards;}
+@keyframes sfAnim{0%{opacity:.22;}100%{opacity:0;}}
+
+/* Leaderboard */
+.lb-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-radius:12px;background:var(--glass);border:1px solid var(--glass-b);margin-bottom:8px;}
+.lb-rank{font-size:20px;width:32px;text-align:center;}
+.lb-name{flex:1;font-size:15px;color:#fff;font-weight:700;text-align:left;}
+.lb-score{font-size:18px;font-weight:900;color:var(--pink);}
+
+@media(max-width:500px){#eq-text{font-size:34px;}#tf-buttons{gap:12px;}.tf-btn{font-size:20px;padding:18px 0;}}
+</style>
+</head>
+<body>
+
+<!-- HUD -->
+<div id="hud">
+  <div class="hud-pill"><div><div class="hud-lbl">Score</div><div class="hud-val c" id="h-score">0</div></div></div>
+  <div class="hud-pill"><div><div class="hud-lbl">Best</div><div class="hud-val y" id="h-best">0</div></div></div>
+  <div id="timer-wrap" class="hud-pill" style="padding:4px 10px;">
+    <svg id="timer-svg" width="52" height="52" viewBox="0 0 52 52">
+      <circle cx="26" cy="26" r="22" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="4"/>
+      <circle id="timer-arc" cx="26" cy="26" r="22" fill="none" stroke-width="4"/>
+    </svg>
+    <div id="timer-num">60</div>
+  </div>
+  <div class="hud-pill"><div><div class="hud-lbl">Streak</div><div class="hud-val g" id="h-streak">0</div></div></div>
+  <div class="hud-pill"><div><div class="hud-lbl">Lives</div><div class="hud-val pk" id="h-lives">❤️❤️❤️</div></div></div>
+  <button onclick="showLeaderboard()" style="padding:6px 14px;border-radius:50px;border:1px solid rgba(255,45,120,.4);background:rgba(255,45,120,.1);color:#ff2d78;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;">🏆 Board</button>
+</div>
+
+<!-- Game Area -->
+<div id="game-area">
+  <div id="eq-card">
+    <div id="eq-label">IS THIS CORRECT?</div>
+    <div id="eq-text">12 + 8 = 20</div>
+    <div id="eq-sub">Judge the equation — True or False?</div>
+  </div>
+  <div id="q-progress"><div id="q-bar" style="width:100%;"></div></div>
+  <div id="swipe-hint">
+    <div class="sh-item"><div class="sh-key">← A</div><div style="color:var(--green);font-weight:700;">✓ TRUE</div></div>
+    <div style="color:rgba(255,255,255,.2);font-size:20px;">|</div>
+    <div class="sh-item"><div class="sh-key">D →</div><div style="color:var(--pink);font-weight:700;">✗ FALSE</div></div>
+  </div>
+  <div id="tf-buttons">
+    <button class="tf-btn true-btn"  onclick="judge(true)">✓ TRUE</button>
+    <button class="tf-btn false-btn" onclick="judge(false)">✗ FALSE</button>
+  </div>
+</div>
+
+<div id="lvl-flash"><div id="lvl-text">⭐ LEVEL UP! ⭐</div></div>
+
+<!-- START SCREEN -->
+<div class="overlay" id="start-screen">
+  <div class="ov-card">
+    <span class="ov-emoji">🥷</span>
+    <div class="ov-title">Number Ninja!</div>
+    <div class="ov-sub">Judge equations as TRUE or FALSE as fast as you can! You have 3 lives — don't waste them!</div>
+    <div class="feat-grid">
+      <div class="feat"><span>⚡</span> Lightning Reflexes</div>
+      <div class="feat"><span>❤️</span> 3 Lives System</div>
+      <div class="feat"><span>🧮</span> Algebra & Fractions</div>
+      <div class="feat"><span>🏆</span> Leaderboard</div>
+    </div>
+    <div style="font-size:13px;color:rgba(255,255,255,.45);margin-bottom:10px;">Difficulty</div>
+    <div class="diff-pills">
+      <button class="diff-pill sel" id="dp-easy"   onclick="selDiff('easy')">😊 Easy</button>
+      <button class="diff-pill"     id="dp-medium" onclick="selDiff('medium')">🔥 Medium</button>
+      <button class="diff-pill"     id="dp-hard"   onclick="selDiff('hard')">💀 Hard</button>
+    </div>
+    <button class="btn btn-primary" onclick="startGame()">🥷 Start!</button>
+  </div>
+</div>
+
+<!-- GAME OVER -->
+<div class="overlay" id="go-screen" style="display:none;">
+  <div class="ov-card">
+    <span class="ov-emoji" id="go-emoji">🥷</span>
+    <div class="ov-title" id="go-title">Game Over!</div>
+    <div class="ov-sub"  id="go-sub">Keep training!</div>
+    <div class="ov-score" id="go-score">0</div>
+    <div class="ov-score-lbl">Final Score</div>
+    <div class="ov-best" id="go-best">🏆 Best: 0</div>
+    
+    <div style="margin-top:10px;">
+      <div style="font-size:11px;color:rgba(255,255,255,.3);margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">Leaderboard Name</div>
+      <input type="text" id="go-name" class="ov-input" placeholder="Ninja" maxlength="15"/>
+    </div>
+
+    <div>
+      <button class="btn btn-primary" onclick="restartGame()">🔄 Play Again</button>
+      <button class="btn btn-sec"     onclick="showLeaderboard()">🏆 Leaderboard</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="overlay" id="lb-screen" style="display:none;">
+  <div class="ov-card" style="max-width:560px;">
+    <span class="ov-emoji">🏆</span>
+    <div class="ov-title">Leaderboard</div>
+    <div id="lb-list" style="margin:16px 0;max-height:280px;overflow-y:auto;"></div>
+    <div>
+      <button class="btn btn-primary" onclick="hideLB()">▶ Play</button>
+      <button class="btn btn-sec"     onclick="clearLB()">🗑 Clear</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────────────────────────
+const TOTAL_TIME=60, CIRCUMFERENCE=138.2, MAX_LIVES=3;
+const DIFF={
+  easy:  {types:['add','sub','mul'],maxA:20,maxB:10,qTime:5,falseChance:.45},
+  medium:{types:['add','sub','mul','div','sq'],maxA:50,maxB:12,qTime:4,falseChance:.5},
+  hard:  {types:['add','sub','mul','div','sq','frac','neg'],maxA:100,maxB:15,qTime:3,falseChance:.5},
+};
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let score=0,streak=0,level=1,lives=MAX_LIVES,correctCount=0;
+let timeLeft=TOTAL_TIME,timerInterval=null;
+let qTimeLeft=0,qTimerInterval=null;
+let gameRunning=false;
+let isTrue=false; // whether current equation is actually correct
+let difficulty='easy';
+let bestScore=parseInt(localStorage.getItem('numberNinjaBest')||'0');
+let leaderboard=JSON.parse(localStorage.getItem('numberNinjaLB')||'[]');
+const CONFETTI_COLORS=['#ff2d78','#00e5ff','#ffe600','#39ff14','#bf5fff','#ff6b35'];
+
+// ── DIFFICULTY ─────────────────────────────────────────────────────────────
+function selDiff(d){difficulty=d;['easy','medium','hard'].forEach(x=>document.getElementById('dp-'+x).classList.toggle('sel',x===d));}
+
+// ── EQUATION GEN ───────────────────────────────────────────────────────────
+function genEquation(){
+  const cfg=DIFF[difficulty];
+  const types=cfg.types;
+  const type=types[Math.floor(Math.random()*types.length)];
+  const makeFalse=Math.random()<cfg.falseChance;
+  let a,b,realAns,shownAns,disp;
+
+  switch(type){
+    case 'add': a=rnd(1,cfg.maxA);b=rnd(1,cfg.maxB);realAns=a+b;disp=`${a} + ${b} = `;break;
+    case 'sub': a=rnd(cfg.maxB,cfg.maxA);b=rnd(1,a);realAns=a-b;disp=`${a} − ${b} = `;break;
+    case 'mul': a=rnd(2,cfg.maxB);b=rnd(2,cfg.maxB);realAns=a*b;disp=`${a} × ${b} = `;break;
+    case 'div': b=rnd(2,cfg.maxB);realAns=rnd(1,cfg.maxB);a=realAns*b;disp=`${a} ÷ ${b} = `;break;
+    case 'sq':  a=rnd(2,15);realAns=a*a;disp=`${a}² = `;break;
+    case 'frac':a=rnd(1,10);b=rnd(2,10);realAns=Math.round(a/b*100)/100;disp=`${a}/${b} ≈ `;break;
+    case 'neg': a=rnd(-20,-1);b=rnd(1,20);realAns=a+b;disp=`${a} + ${b} = `;break;
+    default:    a=rnd(1,20);b=rnd(1,20);realAns=a+b;disp=`${a} + ${b} = `;
+  }
+
+  if(makeFalse){
+    // Generate a plausible wrong answer
+    let delta=rnd(1,5)*(Math.random()<.5?1:-1);
+    shownAns=realAns+delta;
+    if(shownAns===realAns)shownAns+=1;
+    isTrue=false;
+  } else {
+    shownAns=realAns;
+    isTrue=true;
+  }
+
+  // Format shown answer
+  const shown=Number.isInteger(shownAns)?shownAns:Math.round(shownAns*100)/100;
+  return `${disp}${shown}`;
+}
+
+// ── RENDER EQUATION ────────────────────────────────────────────────────────
+function showEquation(){
+  const eq=genEquation();
+  document.getElementById('eq-text').textContent=eq;
+  const card=document.getElementById('eq-card');
+  card.className=''; // reset
+  startQTimer();
+}
+
+// ── PER-QUESTION TIMER ─────────────────────────────────────────────────────
+function startQTimer(){
+  clearInterval(qTimerInterval);
+  const cfg=DIFF[difficulty];
+  const maxQTime=Math.max(1.5,cfg.qTime-(level-1)*0.2);
+  qTimeLeft=maxQTime;
+  updateQBar(1);
+  qTimerInterval=setInterval(()=>{
+    qTimeLeft=Math.max(0,qTimeLeft-.04);
+    updateQBar(qTimeLeft/maxQTime);
+    if(qTimeLeft<=0){clearInterval(qTimerInterval);onQTimeout();}
+  },40);
+}
+function updateQBar(pct){
+  const bar=document.getElementById('q-bar');
+  bar.style.width=`${pct*100}%`;
+  bar.style.background=pct>.5?'linear-gradient(90deg,#ff2d78,#bf5fff)':pct>.25?'linear-gradient(90deg,#ffe600,#ff6b35)':'linear-gradient(90deg,#ff2d78,#ff6b35)';
+}
+function onQTimeout(){
+  if(!gameRunning)return;
+  loseLife();
+}
+
+// ── JUDGE ─────────────────────────────────────────────────────────────────
+function judge(playerSaysTrue){
+  if(!gameRunning)return;
+  clearInterval(qTimerInterval);
+  const correct=(playerSaysTrue===isTrue);
+  const card=document.getElementById('eq-card');
+
+  if(correct){
+    card.className=isTrue?'true-card':'false-card';
+    const speedBonus=Math.round(qTimeLeft*4);
+    const pts=8+speedBonus+streak*2+level*2;
+    score+=pts;streak++;correctCount++;
+    updateHUD();
+    showScorePop(pts);
+    if(streak%3===0)spawnConfetti();
+    playTone(880,.15);
+    checkLevelUp();
+    setTimeout(()=>{if(gameRunning)showEquation();},450);
+  } else {
+    card.className=isTrue?'false-card':'true-card';
+    loseLife();
+  }
+}
+
+function loseLife(){
+  lives--;streak=0;
+  updateHUD();
+  flashScreen('#ff2d78');
+  playTone(180,.3);
+  if(lives<=0){endGame();return;}
+  setTimeout(()=>{if(gameRunning)showEquation();},600);
+}
+
+// ── LEVEL UP ──────────────────────────────────────────────────────────────
+function checkLevelUp(){
+  if(correctCount>0&&correctCount%8===0){
+    level++;
+    document.getElementById('h-level') && (document.getElementById('h-level').textContent=level);
+    const fl=document.getElementById('lvl-flash');
+    document.getElementById('lvl-text').textContent=`⭐ LEVEL ${level}! ⭐`;
+    fl.classList.remove('show');void fl.offsetWidth;fl.classList.add('show');
+    setTimeout(()=>fl.classList.remove('show'),1600);
+    playTone(1200,.25);
+    // Restore 1 life (max 3)
+    if(lives<MAX_LIVES){lives++;updateHUD();}
+  }
+}
+
+// ── GLOBAL TIMER ──────────────────────────────────────────────────────────
+function startTimer(){
+  clearInterval(timerInterval);
+  timerInterval=setInterval(()=>{
+    timeLeft=Math.max(0,timeLeft-.1);
+    const pct=timeLeft/TOTAL_TIME;
+    const arc=document.getElementById('timer-arc');
+    arc.style.strokeDashoffset=CIRCUMFERENCE*(1-pct);
+    arc.style.stroke=pct>.5?'#ff2d78':pct>.25?'#ffe600':'#ff6b35';
+    arc.style.filter=`drop-shadow(0 0 5px ${pct>.5?'#ff2d78':pct>.25?'#ffe600':'#ff6b35'})`;
+    document.getElementById('timer-num').textContent=Math.ceil(timeLeft);
+    if(timeLeft<=0){clearInterval(timerInterval);endGame();}
+  },100);
+}
+
+// ── HUD ───────────────────────────────────────────────────────────────────
+function updateHUD(){
+  document.getElementById('h-score').textContent=score;
+  document.getElementById('h-streak').textContent=streak;
+  document.getElementById('h-best').textContent=Math.max(bestScore,score);
+  document.getElementById('h-lives').textContent='❤️'.repeat(lives)+'🖤'.repeat(MAX_LIVES-lives);
+}
+
+// ── GAME FLOW ─────────────────────────────────────────────────────────────
+function startGame(){
+  document.getElementById('start-screen').style.display='none';
+  score=0;streak=0;level=1;lives=MAX_LIVES;correctCount=0;timeLeft=TOTAL_TIME;
+  gameRunning=true;updateHUD();startTimer();showEquation();
+}
+function restartGame(){
+  document.getElementById('go-screen').style.display='none';
+  saveScore();
+  startGame();
+}
+function endGame(){
+  gameRunning=false;clearInterval(qTimerInterval);
+  if(score>bestScore){bestScore=score;localStorage.setItem('numberNinjaBest',bestScore);}
+  
+  // Set name field from last used or default
+  document.getElementById('go-name').value = localStorage.getItem('lastPlayerName') || 'Ninja';
+
+  document.getElementById('go-emoji').textContent=score>=250?'🏆':score>=120?'⭐':'🥷';
+  document.getElementById('go-title').textContent=score>=250?'True Ninja!':score>=120?'Sharp Mind!':'Game Over!';
+  document.getElementById('go-sub').textContent=`${correctCount} correct judgements · Level ${level} · ${lives===0?'Ran out of lives':'Time\'s up!'}`;
+  document.getElementById('go-score').textContent=score;
+  document.getElementById('go-best').textContent=`🏆 Best: ${bestScore}`;
+  document.getElementById('go-screen').style.display='flex';
+  postScore();
+}
+
+function saveScore(){
+  const name=document.getElementById('go-name').value.trim() || 'Ninja';
+  localStorage.setItem('lastPlayerName', name);
+  leaderboard.push({name,score,correct:correctCount,date:new Date().toLocaleDateString()});
+  leaderboard.sort((a,b)=>b.score-a.score);
+  leaderboard=leaderboard.slice(0,10);
+  localStorage.setItem('numberNinjaLB',JSON.stringify(leaderboard));
+}
+
+// ── LEADERBOARD ───────────────────────────────────────────────────────────
+function showLeaderboard(){
+  saveScore();
+  document.getElementById('go-screen').style.display='none';
+  const medals=['🥇','🥈','🥉'];
+  const list=document.getElementById('lb-list');
+  if(leaderboard.length===0){list.innerHTML='<div style="color:rgba(255,255,255,.4);padding:20px;">No scores yet!</div>';}
+  else{list.innerHTML=leaderboard.map((e,i)=>`<div class="lb-row"><div class="lb-rank">${medals[i]||'#'+(i+1)}</div><div class="lb-name">${e.name}<span style="font-size:11px;color:rgba(255,255,255,.35);margin-left:8px;">${e.correct} correct · ${e.date}</span></div><div class="lb-score">${e.score}</div></div>`).join('');}
+  document.getElementById('lb-screen').style.display='flex';
+}
+function hideLB(){document.getElementById('lb-screen').style.display='none';if(!gameRunning)document.getElementById('start-screen').style.display='flex';}
+function clearLB(){if(confirm('Clear all scores?')){leaderboard=[];localStorage.removeItem('numberNinjaLB');showLeaderboard();}}
+
+// ── KEYBOARD ──────────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(!gameRunning)return;
+  if(e.key==='ArrowLeft'||e.key==='a'||e.key==='A')judge(true);
+  if(e.key==='ArrowRight'||e.key==='d'||e.key==='D')judge(false);
+});
+
+// ── EFFECTS ───────────────────────────────────────────────────────────────
+function showScorePop(pts){
+  const p=document.createElement('div');p.className='score-pop';
+  p.textContent=`+${pts}`;
+  p.style.cssText=`left:50%;top:45%;transform:translateX(-50%);color:#39ff14;text-shadow:0 0 14px #39ff14;`;
+  document.body.appendChild(p);setTimeout(()=>p.remove(),1100);
+}
+function spawnConfetti(){
+  for(let i=0;i<14;i++){
+    const c=document.createElement('div');c.className='confetti';
+    const angle=(i/14)*360,dist=50+Math.random()*60;
+    const dx=Math.cos(angle*Math.PI/180)*dist,dy=Math.sin(angle*Math.PI/180)*dist-50;
+    c.style.cssText=`left:50%;top:45%;background:${CONFETTI_COLORS[i%CONFETTI_COLORS.length]};--dx:${dx}px;--dy:${dy}px;--dr:${Math.random()*360}deg;`;
+    document.body.appendChild(c);setTimeout(()=>c.remove(),900);
+  }
+}
+function flashScreen(color){
+  const f=document.createElement('div');
+  f.className='screen-flash';
+  f.style.cssText=`position:fixed;inset:0;z-index:450;background:${color};pointer-events:none;`;
+  document.body.appendChild(f);setTimeout(()=>f.remove(),400);
+}
+let audioCtx=null;
+function getAudio(){if(!audioCtx)audioCtx=new(window.AudioContext||window.webkitAudioContext)();return audioCtx;}
+function playTone(freq,dur){try{const ctx=getAudio(),o=ctx.createOscillator(),g=ctx.createGain();o.connect(g);g.connect(ctx.destination);o.type='sine';o.frequency.setValueAtTime(freq,ctx.currentTime);g.gain.setValueAtTime(.15,ctx.currentTime);g.gain.exponentialRampToValueAtTime(.001,ctx.currentTime+dur);o.start();o.stop(ctx.currentTime+dur);}catch(e){}}
+function postScore(){try{window.parent.postMessage({type:'NUMBER_NINJA_SCORE',score,level,best:bestScore},'*');}catch(e){}}
+function rnd(min,max){return Math.floor(Math.random()*(max-min+1))+min;}
+
+document.getElementById('h-best').textContent=bestScore;
+</script>
+</body>
+</html>
