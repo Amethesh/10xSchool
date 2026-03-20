@@ -1,6 +1,5 @@
 import CourseCard, { CourseCardItems } from "@/components/Courses/CourseCard";
 import EducationalVisionComponent from "@/components/Courses/CoursesHeader";
-import Footer from "@/components/Home/Footer";
 
 const coursesData: CourseCardItems[] = [
   {
@@ -123,7 +122,6 @@ const page = () => {
       {coursesData.map((courseData, index) => (
         <CourseCard key={index} {...courseData} />
       ))}
-      <Footer />
     </main>
   );
 };

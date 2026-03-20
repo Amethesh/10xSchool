@@ -1,7 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/Home/Navbar";
 import GalleryGrid from "./GalleryGrid";
-import Footer from "@/components/Home/Footer";
 
 export const revalidate = 0; // Ensure fresh data on every request
 
@@ -64,7 +63,6 @@ export default async function GalleryPage() {
           )}
         </div>
       </section>
-      <Footer/>
     </main>
   );
 }
