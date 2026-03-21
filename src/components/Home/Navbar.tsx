@@ -11,7 +11,7 @@ import { User } from "@supabase/supabase-js";
 
 const NAV_LINKS = [
   { href: "/landing/courses", label: "Courses" },
-  { href: "/landing/beads-and-brain", label: "Beads and brain" },
+  // { href: "/landing/beads-and-brain", label: "Beads and brain" },
   { href: "/landing/gallery", label: "Gallery" },
   { href: "/student/levels", label: "Students" },
   { href: "/landing/about", label: "About Us" },

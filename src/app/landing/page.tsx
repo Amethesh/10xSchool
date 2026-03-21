@@ -2,6 +2,7 @@ import AboutSection from "@/components/Home/AboutUs";
 import FAQComponent from "@/components/Home/FAQ";
 import GetStarted from "@/components/Home/GetStarted";
 import Hero from "@/components/Home/Hero";
+import TeachingPartnersSection from "@/components/Home/TeachingPartners";
 import Testimonials from "@/components/Home/Testimonials";
 import VideoTestimonials from "@/components/Home/VideoTestimonials";
 import WhatWeDoSection from "@/components/Home/WhatWeDo";
@@ -12,6 +13,7 @@ export default function Home() {
       <Hero />
       <AboutSection />
       <WhatWeDoSection />
+      <TeachingPartnersSection />
       <Testimonials />
       <VideoTestimonials />
       <FAQComponent />

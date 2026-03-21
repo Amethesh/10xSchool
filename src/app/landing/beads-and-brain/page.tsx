@@ -63,7 +63,7 @@ const vedicPoints = [
 ];
 const whyUs = [
   { title: "Experienced Trainers", desc: "Trained under The 10X School methodology.", icon: <GraduationCap />, color: "bg-[#bfecff]" },
-  { title: "Color Workbooks", desc: "Visually engaging books that make learning fun.", icon: <BookOpen />, color: "bg-[#ffd6cc]" },
+  { title: "High Quality Printed Workbooks", desc: "Visually engaging books that make learning fun.", icon: <BookOpen />, color: "bg-[#ffd6cc]" },
   { title: "Learning by Doing", desc: "Hands-on activities & interactive brain games.", icon: <Activity />, color: "bg-[#D3EF95]" },
   { title: "Small Batch Size", desc: "Individual attention for every child.", icon: <UsersRound />, color: "bg-[#ffe082]" },
   { title: "Competitive Fees", desc: "Premium quality at reasonable pricing.", icon: <Tag />, color: "bg-white" },
@@ -126,7 +126,7 @@ export default function BeadsAndBrainPage() {
                 <em>"Learning by Doing"</em> approach.
               </motion.p>
               <motion.div variants={fadeLeft} initial="hidden" animate="show" className="flex flex-wrap gap-3">
-                {["🧮 Abacus", "🧠 Memory Training", "💰 Financial Literacy", "🎯 Brain Games"].map((t) => (
+                {["📐 Vedic Maths", "🧮 Abacus", "🧠 Memory Training", "💰 Financial Literacy", "🎯 Brain Games"].map((t) => (
                   <span key={t} className="bg-white border-2 border-black rounded-full px-4 py-1.5 font-semibold text-sm shadow-[3px_3px_0px_0px_rgba(0,0,0,1)]">
                     {t}
                   </span>
