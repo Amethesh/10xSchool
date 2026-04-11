@@ -17,15 +17,18 @@ export async function getStudentLevelsData(studentId?: string) {
 
   const { data: profile, error: profileError } = await supabase
     .from("students")
-    .select("id, full_name, total_score, email, student_id")
+    .select("id, full_name, total_score, email, student_id, course")
     .eq("id", targetStudentId)
     .single();
   if (profileError) throw profileError;
 
-  // 2️⃣ Get all levels (No changes here)
+  const course = profile.course || "m3-genius-program";
+
+  // 2️⃣ Get all levels filtered by the student's course
   const { data: levelsData, error: levelsError } = await supabase
     .from("levels")
     .select("id, name, type, difficulty_level")
+    .eq("type", course)
     .order("difficulty_level", { ascending: true });
   if (levelsError) throw levelsError;
 
@@ -48,10 +51,13 @@ export async function getStudentLevelsData(studentId?: string) {
     accessRequests.filter(a => a.status === "pending").map(a => a.level_id)
   );
 
+  const approvedIds = Array.from(approvedLevelIds).filter((id): id is number => id !== null);
+  const rpcName = course === "vedic-math"
+    ? "get_question_counts_for_vedic_levels"
+    : "get_question_counts_for_levels";
+
   const { data: questionCounts, error: questionCountError } = await supabase
-    .rpc('get_question_counts_for_levels', {
-      level_ids: Array.from(approvedLevelIds).filter((id): id is number => id !== null)
-    });
+    .rpc(rpcName, { level_ids: approvedIds });
   if (questionCountError) throw questionCountError;
 
   const questionGroups = new Map<string, { count: number }>();
@@ -116,8 +122,5 @@ export async function getStudentLevelsData(studentId?: string) {
     };
   });
 
-  console.log("PROFILE", profile)
-  console.log("LEVELS", JSON.stringify(levels, null, 2))
-
-  return { profile, levels };
+  return { profile, levels, course };
 }

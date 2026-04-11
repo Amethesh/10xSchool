@@ -39,6 +39,7 @@ export type Student = {
   level: number;
   level_no: number | null;
   rank: string;
+  course: string | null;
   currentLevel?: {
     id: number;
     name: string;

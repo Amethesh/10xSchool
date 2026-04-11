@@ -52,6 +52,7 @@ export async function getAllStudentsData() {
       email,
       total_score,
       rank,
+      course,
       level,
       level_no,
       levels:level_no (
@@ -82,6 +83,7 @@ export async function getAllStudentsData() {
     email: student.email,
     total_score: student.total_score,
     rank: student.rank,
+    course: student.course ?? null,
     level: student.level,
     level_no: student.level_no,
     currentLevel: student.levels ? {
@@ -173,6 +175,7 @@ export async function updateStudentByAdmin(formData: FormData) {
   const level_no = formData.get("level_no") ? Number(formData.get("level_no")) : null;
   const rank = formData.get("rank") as string;
   const teacher_id = formData.get("teacher_id") as string;
+  const course = (formData.get("course") as string) || "m3-genius-program";
 
   if (!studentId || !full_name) {
     throw new Error("Student ID and Full Name are required.");
@@ -183,15 +186,27 @@ export async function updateStudentByAdmin(formData: FormData) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
+  // Check the student's current course to detect a course switch
+  const { data: existing } = await supabaseAdmin
+    .from("students")
+    .select("course")
+    .eq("id", studentId)
+    .single();
+
+  const courseChanged = existing?.course !== course;
+
   const updateData: any = {
-    full_name: full_name,
-    total_score: total_score,
+    full_name,
+    total_score,
     rank,
-    teacher_id: teacher_id || null, 
+    course,
+    teacher_id: teacher_id || null,
+    // Reset level_no when switching courses so the student starts fresh
+    level_no: courseChanged ? null : (level_no ?? null),
   };
 
-  // Only update level_no if provided
-  if (level_no !== null) {
+  // If the course hasn't changed and a level was explicitly chosen, set it
+  if (!courseChanged && level_no !== null) {
     updateData.level_no = level_no;
   }
 

@@ -14,6 +14,7 @@ import {
   Trash2,
   AlertTriangle,
   BookOpen,
+  GraduationCap,
 } from "lucide-react";
 import { Student, Level } from "@/app/admin/dashboard/page";
 import {
@@ -38,6 +39,7 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
     level: 0,
     level_no: null,
     rank: "",
+    course: null,
     teacher_id: null,
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
@@ -65,6 +67,7 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
       level: student.level,
       level_no: student.level_no,
       rank: student.rank,
+      course: student.course || "m3-genius-program",
       teacher_id: student.teacher_id || null,
     });
   }, [student]);
@@ -108,6 +111,7 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
       data.append("level_no", String(formData.level_no));
     }
     data.append("rank", formData.rank);
+    data.append("course", formData.course || "m3-genius-program");
     if (formData.teacher_id) {
       data.append("teacher_id", formData.teacher_id);
     }
@@ -125,6 +129,9 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
         ...prev,
         [name]: value ? Number(value) : null,
       }));
+    } else if (name === "course") {
+      // Switching course resets the level — student starts fresh on the new course
+      setFormData((prev) => ({ ...prev, course: value, level_no: null }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
@@ -210,6 +217,28 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
               required
             />
           </div>
+
+          {/* Course Selection */}
+          <div className="input-container">
+            <GraduationCap className="input-icon w-4 h-4" />
+            <select
+              name="course"
+              value={formData.course || "m3-genius-program"}
+              onChange={handleSelectChange}
+              className="pixel-select w-full"
+            >
+              <option value="m3-genius-program">M3 Genius Program</option>
+              <option value="vedic-math">Vedic Math</option>
+            </select>
+          </div>
+
+          {formData.course === "vedic-math" && formData.course !== student.course && (
+            <div className="pixel-panel p-3 bg-yellow-900/20 border-yellow-500/50">
+              <div className="pixel-font text-xs text-yellow-300">
+                ⚠ Switching course will reset the student&apos;s level. They will start fresh on Vedic Math.
+              </div>
+            </div>
+          )}
 
           {/* Level Selection */}
           <div className="input-container">

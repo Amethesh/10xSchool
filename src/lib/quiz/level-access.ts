@@ -9,8 +9,15 @@ export async function checkStudentLevelAccess(
   levelId: number
 ): Promise<boolean> {
   const supabase = createClient();
-  console.log(studentId, levelId);
-  if (levelId === 2) return true;
+
+  // Beginner levels (difficulty_level === 1) are always accessible for any course
+  const { data: levelData } = await supabase
+    .from("levels")
+    .select("difficulty_level")
+    .eq("id", levelId)
+    .single();
+
+  if (levelData?.difficulty_level === 1) return true;
 
   const { data: accessData, error: accessError } = await supabase
     .from("access_requests")
@@ -22,7 +29,7 @@ export async function checkStudentLevelAccess(
   if (accessError && accessError.code !== "PGRST116") {
     throw new Error(`Failed to check level access: ${accessError.message}`);
   }
-  console.log(accessData);
+
   return Boolean(accessData && accessData.length > 0);
 }
 

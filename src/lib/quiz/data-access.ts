@@ -15,32 +15,37 @@ type QuizAnswerRow = Tables["quiz_answers"]["Row"];
  */
 export async function fetchQuestionsByLevelAndWeek(
   levelId: number,
-  weekNo: number
+  weekNo: number,
+  course: string = "m3-genius-program"
 ): Promise<Question[]> {
   try {
     return await withDatabaseCircuitBreaker(async () => {
       return await withDatabaseRetry(async () => {
         const supabase = await createClient();
+        const isVedic = course === "vedic-math";
 
-        const { data, error } = await supabase.rpc("get_random_questions", {
-          p_level_id: levelId,
-          p_week_no: weekNo,
-        });
+        const { data, error } = isVedic
+          ? await supabase.rpc("get_random_vedic_questions", {
+              p_level_id: levelId,
+              p_week_no: weekNo,
+            })
+          : await supabase.rpc("get_random_questions", {
+              p_level_id: levelId,
+              p_week_no: weekNo,
+            });
 
         if (error) {
-          // Error handling logic remains the same.
           throw QuizError.database(
             `Failed to fetch questions via RPC: ${error.message}`,
             {
               levelId,
               weekNo,
+              course,
               operation: "fetchQuestionsByLevelAndWeek (RPC)",
             }
           );
         }
 
-        // The check for empty data is also still crucial.
-        // An RPC call with no results returns an empty array.
         if (!data || data.length === 0) {
           throw QuizError.questionLoad(
             `No questions found for levelId ${levelId} week ${weekNo}`,
@@ -51,32 +56,33 @@ export async function fetchQuestionsByLevelAndWeek(
           );
         }
 
-        // Transform the data to match the Question interface
+        // Transform the data to match the Question interface.
+        // vedic_math_questions uses `vedic_maths_level` instead of `level`.
         return data.map(
           (question: any): Question => ({
             id: question.id,
-            level_no: question.level_id || levelId, // Use provided levelId as fallback
-            level: question.level || "unknown",
-            week_no: question.week_no || weekNo, // Use provided weekNo as fallback
+            level_no: question.level_id || levelId,
+            level: (question.vedic_maths_level || question.level || "unknown").toLowerCase(),
+            week_no: question.week_no || weekNo,
             question: question.question || "",
             option_a: question.option_a || "",
             option_b: question.option_b || "",
             option_c: question.option_c || "",
             option_d: question.option_d || "",
             correct_answer: question.correct_answer || "",
-            points: question.points || 10, // Default to 10 points if null
+            points: question.points || 10,
           })
         );
       });
     });
   } catch (error) {
-    // Outer error handling also remains the same.
     if (error instanceof QuizError) {
       throw error;
     }
     throw categorizeError(error as Error, {
       levelId,
       weekNo,
+      course,
       operation: "fetchQuestionsByLevelAndWeek (RPC)",
     });
   }
