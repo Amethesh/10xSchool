@@ -31,6 +31,7 @@ const TeacherEditStudentModal = ({ student, onClose }: EditStudentModalProps) =>
     level: 0,
     level_no: null,
     rank: "",
+    course: null,
   });
 
   const queryClient = useQueryClient();
@@ -50,6 +51,7 @@ const TeacherEditStudentModal = ({ student, onClose }: EditStudentModalProps) =>
       level: student.level,
       level_no: student.level_no,
       rank: student.rank,
+      course: student.course ?? null,
     });
   }, [student]);
 

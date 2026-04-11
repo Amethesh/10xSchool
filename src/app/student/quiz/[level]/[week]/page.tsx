@@ -27,9 +27,11 @@ function QuizPageContent() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [studentId, setStudentId] = useState<string | null>(null);
+  const [studentCourse, setStudentCourse] = useState<string | null>(null);
   const [finalQuizResults, setFinalQuizResults] = useState<QuizResults | null>(null);
 
-  // Get current user
+  // Fetch user + course together so both state values are set in the same render.
+  // This prevents the loadQuestions effect from running with the stale default course.
   useEffect(() => {
     const getCurrentUser = async () => {
       const supabase = createClient();
@@ -40,21 +42,29 @@ function QuizPageContent() {
         return;
       }
 
+      const { data: studentData } = await supabase
+        .from('students')
+        .select('course')
+        .eq('id', user.id)
+        .single();
+
+      // Set both together — React 18 batches these into one render,
+      // so loadQuestions won't fire until studentCourse is resolved.
       setStudentId(user.id);
+      setStudentCourse(studentData?.course || 'm3-genius-program');
     };
 
     getCurrentUser();
   }, [router]);
 
-  // Load questions
+  // Load questions — only runs once both studentId and studentCourse are resolved
   useEffect(() => {
     const loadQuestions = async () => {
-      if (!levelId || !weekNo) return;
+      if (!levelId || !weekNo || !studentId || studentCourse === null) return;
 
       try {
         setLoading(true);
-        const fetchedQuestions = await fetchQuestionsByLevelAndWeek(levelId, weekNo);
-        console.log(fetchedQuestions)
+        const fetchedQuestions = await fetchQuestionsByLevelAndWeek(levelId, weekNo, studentCourse);
         if (fetchedQuestions.length === 0) {
           setError('No questions found for this level and week.');
           return;
@@ -70,7 +80,7 @@ function QuizPageContent() {
     };
 
     loadQuestions();
-  }, [levelId, weekNo]);
+  }, [levelId, weekNo, studentId, studentCourse]);
 
   useEffect(() => {
     if (finalQuizResults) {
@@ -107,7 +117,7 @@ function QuizPageContent() {
   };
 
   // Loading state
-  if (loading || !studentId) {
+  if (loading || !studentId || studentCourse === null) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
          <Image

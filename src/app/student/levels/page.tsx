@@ -16,7 +16,7 @@ const StudentLevelsPage: React.FC = () => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
-  const [selectedLevelName, setSelectedLevelName] = useState<string>("beginner");
+  const [selectedLevelName, setSelectedLevelName] = useState<string>("");
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["studentLevels"],
@@ -24,17 +24,15 @@ const StudentLevelsPage: React.FC = () => {
     staleTime: 1000 * 60 * 5,
   });
 
+  // Auto-select the first approved level when data loads (or when course changes)
   useEffect(() => {
-    if (data?.levels && !selectedLevelName) {
-      const firstApprovedLevel = data.levels.find(l => l.approved);
-      if (firstApprovedLevel) {
-        console.log("LEVEL INITIAL", firstApprovedLevel.name)
-        setSelectedLevelName(firstApprovedLevel.name);
-      } else if (data.levels.length > 0) {
-        setSelectedLevelName(data.levels[0].name);
-      }
+    if (!data?.levels) return;
+    const match = data.levels.find((l) => l.name === selectedLevelName);
+    if (!match) {
+      const firstApproved = data.levels.find((l) => l.approved);
+      setSelectedLevelName(firstApproved?.name ?? data.levels[0]?.name ?? "");
     }
-  }, [data, selectedLevelName]);
+  }, [data]);
 
 
   const requestAccessMutation = useMutation({
@@ -56,8 +54,14 @@ const StudentLevelsPage: React.FC = () => {
   });
 
   const currentLevel = useMemo(() => {
-    if (!data?.levels || !selectedLevelName) return null;
-    return data.levels.find((l) => l.name === selectedLevelName);
+    if (!data?.levels) return null;
+    // Try the selected name first, then fall back to first approved, then first available
+    return (
+      data.levels.find((l) => l.name === selectedLevelName) ||
+      data.levels.find((l) => l.approved) ||
+      data.levels[0] ||
+      null
+    );
   }, [data?.levels, selectedLevelName]);
 
   const processedWeeks: ProcessedWeekLesson[] = useMemo(() => {

@@ -345,7 +345,7 @@ export default function BeadsAndBrainPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row justify-center gap-4 relative z-10">
-            <Link href="mailto:admin@10xschool.com">
+            <Link href="mailto:admin@10xschool.com,beadsandbrainllc@gmail.com?subject=Demo%20Session%20Request">
               <button className="group w-full sm:w-auto bg-[#D3EF95] text-black border-2 border-black rounded-xl px-8 py-4 font-bold text-lg shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-y-[2px] hover:translate-x-[2px] transition-all flex items-center justify-center gap-2">
                 <Mail className="w-5 h-5" />
                 Email Us

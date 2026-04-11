@@ -40,6 +40,7 @@ export async function getTeacherStudents() {
       email,
       total_score,
       rank,
+      course,
       level,
       level_no,
       levels:level_no (
@@ -68,6 +69,7 @@ export async function getTeacherStudents() {
     email: student.email,
     total_score: student.total_score,
     rank: student.rank,
+    course: student.course ?? null,
     level: student.level,
     level_no: student.level_no,
     currentLevel: student.levels ? {
