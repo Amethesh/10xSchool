@@ -9,6 +9,7 @@ import {
   Target,
   TrendingUp,
   Search,
+  ChartAreaIcon,
 } from "lucide-react";
 import {
   getTeacherStudents,
@@ -340,6 +341,13 @@ const TeacherDashboardPage = () => {
                       </td>
                       <td className="p-4 text-center">
                         <div className="flex gap-2 justify-center">
+                          <a
+                            href={`/student/dashboard?studentId=${student.id}`}
+                            className="pixel-button pixel-button-blue hover:scale-105 transition-transform"
+                            title="View Dashboard"
+                          >
+                            <ChartAreaIcon className="w-4 h-4" />
+                          </a>
                           <button
                             onClick={() => setEditingStudent(student)}
                             className="pixel-button text-xs p-2 hover:scale-105 transition-transform"

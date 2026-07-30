@@ -113,11 +113,13 @@ export function QuestionDisplay({
             disabled={showAnswerFeedback}
             className={getAnswerButtonClass(option)}
           >
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0">
               <div className="flex-shrink-0 w-8 h-8 border-2 border-current flex items-center justify-center pixel-font text-xs">
                 {option}
               </div>
-              <span className="text-base sm:text-sm leading-snug">{getAnswerText(option)}</span>
+              <span className="flex-1 min-w-0 text-base sm:text-sm leading-snug break-words [overflow-wrap:anywhere]">
+                {getAnswerText(option)}
+              </span>
             </div>
           </button>
         ))}
