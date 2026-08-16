@@ -225,6 +225,69 @@ export async function updateStudentByAdmin(formData: FormData) {
 }
 
 /**
+ * Resets a student's login password and forces them to choose their own
+ * password the next time they log in.
+ * Admin-only.
+ */
+export async function resetStudentPasswordByAdmin(
+  studentId: string,
+  newPassword: string
+) {
+  await verifyAdmin();
+
+  if (!studentId) {
+    throw new Error("Student ID is required.");
+  }
+
+  if (!newPassword || newPassword.length < 6) {
+    throw new Error("Password must be at least 6 characters.");
+  }
+
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { data: student } = await supabaseAdmin
+    .from("students")
+    .select("full_name")
+    .eq("id", studentId)
+    .single();
+
+  // students.id is the Supabase Auth user id — it is set from the created
+  // auth user in createStudentAction, so it can be used directly here.
+  const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
+    studentId,
+    { password: newPassword }
+  );
+
+  if (authError) {
+    throw new Error(`Failed to reset password: ${authError.message}`);
+  }
+
+  // The middleware already redirects to /change-password while this flag is set.
+  const { error: flagError } = await supabaseAdmin
+    .from("students")
+    .update({ password_change_required: true })
+    .eq("id", studentId);
+
+  if (flagError) {
+    throw new Error(
+      `Password was reset, but the change-required flag failed to set: ${flagError.message}`
+    );
+  }
+
+  revalidatePath("/admin/dashboard");
+
+  return {
+    success: true,
+    message: `Temporary password set for ${
+      student?.full_name || "student"
+    }. They must change it at next login.`,
+  };
+}
+
+/**
  * Deletes a student and all related data.
  * Admin-only.
  */

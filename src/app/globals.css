@@ -796,3 +796,493 @@
   box-shadow: inset 2px 2px 0px #212121;
 }
 
+
+
+/* ==========================================================================
+   ADMIN CONSOLE ("ac-")
+   Warm, soft, pastel staff dashboard. Scoped to the admin surface only — the
+   kid-facing pixel components are untouched.
+   ========================================================================== */
+
+.ac-root {
+  --ac-cream: #faf4ea;
+  --ac-paper: #fffdf8;
+  --ac-ink: #141414;
+  --ac-body: #2c2a26;
+  --ac-muted: #8c8578;
+  --ac-line: #e7e0d3;
+  --ac-frame: #3d3a34;
+
+  --ac-yellow: #f0df6e;
+  --ac-pink: #f4c7dd;
+  --ac-green: #b4c48d;
+  --ac-blue: #a6bedb;
+  --ac-accent: #cfe0b4;
+  --ac-accent-soft: #e9f2dd;
+
+  background: var(--ac-cream);
+  color: var(--ac-body);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  min-height: 100vh;
+}
+
+/* Modal scrim. Needs to beat .ac-root's own cream background, hence the
+   doubled-up selector. */
+.ac-root.ac-overlay {
+  background: rgba(20, 20, 20, 0.45);
+  min-height: 0;
+}
+
+/* The greeting and card titles carry the friendly voice */
+.ac-display {
+  font-family: var(--font-fredoka), var(--font-geist-sans), sans-serif;
+  font-weight: 500;
+  letter-spacing: -0.015em;
+}
+
+.ac-num {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* Small all-caps captions under the big numbers, as in the reference */
+.ac-caption {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ac-muted);
+  font-weight: 500;
+}
+
+/* ---- Top bar ----------------------------------------------------------- */
+
+.ac-navpill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 15px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ac-muted);
+  white-space: nowrap;
+  transition: color 0.15s ease, background 0.15s ease;
+}
+
+.ac-navpill:hover {
+  color: var(--ac-ink);
+  background: var(--ac-accent-soft);
+}
+
+.ac-navpill.is-active {
+  background: var(--ac-ink);
+  color: #fff;
+}
+
+/* ---- Cards ------------------------------------------------------------- */
+
+.ac-card {
+  border-radius: 20px;
+  background: var(--ac-paper);
+  border: 1px solid var(--ac-line);
+  position: relative;
+  overflow: hidden;
+}
+
+.ac-card-yellow {
+  background: var(--ac-yellow);
+  border-color: transparent;
+}
+.ac-card-pink {
+  background: var(--ac-pink);
+  border-color: transparent;
+}
+.ac-card-green {
+  background: var(--ac-green);
+  border-color: transparent;
+}
+.ac-card-blue {
+  background: var(--ac-blue);
+  border-color: transparent;
+}
+
+/* Oversized graphic that bleeds off the card corner, kept faint so the
+   numbers always win */
+.ac-card-art {
+  position: absolute;
+  right: -22px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.14;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Everything except the art sits above it */
+.ac-card > *:not(.ac-card-art) {
+  position: relative;
+  z-index: 1;
+}
+
+.ac-card-title {
+  font-family: var(--font-fredoka), sans-serif;
+  font-size: 19px;
+  font-weight: 500;
+  color: var(--ac-ink);
+  letter-spacing: -0.01em;
+}
+
+.ac-stat {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--ac-ink);
+  line-height: 1.1;
+}
+
+/* ---- Buttons ----------------------------------------------------------- */
+
+.ac-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  border: 1px solid var(--ac-line);
+  background: var(--ac-paper);
+  color: var(--ac-body);
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease,
+    transform 0.15s ease;
+  white-space: nowrap;
+}
+
+.ac-btn:hover:not(:disabled) {
+  border-color: var(--ac-frame);
+  transform: translateY(-1px);
+}
+
+.ac-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.ac-btn-primary {
+  background: var(--ac-ink);
+  border-color: var(--ac-ink);
+  color: #fff;
+}
+
+.ac-btn-primary:hover:not(:disabled) {
+  background: #2c2a26;
+}
+
+.ac-btn-danger {
+  background: #fdeceb;
+  border-color: #f3c4c0;
+  color: #b3261e;
+}
+
+.ac-btn-danger:hover:not(:disabled) {
+  background: #fadcd9;
+  border-color: #e79c96;
+}
+
+.ac-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--ac-muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ac-icon-btn:hover:not(:disabled) {
+  background: var(--ac-accent-soft);
+  color: var(--ac-ink);
+}
+
+.ac-icon-btn-danger:hover:not(:disabled) {
+  background: #fdeceb;
+  color: #b3261e;
+}
+
+.ac-icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ---- Fields ------------------------------------------------------------ */
+
+.ac-field {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid var(--ac-line);
+  background: var(--ac-paper);
+  color: var(--ac-body);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.ac-field::placeholder {
+  color: var(--ac-muted);
+}
+
+.ac-field:focus {
+  border-color: var(--ac-frame);
+  box-shadow: 0 0 0 3px rgba(207, 224, 180, 0.6);
+}
+
+/* Multi-line inputs and selects read better as rounded rectangles */
+.ac-field-box {
+  border-radius: 12px;
+}
+
+select.ac-field {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238c8578' stroke-width='2'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
+}
+
+.ac-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ac-muted);
+  margin-bottom: 6px;
+}
+
+/* ---- Chips ------------------------------------------------------------- */
+
+.ac-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--ac-line);
+  background: var(--ac-paper);
+  font-size: 12px;
+  color: var(--ac-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ac-chip:hover {
+  border-color: var(--ac-frame);
+  color: var(--ac-body);
+}
+
+.ac-chip.is-on {
+  background: var(--ac-ink);
+  border-color: var(--ac-ink);
+  color: #fff;
+}
+
+.ac-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 11px;
+  border-radius: 999px;
+  background: var(--ac-paper);
+  border: 1px solid var(--ac-line);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--ac-body);
+  white-space: nowrap;
+}
+
+/* ---- Roster ------------------------------------------------------------ */
+
+.ac-table {
+  width: 100%;
+  min-width: 780px;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.ac-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--ac-paper);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--ac-muted);
+  text-align: left;
+  padding: 13px 18px;
+  border-bottom: 1px solid var(--ac-line);
+  white-space: nowrap;
+}
+
+.ac-table th.ac-right,
+.ac-table td.ac-right {
+  text-align: right;
+}
+
+.ac-table th.ac-sortable {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.15s ease;
+}
+
+.ac-table th.ac-sortable:hover {
+  color: var(--ac-ink);
+}
+
+.ac-table tbody td {
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--ac-line);
+  font-size: 14px;
+  vertical-align: middle;
+}
+
+.ac-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.ac-table tbody tr:hover {
+  background: var(--ac-accent-soft);
+}
+
+.ac-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Avatar disc, echoing the reference's list rows */
+.ac-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ac-ink);
+  flex-shrink: 0;
+}
+
+.ac-row-actions {
+  display: flex;
+  gap: 2px;
+  justify-content: flex-end;
+  opacity: 0.4;
+  transition: opacity 0.15s ease;
+}
+
+tr:hover .ac-row-actions,
+tr:focus-within .ac-row-actions {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .ac-row-actions {
+    opacity: 1;
+  }
+}
+
+/* ---- Rank ladder -------------------------------------------------------
+   NOVICE -> LEGEND is an ordered ladder, so it is drawn as one: filled
+   segments let you compare progress straight down the column.
+   ---------------------------------------------------------------------- */
+
+.ac-ladder {
+  display: inline-flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.ac-ladder-seg {
+  width: 6px;
+  height: 16px;
+  border-radius: 3px;
+  background: rgba(20, 20, 20, 0.1);
+}
+
+.ac-ladder-seg.is-filled {
+  background: var(--ac-seg, var(--ac-ink));
+}
+
+/* ---- Tabs -------------------------------------------------------------- */
+
+.ac-tab {
+  font-size: 14px;
+  font-weight: 500;
+  padding: 10px 2px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: var(--ac-muted);
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+}
+
+.ac-tab:hover {
+  color: var(--ac-body);
+}
+
+.ac-tab[aria-selected="true"] {
+  color: var(--ac-ink);
+  border-bottom-color: var(--ac-ink);
+}
+
+/* ---- Scrollbars, focus, motion ----------------------------------------- */
+
+.ac-scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.ac-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.ac-scroll::-webkit-scrollbar-thumb {
+  background: #ddd5c6;
+  border-radius: 6px;
+  border: 3px solid var(--ac-paper);
+}
+
+.ac-scroll::-webkit-scrollbar-thumb:hover {
+  background: #c9c0ae;
+}
+
+.ac-root :focus-visible {
+  outline: 2px solid var(--ac-ink);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ac-root *,
+  .ac-root *::before,
+  .ac-root *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .ac-row-actions {
+    opacity: 1;
+  }
+}

@@ -9,11 +9,13 @@ import {
   Star,
   Crown,
   BookOpen,
+  KeyRound,
 } from "lucide-react";
 import { Student } from "@/app/admin/dashboard/page"; // Reuse type
 import {
   updateStudentByTeacher,
   getAllLevelsForTeacher,
+  resetStudentPasswordByTeacher,
 } from "@/app/teacher/dashboard/actions";
 
 type EditStudentModalProps = {
@@ -33,6 +35,10 @@ const TeacherEditStudentModal = ({ student, onClose }: EditStudentModalProps) =>
     rank: "",
     course: null,
   });
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetValidationError, setResetValidationError] = useState("");
+  const [resetSuccess, setResetSuccess] = useState("");
 
   const queryClient = useQueryClient();
 
@@ -72,6 +78,48 @@ const TeacherEditStudentModal = ({ student, onClose }: EditStudentModalProps) =>
     },
   });
 
+  const {
+    mutate: resetPassword,
+    isPending: isResetting,
+    error: resetError,
+  } = useMutation({
+    mutationFn: ({ id, password }: { id: string; password: string }) =>
+      resetStudentPasswordByTeacher(id, password),
+    onSuccess: (result) => {
+      setResetSuccess(result.message);
+      setNewPassword("");
+      setConfirmPassword("");
+    },
+  });
+
+  const handleResetPassword = () => {
+    setResetValidationError("");
+    setResetSuccess("");
+
+    if (!newPassword || !confirmPassword) {
+      setResetValidationError("BOTH PASSWORD FIELDS ARE REQUIRED");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setResetValidationError("PASSWORDS DO NOT MATCH");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setResetValidationError("PASSWORD MUST BE AT LEAST 6 CHARACTERS");
+      return;
+    }
+
+    if (
+      !window.confirm(
+        `Reset the password for ${formData.full_name}? They will be required to set their own password at next login.`
+      )
+    ) {
+      return;
+    }
+
+    resetPassword({ id: formData.id, password: newPassword });
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const data = new FormData();
@@ -99,7 +147,7 @@ const TeacherEditStudentModal = ({ student, onClose }: EditStudentModalProps) =>
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-      <div className="pixel-panel p-6 max-w-lg w-full relative">
+      <div className="pixel-panel p-6 max-w-lg w-full relative max-h-[90vh] overflow-y-auto custom-scrollbar">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-white hover:text-red-500 transition-colors"
@@ -218,6 +266,64 @@ const TeacherEditStudentModal = ({ student, onClose }: EditStudentModalProps) =>
             </button>
           </div>
         </form>
+
+        {/* Password Reset — kept outside the edit form so it saves independently */}
+        <div className="mt-6 pt-6 border-t-2 border-gray-700/50">
+          <div className="flex items-center gap-2 mb-3">
+            <KeyRound className="w-4 h-4 text-orange-400" />
+            <h4 className="pixel-font text-sm text-orange-300">
+              RESET PASSWORD
+            </h4>
+          </div>
+
+          <p className="pixel-font text-xs text-gray-400 mb-4">
+            Sets a temporary password. The student must choose their own the
+            next time they log in.
+          </p>
+
+          <div className="space-y-3">
+            <input
+              type="password"
+              placeholder="NEW PASSWORD"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              className="pixel-input w-full"
+              autoComplete="new-password"
+              disabled={isResetting}
+            />
+            <input
+              type="password"
+              placeholder="CONFIRM NEW PASSWORD"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="pixel-input w-full"
+              autoComplete="new-password"
+              disabled={isResetting}
+            />
+
+            {(resetValidationError || resetError) && (
+              <p className="pixel-font text-xs text-red-400 text-center">
+                {resetValidationError || resetError?.message}
+              </p>
+            )}
+
+            {resetSuccess && (
+              <p className="pixel-font text-xs text-green-400 text-center">
+                {resetSuccess}
+              </p>
+            )}
+
+            <button
+              type="button"
+              onClick={handleResetPassword}
+              disabled={isResetting || isUpdating}
+              className="pixel-button pixel-button-secondary w-full flex items-center justify-center gap-2"
+            >
+              <KeyRound className="w-4 h-4" />
+              {isResetting ? "RESETTING..." : "RESET PASSWORD"}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

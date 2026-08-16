@@ -4,24 +4,14 @@
 
 import React, { useState, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
-import {
-  X,
-  Save,
-  User,
-  Trophy,
-  Star,
-  Crown,
-  Trash2,
-  AlertTriangle,
-  BookOpen,
-  GraduationCap,
-} from "lucide-react";
-import { Student, Level } from "@/app/admin/dashboard/page";
+import { X, Save, Trash2, AlertTriangle, KeyRound } from "lucide-react";
+import { Student } from "@/app/admin/dashboard/page";
 import {
   updateStudentByAdmin,
   deleteStudentByAdmin,
   getAllLevels,
   getAllTeachers,
+  resetStudentPasswordByAdmin,
 } from "@/app/admin/dashboard/actions";
 
 type EditStudentModalProps = {
@@ -29,7 +19,15 @@ type EditStudentModalProps = {
   onClose: () => void;
 };
 
+/**
+ * Two tabs, deliberately: everything used in a routine edit lives on Profile,
+ * and the two irreversible account actions live together on Account. Putting
+ * "delete" next to "save" invites the wrong click.
+ */
+type Tab = "profile" | "account";
+
 const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
+  const [tab, setTab] = useState<Tab>("profile");
   const [formData, setFormData] = useState<
     Omit<Student, "student_id" | "email">
   >({
@@ -43,16 +41,18 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
     teacher_id: null,
   });
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [resetValidationError, setResetValidationError] = useState("");
+  const [resetSuccess, setResetSuccess] = useState("");
 
   const queryClient = useQueryClient();
 
-  // Fetch all available levels
   const { data: levels, isLoading: levelsLoading } = useQuery({
     queryKey: ["admin-levels"],
     queryFn: getAllLevels,
   });
 
-  // Fetch all available teachers
   const { data: teachers, isLoading: teachersLoading } = useQuery({
     queryKey: ["admin-teachers"],
     queryFn: getAllTeachers,
@@ -71,6 +71,14 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
       teacher_id: student.teacher_id || null,
     });
   }, [student]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -101,6 +109,20 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
     },
   });
 
+  const {
+    mutate: resetPassword,
+    isPending: isResetting,
+    error: resetError,
+  } = useMutation({
+    mutationFn: ({ id, password }: { id: string; password: string }) =>
+      resetStudentPasswordByAdmin(id, password),
+    onSuccess: (result) => {
+      setResetSuccess(result.message);
+      setNewPassword("");
+      setConfirmPassword("");
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const data = new FormData();
@@ -122,6 +144,26 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
     deleteStudent(formData.id);
   };
 
+  const handleResetPassword = () => {
+    setResetValidationError("");
+    setResetSuccess("");
+
+    if (!newPassword || !confirmPassword) {
+      setResetValidationError("Enter the new password in both fields.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setResetValidationError("The two passwords don't match.");
+      return;
+    }
+    if (newPassword.length < 6) {
+      setResetValidationError("Use at least 6 characters.");
+      return;
+    }
+
+    resetPassword({ id: formData.id, password: newPassword });
+  };
+
   const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const { name, value } = e.target;
     if (name === "level_no") {
@@ -137,46 +179,42 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
     }
   };
 
+  const courseChanged = formData.course !== student.course;
+
   if (showDeleteConfirm) {
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-        <div className="pixel-panel p-6 max-w-md w-full relative border-red-500">
-          <div className="text-center">
-            <AlertTriangle className="w-16 h-16 text-red-400 mx-auto mb-4" />
-            <h3 className="pixel-font text-lg text-white mb-4">
-              DELETE STUDENT
-            </h3>
-            <p className="pixel-font text-sm text-gray-300 mb-6">
-              Are you sure you want to delete{" "}
-              <span className="text-red-400">{formData.full_name}</span>?
-              <br />
-              <span className="text-red-300 text-xs">
-                This action cannot be undone.
-              </span>
-            </p>
+      <div className="ac-root ac-overlay fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div className="ac-card p-7 max-w-md w-full">
+          <AlertTriangle className="w-9 h-9 text-[#b3261e] mb-4" />
+          <h3 className="ac-display text-xl text-[#141414] mb-3">Delete student</h3>
+          <p className="text-sm text-[#2c2a26] mb-2">
+            This removes{" "}
+            <span className="text-[#141414] font-medium">
+              {formData.full_name}
+            </span>
+            &apos;s account, level access, and quiz history.
+          </p>
+          <p className="text-sm text-[#b3261e] mb-6">This can&apos;t be undone.</p>
 
-            {deleteError && (
-              <p className="pixel-font text-xs text-red-400 mb-4">
-                {deleteError.message}
-              </p>
-            )}
+          {deleteError && (
+            <p className="text-sm text-[#b3261e] mb-4">{deleteError.message}</p>
+          )}
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowDeleteConfirm(false)}
-                disabled={isDeleting}
-                className="pixel-button pixel-button-secondary flex-1"
-              >
-                CANCEL
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={isDeleting}
-                className="pixel-button pixel-button-red flex-1"
-              >
-                {isDeleting ? "DELETING..." : "DELETE"}
-              </button>
-            </div>
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={isDeleting}
+              className="ac-btn flex-1"
+            >
+              Keep student
+            </button>
+            <button
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="ac-btn ac-btn-danger flex-1"
+            >
+              {isDeleting ? "Deleting…" : "Delete"}
+            </button>
           </div>
         </div>
       </div>
@@ -184,177 +222,287 @@ const EditStudentModal = ({ student, onClose }: EditStudentModalProps) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-      <div className="pixel-panel p-6 max-w-lg w-full relative">
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-white hover:text-red-500 transition-colors"
-        >
-          <X className="w-5 h-5" />
-        </button>
-
-        <h3 className="pixel-font text-lg text-white mb-6 text-center">
-          EDIT STUDENT
-        </h3>
-
-        {levelsLoading && (
-          <div className="pixel-font text-xs text-cyan-400 text-center mb-4">
-            LOADING LEVELS...
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Full Name */}
-          <div className="input-container">
-            <User className="input-icon w-4 h-4" />
-            <input
-              type="text"
-              name="full_name"
-              placeholder="Full Name"
-              value={formData.full_name}
-              onChange={handleInputChange}
-              className="pixel-input input-with-icon"
-              required
-            />
-          </div>
-
-          {/* Course Selection */}
-          <div className="input-container">
-            <GraduationCap className="input-icon w-4 h-4" />
-            <select
-              name="course"
-              value={formData.course || "m3-genius-program"}
-              onChange={handleSelectChange}
-              className="pixel-select w-full"
-            >
-              <option value="m3-genius-program">M3 Genius Program</option>
-              <option value="vedic-math">Vedic Math</option>
-            </select>
-          </div>
-
-          {formData.course === "vedic-math" && formData.course !== student.course && (
-            <div className="pixel-panel p-3 bg-yellow-900/20 border-yellow-500/50">
-              <div className="pixel-font text-xs text-yellow-300">
-                ⚠ Switching course will reset the student&apos;s level. They will start fresh on Vedic Math.
-              </div>
+    <div
+      className="ac-root ac-overlay fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+      onClick={onClose}
+    >
+      <div
+        className="ac-card w-full max-w-lg max-h-[88vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-label={`Edit ${student.full_name}`}
+      >
+        {/* Identity is the header, so it never needs a form field */}
+        <div className="px-6 pt-6 pb-0 shrink-0">
+          <div className="flex items-start gap-4">
+            <div className="mr-auto min-w-0">
+              <h3 className="ac-display text-xl text-[#141414] truncate">
+                {student.full_name}
+              </h3>
+              <p className="ac-num text-xs text-[#8c8578] mt-1">
+                {student.student_id}
+                {student.email ? ` · ${student.email}` : ""}
+              </p>
             </div>
-          )}
-
-          {/* Level Selection */}
-          <div className="input-container">
-            <BookOpen className="input-icon w-4 h-4" />
-            <select
-              name="level_no"
-              value={formData.level_no || ""}
-              onChange={handleSelectChange}
-              className="pixel-select w-full"
-              disabled={levelsLoading}
-            >
-              <option value="">Select Level</option>
-              {levels?.map((level) => (
-                <option key={level.id} value={level.id}>
-                  {level.name} (Difficulty: {level.difficulty_level})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Current Level Display */}
-          {student.currentLevel && (
-            <div className="pixel-panel p-3 bg-blue-900/20 border-blue-500/50">
-              <div className="pixel-font text-xs text-blue-300 mb-1">
-                CURRENT LEVEL
-              </div>
-              <div className="pixel-font text-sm text-white">
-                {student.currentLevel.name} - {student.currentLevel.type}
-              </div>
-              <div className="pixel-font text-xs text-gray-400">
-                Difficulty: {student.currentLevel.difficulty_level}
-              </div>
-            </div>
-          )}
-
-          {/* Score */}
-          <div className="input-container">
-            <Star className="input-icon w-4 h-4" />
-            <input
-              type="number"
-              name="total_score"
-              placeholder="Total Score"
-              value={formData.total_score}
-              onChange={handleInputChange}
-              className="pixel-input input-with-icon"
-              min="0"
-              required
-            />
-          </div>
-
-          {/* Rank */}
-          <div className="input-container">
-            <Crown className="input-icon w-4 h-4" />
-            <select
-              name="rank"
-              value={formData.rank}
-              onChange={handleSelectChange}
-              className="pixel-select w-full"
-              required
-            >
-              <option value="">Select Rank</option>
-              <option value="NOVICE">NOVICE</option>
-              <option value="APPRENTICE">APPRENTICE</option>
-              <option value="ADEPT">ADEPT</option>
-              <option value="EXPERT">EXPERT</option>
-              <option value="MASTER">MASTER</option>
-              <option value="LEGEND">LEGEND</option>
-            </select>
-          </div>
-
-          {/* Teacher Selection */}
-          <div className="input-container">
-            <User className="input-icon w-4 h-4" />
-            <select
-              name="teacher_id"
-              value={formData.teacher_id || ""}
-              onChange={handleSelectChange}
-              className="pixel-select w-full"
-              disabled={teachersLoading}
-            >
-              <option value="">No Teacher Assigned</option>
-              {teachers?.map((teacher: any) => (
-                <option key={teacher.id} value={teacher.id}>
-                  {teacher.full_name} ({teacher.teacher_id})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {(updateError || deleteError) && (
-            <p className="pixel-font text-xs text-red-400 text-center">
-              {updateError?.message || deleteError?.message}
-            </p>
-          )}
-
-          <div className="flex gap-3">
             <button
-              type="button"
-              onClick={() => setShowDeleteConfirm(true)}
-              disabled={isUpdating || isDeleting}
-              className="pixel-button pixel-button-red flex items-center justify-center gap-2"
+              onClick={onClose}
+              className="ac-icon-btn shrink-0"
+              aria-label="Close"
             >
-              <Trash2 className="w-4 h-4" />
-              DELETE
+              <X className="w-4 h-4" />
             </button>
+          </div>
 
+          <div
+            className="flex gap-6 mt-5 border-b border-[#e7e0d3]"
+            role="tablist"
+          >
+            <button
+              role="tab"
+              aria-selected={tab === "profile"}
+              onClick={() => setTab("profile")}
+              className="ac-tab"
+            >
+              Profile
+            </button>
+            <button
+              role="tab"
+              aria-selected={tab === "account"}
+              onClick={() => setTab("account")}
+              className="ac-tab"
+            >
+              Account
+            </button>
+          </div>
+        </div>
+
+        <div className="overflow-y-auto ac-scroll px-6 py-6 flex-1">
+          {tab === "profile" ? (
+            <form id="edit-student-form" onSubmit={handleSubmit}>
+              <div className="space-y-5">
+                <div>
+                  <label className="ac-label" htmlFor="full_name">
+                    Full name
+                  </label>
+                  <input
+                    id="full_name"
+                    type="text"
+                    name="full_name"
+                    value={formData.full_name}
+                    onChange={handleInputChange}
+                    className="ac-field ac-field-box"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="ac-label" htmlFor="course">
+                      Course
+                    </label>
+                    <select
+                      id="course"
+                      name="course"
+                      value={formData.course || "m3-genius-program"}
+                      onChange={handleSelectChange}
+                      className="ac-field ac-field-box"
+                    >
+                      <option value="m3-genius-program">M3 Genius</option>
+                      <option value="vedic-math">Vedic Math</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="ac-label" htmlFor="level_no">
+                      Level
+                    </label>
+                    <select
+                      id="level_no"
+                      name="level_no"
+                      value={formData.level_no || ""}
+                      onChange={handleSelectChange}
+                      className="ac-field ac-field-box"
+                      disabled={levelsLoading}
+                    >
+                      <option value="">
+                        {levelsLoading ? "Loading…" : "Not set"}
+                      </option>
+                      {levels?.map((level) => (
+                        <option key={level.id} value={level.id}>
+                          {level.name} · difficulty {level.difficulty_level}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {courseChanged && (
+                  <p className="text-sm text-[#6b5a1e] bg-[#fbf3d4] border border-[#efe0a5] rounded-xl px-4 py-3">
+                    Changing the course resets this student&apos;s level. They
+                    start fresh on the new course.
+                  </p>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="ac-label" htmlFor="total_score">
+                      Total score
+                    </label>
+                    <input
+                      id="total_score"
+                      type="number"
+                      name="total_score"
+                      value={formData.total_score}
+                      onChange={handleInputChange}
+                      className="ac-field ac-field-box ac-num"
+                      min="0"
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label className="ac-label" htmlFor="rank">
+                      Rank
+                    </label>
+                    <select
+                      id="rank"
+                      name="rank"
+                      value={formData.rank}
+                      onChange={handleSelectChange}
+                      className="ac-field ac-field-box"
+                      required
+                    >
+                      <option value="">Not set</option>
+                      <option value="NOVICE">Novice</option>
+                      <option value="APPRENTICE">Apprentice</option>
+                      <option value="ADEPT">Adept</option>
+                      <option value="EXPERT">Expert</option>
+                      <option value="MASTER">Master</option>
+                      <option value="LEGEND">Legend</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="ac-label" htmlFor="teacher_id">
+                    Teacher
+                  </label>
+                  <select
+                    id="teacher_id"
+                    name="teacher_id"
+                    value={formData.teacher_id || ""}
+                    onChange={handleSelectChange}
+                    className="ac-field ac-field-box"
+                    disabled={teachersLoading}
+                  >
+                    <option value="">No teacher assigned</option>
+                    {teachers?.map((teacher: any) => (
+                      <option key={teacher.id} value={teacher.id}>
+                        {teacher.full_name} ({teacher.teacher_id})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {updateError && (
+                  <p className="text-sm text-[#b3261e]">
+                    {updateError.message}
+                  </p>
+                )}
+              </div>
+            </form>
+          ) : (
+            <div className="space-y-8">
+              <section>
+                <h4 className="ac-display text-base text-[#141414] mb-2">
+                  Reset password
+                </h4>
+                <p className="text-sm text-[#8c8578] mb-4">
+                  Sets a temporary password to give the student. They choose
+                  their own the next time they log in.
+                </p>
+
+                <div className="space-y-3">
+                  <input
+                    type="password"
+                    placeholder="New password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="ac-field ac-field-box"
+                    autoComplete="new-password"
+                    disabled={isResetting}
+                  />
+                  <input
+                    type="password"
+                    placeholder="Confirm new password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="ac-field ac-field-box"
+                    autoComplete="new-password"
+                    disabled={isResetting}
+                  />
+
+                  {(resetValidationError || resetError) && (
+                    <p className="text-sm text-[#b3261e]">
+                      {resetValidationError || resetError?.message}
+                    </p>
+                  )}
+
+                  {resetSuccess && (
+                    <p className="text-sm text-[#4a7c3f]">{resetSuccess}</p>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleResetPassword}
+                    disabled={isResetting || isUpdating}
+                    className="ac-btn w-full"
+                  >
+                    <KeyRound className="w-3.5 h-3.5" />
+                    {isResetting ? "Resetting…" : "Reset password"}
+                  </button>
+                </div>
+              </section>
+
+              <section className="pt-6 border-t border-[#e7e0d3]">
+                <h4 className="ac-display text-base text-[#b3261e] mb-2">
+                  Delete student
+                </h4>
+                <p className="text-sm text-[#8c8578] mb-4">
+                  Removes the account, level access, and quiz history for good.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  disabled={isUpdating || isDeleting}
+                  className="ac-btn ac-btn-danger w-full"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  Delete student
+                </button>
+              </section>
+            </div>
+          )}
+        </div>
+
+        {/* Save belongs to Profile only, so it can't be confused with account actions */}
+        {tab === "profile" && (
+          <div className="px-6 py-4 border-t border-[#e7e0d3] flex justify-end gap-3 shrink-0">
+            <button type="button" onClick={onClose} className="ac-btn">
+              Cancel
+            </button>
             <button
               type="submit"
+              form="edit-student-form"
               disabled={isUpdating || isDeleting}
-              className="pixel-button pixel-button-green flex-1 flex items-center justify-center gap-2"
+              className="ac-btn ac-btn-primary"
             >
-              <Save className="w-4 h-4" />
-              {isUpdating ? "SAVING..." : "SAVE CHANGES"}
+              <Save className="w-3.5 h-3.5" />
+              {isUpdating ? "Saving…" : "Save changes"}
             </button>
           </div>
-        </form>
+        )}
       </div>
     </div>
   );
