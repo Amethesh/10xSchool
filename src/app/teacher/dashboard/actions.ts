@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { revalidatePath } from "next/cache";
 
 async function verifyTeacher() {
@@ -132,6 +133,72 @@ export async function updateStudentByTeacher(formData: FormData) {
   
   revalidatePath("/teacher/dashboard");
   return { success: true, message: "Student updated successfully" };
+}
+
+/**
+ * Resets the password for one of the teacher's own students and forces them
+ * to choose their own password at next login.
+ */
+export async function resetStudentPasswordByTeacher(
+  studentId: string,
+  newPassword: string
+) {
+  const teacher = await verifyTeacher();
+  const supabase = await createClient();
+
+  if (!studentId) {
+    throw new Error("Student ID is required.");
+  }
+
+  if (!newPassword || newPassword.length < 6) {
+    throw new Error("Password must be at least 6 characters.");
+  }
+
+  // Verify student belongs to teacher
+  const { data: studentCheck } = await supabase
+    .from("students")
+    .select("id, full_name")
+    .eq("id", studentId)
+    .eq("teacher_id", teacher.id)
+    .single();
+
+  if (!studentCheck) {
+    throw new Error(
+      "Unauthorized: You can only reset passwords for your assigned students."
+    );
+  }
+
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+
+  const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
+    studentId,
+    { password: newPassword }
+  );
+
+  if (authError) {
+    throw new Error(`Failed to reset password: ${authError.message}`);
+  }
+
+  const { error: flagError } = await supabaseAdmin
+    .from("students")
+    .update({ password_change_required: true })
+    .eq("id", studentId);
+
+  if (flagError) {
+    throw new Error(
+      `Password was reset, but the change-required flag failed to set: ${flagError.message}`
+    );
+  }
+
+  revalidatePath("/teacher/dashboard");
+
+  return {
+    success: true,
+    message: `Temporary password set for ${studentCheck.full_name}. They must change it at next login.`,
+  };
 }
 
 export async function getAllLevelsForTeacher() {

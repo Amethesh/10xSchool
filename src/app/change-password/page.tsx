@@ -1,8 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 // Added a new icon for the course selection
 import { Lock, Save, Library } from "lucide-react";
-import { updateUserPassword } from "./actions";
+import { updateUserPassword, getCurrentStudentCourse } from "./actions";
 import Image from "next/image";
 
 const ChangePasswordPage = () => {
@@ -11,13 +11,24 @@ const ChangePasswordPage = () => {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [status, setStatus] = useState("idle"); // idle | loading | error
   const [message, setMessage] = useState("");
+  // Students sent here by an admin password reset already have a course and
+  // must not be asked to pick one again — re-picking would change their course.
+  const [hasExistingCourse, setHasExistingCourse] = useState<boolean | null>(
+    null
+  );
+
+  useEffect(() => {
+    getCurrentStudentCourse().then((existingCourse) => {
+      setHasExistingCourse(Boolean(existingCourse));
+    });
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setMessage("");
 
-    if (!course) {
-      // New validation check
+    if (!hasExistingCourse && !course) {
+      // Only required during first-time setup
       setStatus("error");
       setMessage("PLEASE SELECT A COURSE");
       return;
@@ -72,27 +83,29 @@ const ChangePasswordPage = () => {
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* === NEW SELECT FIELD START === */}
-          <div>
-            <div className="pixel-font text-xs text-white mb-3 text-center">
-              SELECT YOUR COURSE:
+          {hasExistingCourse === false && (
+            <div>
+              <div className="pixel-font text-xs text-white mb-3 text-center">
+                SELECT YOUR COURSE:
+              </div>
+              <div className="relative">
+                <Library className="text-[#607d8b] w-4 h-4 absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
+                <select
+                  value={course}
+                  onChange={(e) => setCourse(e.target.value)}
+                  className="pixel-select input-with-icon" // Use new class
+                  disabled={status === "loading"}
+                  required
+                >
+                  <option value="" disabled>
+                    CHOOSE YOUR COURSE...
+                  </option>
+                  <option value="m3-genius-program">M3 Genius Program</option>
+                  <option value="vedic-math">Vedic math</option>
+                </select>
+              </div>
             </div>
-            <div className="relative">
-              <Library className="text-[#607d8b] w-4 h-4 absolute top-1/2 -translate-y-1/2 left-3 pointer-events-none" />
-              <select
-                value={course}
-                onChange={(e) => setCourse(e.target.value)}
-                className="pixel-select input-with-icon" // Use new class
-                disabled={status === "loading"}
-                required
-              >
-                <option value="" disabled>
-                  CHOOSE YOUR COURSE...
-                </option>
-                <option value="m3-genius-program">M3 Genius Program</option>
-                <option value="vedic-math">Vedic math</option>
-              </select>
-            </div>
-          </div>
+          )}
           {/* === NEW SELECT FIELD END === */}
 
           <div>
@@ -145,7 +158,7 @@ const ChangePasswordPage = () => {
 
           <button
             type="submit"
-            disabled={status === "loading"}
+            disabled={status === "loading" || hasExistingCourse === null}
             className="pixel-button pixel-button-green w-full"
           >
             <div className="flex items-center justify-center gap-2">
