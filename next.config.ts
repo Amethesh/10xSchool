@@ -14,6 +14,18 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async redirects() {
+    return [
+      // Ad platforms and app listings expect a privacy policy at the site root.
+      // next.config redirects run before middleware, so this stays reachable
+      // to logged-out visitors even though /privacy-policy is not whitelisted.
+      {
+        source: "/privacy-policy",
+        destination: "/landing/privacy-policy",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

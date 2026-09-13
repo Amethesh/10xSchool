@@ -1,12 +1,13 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Loader2, CheckCircle, XCircle, Clock, Users, AlertCircle, ArrowBigLeft, ChevronLeft } from 'lucide-react';
-import { toast } from 'sonner';
-import { formatLevelName } from '@/utils/levelUtils';
-import { motion, Variants, AnimatePresence } from 'motion/react';
-import clsx from 'clsx';
+import React, { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Loader2, Check, X, Inbox } from "lucide-react";
+import { toast } from "sonner";
+import { formatLevelName } from "@/utils/levelUtils";
+import { motion, AnimatePresence } from "motion/react";
+import AdminTopBar from "@/components/admin/AdminTopBar";
+import { avatarTint, initials } from "@/components/admin/avatar";
 
 interface AccessRequest {
   id: string;
@@ -17,32 +18,25 @@ interface AccessRequest {
   requestedAt: string;
 }
 
-// --- Animation Variants ---
-const staggerContainer: Variants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.05 } },
-};
-const fadeInItem: Variants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
-};
-
 // Fetch pending access requests
 async function fetchPendingAccessRequests(): Promise<AccessRequest[]> {
-  const response = await fetch('/api/admin/access-requests');
+  const response = await fetch("/api/admin/access-requests");
   if (!response.ok) {
-    throw new Error('Failed to fetch access requests');
+    throw new Error("Failed to fetch access requests");
   }
   const data = await response.json();
   return data.requests;
 }
 
 // Process access request (approve/deny)
-async function processAccessRequest(requestId: string, action: 'approve' | 'deny') {
-  const response = await fetch('/api/admin/access-requests', {
-    method: 'POST',
+async function processAccessRequest(
+  requestId: string,
+  action: "approve" | "deny"
+) {
+  const response = await fetch("/api/admin/access-requests", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       action,
@@ -52,18 +46,21 @@ async function processAccessRequest(requestId: string, action: 'approve' | 'deny
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to process request');
+    throw new Error(error.error || "Failed to process request");
   }
 
   return response.json();
 }
 
 // Bulk process access requests
-async function bulkProcessAccessRequests(requestIds: string[], action: 'approve' | 'deny') {
-  const response = await fetch('/api/admin/access-requests', {
-    method: 'POST',
+async function bulkProcessAccessRequests(
+  requestIds: string[],
+  action: "approve" | "deny"
+) {
+  const response = await fetch("/api/admin/access-requests", {
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       action,
@@ -73,51 +70,84 @@ async function bulkProcessAccessRequests(requestIds: string[], action: 'approve'
 
   if (!response.ok) {
     const error = await response.json();
-    throw new Error(error.error || 'Failed to process requests');
+    throw new Error(error.error || "Failed to process requests");
   }
 
   return response.json();
 }
 
+/** How long a request has been sitting — the thing that matters in a queue. */
+function waitingFor(iso: string): string {
+  const days = Math.floor(
+    (Date.now() - new Date(iso).getTime()) / 86_400_000
+  );
+  if (days <= 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 7) return `${days} days ago`;
+  if (days < 14) return "Last week";
+  return new Date(iso).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+  });
+}
+
 export default function AccessRequestsPage() {
   const [selectedRequests, setSelectedRequests] = useState<string[]>([]);
+  const [processingId, setProcessingId] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
   // Fetch pending requests
-  const { data: requests, isLoading, error } = useQuery({
-    queryKey: ['admin-access-requests'],
+  const {
+    data: requests,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["admin-access-requests"],
     queryFn: fetchPendingAccessRequests,
     refetchInterval: 30000, // Refetch every 30 seconds
   });
 
   // Single request mutations
   const approveMutation = useMutation({
-    mutationFn: (requestId: string) => processAccessRequest(requestId, 'approve'),
+    mutationFn: (requestId: string) =>
+      processAccessRequest(requestId, "approve"),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-access-requests'] });
-      toast.success('Access request approved successfully');
+      queryClient.invalidateQueries({ queryKey: ["admin-access-requests"] });
+      queryClient.invalidateQueries({
+        queryKey: ["admin-pending-requests-count"],
+      });
+      toast.success("Access approved");
     },
     onError: (error: Error) => {
       toast.error(error.message);
     },
+    onSettled: () => setProcessingId(null),
   });
 
   const denyMutation = useMutation({
-    mutationFn: (requestId: string) => processAccessRequest(requestId, 'deny'),
+    mutationFn: (requestId: string) => processAccessRequest(requestId, "deny"),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['admin-access-requests'] });
-      toast.success('Access request denied');
+      queryClient.invalidateQueries({ queryKey: ["admin-access-requests"] });
+      queryClient.invalidateQueries({
+        queryKey: ["admin-pending-requests-count"],
+      });
+      toast.success("Access denied");
     },
     onError: (error: Error) => {
       toast.error(error.message);
     },
+    onSettled: () => setProcessingId(null),
   });
 
   // Bulk mutations
   const bulkApproveMutation = useMutation({
-    mutationFn: (requestIds: string[]) => bulkProcessAccessRequests(requestIds, 'approve'),
+    mutationFn: (requestIds: string[]) =>
+      bulkProcessAccessRequests(requestIds, "approve"),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-access-requests'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-access-requests"] });
+      queryClient.invalidateQueries({
+        queryKey: ["admin-pending-requests-count"],
+      });
       setSelectedRequests([]);
       toast.success(`Approved ${result.successful.length} requests`);
       if (result.failed.length > 0) {
@@ -130,9 +160,13 @@ export default function AccessRequestsPage() {
   });
 
   const bulkDenyMutation = useMutation({
-    mutationFn: (requestIds: string[]) => bulkProcessAccessRequests(requestIds, 'deny'),
+    mutationFn: (requestIds: string[]) =>
+      bulkProcessAccessRequests(requestIds, "deny"),
     onSuccess: (result) => {
-      queryClient.invalidateQueries({ queryKey: ['admin-access-requests'] });
+      queryClient.invalidateQueries({ queryKey: ["admin-access-requests"] });
+      queryClient.invalidateQueries({
+        queryKey: ["admin-pending-requests-count"],
+      });
       setSelectedRequests([]);
       toast.success(`Denied ${result.successful.length} requests`);
       if (result.failed.length > 0) {
@@ -145,9 +179,9 @@ export default function AccessRequestsPage() {
   });
 
   const handleSelectRequest = (requestId: string) => {
-    setSelectedRequests(prev => 
-      prev.includes(requestId) 
-        ? prev.filter(id => id !== requestId)
+    setSelectedRequests((prev) =>
+      prev.includes(requestId)
+        ? prev.filter((id) => id !== requestId)
         : [...prev, requestId]
     );
   };
@@ -156,22 +190,38 @@ export default function AccessRequestsPage() {
     if (selectedRequests.length === requests?.length) {
       setSelectedRequests([]);
     } else {
-      setSelectedRequests(requests?.map(r => r.id) || []);
+      setSelectedRequests(requests?.map((r) => r.id) || []);
     }
   };
 
-  // --- Loading and Error States (Themed) ---
+  const isBulkBusy =
+    bulkApproveMutation.isPending || bulkDenyMutation.isPending;
+
+  const stats = React.useMemo(() => {
+    const list = requests ?? [];
+    return {
+      pending: list.length,
+      students: new Set(list.map((r) => r.studentId)).size,
+      levels: new Set(list.map((r) => r.levelId)).size,
+    };
+  }, [requests]);
+
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen p-4 pixel-font text-cyan-300">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat -z-40"
-          style={{ backgroundImage: "url('/images/8bitBG6.png')" }}
-        />
-        <div className="absolute inset-0 bg-black opacity-40"></div>
-        <div className='pixel-panel backdrop-blur-lg flex flex-col justify-center items-center p-4'>
-          <Loader2 className="w-8 h-8 mb-4 animate-spin" />
-          <p>LOADING ACCESS REQUESTS...</p>
+      <div className="ac-root flex items-center justify-center p-6">
+        <div className="text-center">
+          <p className="ac-display text-xl text-[#141414] mb-4">
+            Checking the queue
+          </p>
+          <div className="flex gap-1.5 justify-center">
+            {["#f0df6e", "#cfe0b4", "#b4c48d", "#a6bedb"].map((c, i) => (
+              <span
+                key={c}
+                className="w-3 h-3 rounded-full animate-pulse"
+                style={{ background: c, animationDelay: `${i * 0.15}s` }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -179,188 +229,252 @@ export default function AccessRequestsPage() {
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen p-4">
-        <div className="pixel-panel p-8 text-center max-w-md w-full">
-          <AlertCircle className="w-12 h-12 mx-auto mb-4 text-red-400" />
-          <h2 className="pixel-font text-lg text-white mb-2">Error Loading Data</h2>
-          <p className="pixel-font text-xs text-red-400/80 mb-6">
-            {error instanceof Error ? error.message : 'An unknown error occurred'}
+      <div className="ac-root flex items-center justify-center p-6">
+        <div className="ac-card p-8 max-w-md text-center">
+          <p className="ac-display text-xl text-[#141414] mb-2">
+            The queue didn&apos;t load
           </p>
-          <button className="pixel-button" onClick={() => window.location.reload()}>
-            TRY AGAIN
+          <p className="text-sm text-[#8c8578] mb-6">
+            {error instanceof Error ? error.message : "An unknown error occurred"}
+          </p>
+          <button
+            onClick={() =>
+              queryClient.invalidateQueries({
+                queryKey: ["admin-access-requests"],
+              })
+            }
+            className="ac-btn ac-btn-primary"
+          >
+            Try again
           </button>
         </div>
       </div>
     );
   }
 
-  // --- Main Component Render ---
   return (
-    <>
-      <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: "url('/images/8bitBG6.png')" }}
-        />
-        <div className="absolute inset-0 bg-black opacity-40"></div>
-      <motion.div 
-        className="pixel-panel backdrop-blur-lg max-w-5xl mx-auto p-4 mt-6 sm:p-6"
-        initial="hidden"
-        animate="visible"
-        variants={staggerContainer}
-      >
-        {/* Header */}
-        <motion.div className="mb-8 flex gap-4 items-center" variants={fadeInItem}>
-          <div className='p-4'>
-            <a
-              href="/admin/dashboard"
-              className="pixel-button pixel-button-secondary flex items-center"
-              >
-              <ChevronLeft  className="w-6 h-6" />
-            </a>
+    <div className="ac-root">
+      <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-5">
+        <AdminTopBar active="requests" />
+
+        <h1 className="ac-display text-[32px] sm:text-[40px] leading-tight text-[#141414]">
+          Access requests
+        </h1>
+        <p className="text-sm text-[#8c8578] mt-2 mb-6 max-w-xl">
+          {stats.pending === 0
+            ? "Nothing waiting. Students appear here when they ask to unlock a level."
+            : `${stats.pending} ${
+                stats.pending === 1 ? "request" : "requests"
+              } from ${stats.students} ${
+                stats.students === 1 ? "student" : "students"
+              }, across ${stats.levels} ${
+                stats.levels === 1 ? "level" : "levels"
+              }.`}
+        </p>
+
+        {/* Summary */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-7">
+          <div className="ac-card ac-card-yellow p-5">
+            <svg
+              className="ac-card-art"
+              width="100"
+              height="100"
+              viewBox="0 0 60 60"
+              fill="#141414"
+            >
+              <rect x="12" y="0" width="36" height="12" />
+              <rect x="18" y="12" width="24" height="12" />
+              <rect x="24" y="24" width="12" height="12" />
+              <rect x="18" y="36" width="24" height="12" />
+              <rect x="12" y="48" width="36" height="12" />
+            </svg>
+            <div className="ac-stat ac-num !text-3xl">{stats.pending}</div>
+            <div className="ac-caption mt-2">Waiting</div>
           </div>
-          <div>
-            <h1 className="pixel-font text-2xl sm:text-3xl text-white mb-2">ACCESS REQUESTS</h1>
-            <p className="pixel-font text-sm text-cyan-300/80">
-              Manage student requests for level access.
+          <div className="ac-card ac-card-blue p-5">
+            <svg
+              className="ac-card-art"
+              width="100"
+              height="100"
+              viewBox="0 0 60 60"
+              fill="#141414"
+            >
+              <rect x="12" y="0" width="24" height="12" />
+              <rect x="0" y="12" width="12" height="24" />
+              <rect x="12" y="12" width="24" height="24" />
+              <rect x="36" y="24" width="12" height="12" />
+            </svg>
+            <div className="ac-stat ac-num !text-3xl">{stats.students}</div>
+            <div className="ac-caption mt-2">Students</div>
+          </div>
+          <div className="ac-card ac-card-green p-5">
+            <svg
+              className="ac-card-art"
+              width="100"
+              height="100"
+              viewBox="0 0 60 60"
+              fill="#141414"
+            >
+              <rect x="0" y="12" width="60" height="12" />
+              <rect x="12" y="24" width="36" height="12" />
+              <rect x="24" y="36" width="12" height="12" />
+            </svg>
+            <div className="ac-stat ac-num !text-3xl">{stats.levels}</div>
+            <div className="ac-caption mt-2">Levels</div>
+          </div>
+        </div>
+
+        {/* Queue */}
+        {!requests || requests.length === 0 ? (
+          <div className="ac-card p-12 text-center">
+            <Inbox className="w-10 h-10 text-[#d8d0c1] mx-auto mb-4" />
+            <p className="ac-display text-xl text-[#141414] mb-2">All clear</p>
+            <p className="text-sm text-[#8c8578]">
+              No requests are waiting for a decision.
             </p>
           </div>
-        </motion.div>
-
-        {/* Summary Stats */}
-        <motion.div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8" variants={staggerContainer}>
-          <div className="pixel-panel !p-4 text-center">
-            <div className="pixel-font text-3xl font-bold text-yellow-400">{requests?.length || 0}</div>
-            <div className="pixel-font text-xs text-cyan-300/70 mt-1">Pending Requests</div>
-          </div>
-          <div className="pixel-panel !p-4 text-center">
-            <div className="pixel-font text-3xl font-bold text-blue-400">{selectedRequests.length}</div>
-            <div className="pixel-font text-xs text-cyan-300/70 mt-1">Selected</div>
-          </div>
-          <div className="pixel-panel !p-4 text-center">
-            <div className="pixel-font text-3xl font-bold text-green-400">{new Set(requests?.map(r => r.levelId)).size || 0}</div>
-            <div className="pixel-font text-xs text-cyan-300/70 mt-1">Unique Levels</div>
-          </div>
-        </motion.div>
-
-        {/* Bulk Actions */}
-        {requests && requests.length > 0 && (
-          <motion.div className="pixel-panel p-4 mb-6" variants={fadeInItem}>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-              <label className="flex items-center gap-3 pixel-font text-sm text-white cursor-pointer">
+        ) : (
+          <div className="ac-card overflow-hidden">
+            {/* Bulk bar */}
+            <div className="flex flex-wrap items-center gap-3 px-5 py-3.5 border-b border-[#e7e0d3]">
+              <label className="flex items-center gap-2.5 text-sm text-[#2c2a26] cursor-pointer select-none">
                 <input
                   type="checkbox"
-                  checked={selectedRequests.length > 0 && selectedRequests.length === requests.length}
+                  checked={selectedRequests.length === requests.length}
                   onChange={handleSelectAll}
-                  className="w-5 h-5 bg-cyan-900/50 border-cyan-400/50 text-cyan-400 focus:ring-cyan-400"
+                  className="ac-checkbox"
                 />
-                Select All ({selectedRequests.length} selected)
+                Select all
               </label>
-              
+
               <AnimatePresence>
                 {selectedRequests.length > 0 && (
                   <motion.div
-                    className="flex gap-2"
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -10 }}
+                    className="flex items-center gap-2 ml-auto"
+                    initial={{ opacity: 0, y: -4 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -4 }}
                   >
+                    <span className="text-xs text-[#8c8578] mr-1">
+                      {selectedRequests.length} selected
+                    </span>
                     <button
-                      onClick={() => bulkApproveMutation.mutate(selectedRequests)}
-                      disabled={bulkApproveMutation.isPending}
-                      className="pixel-button-small flex items-center gap-2"
+                      onClick={() =>
+                        bulkApproveMutation.mutate(selectedRequests)
+                      }
+                      disabled={isBulkBusy}
+                      className="ac-btn ac-btn-approve !min-h-9 !text-[13px]"
                     >
-                      {bulkApproveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                      {bulkApproveMutation.isPending ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Check className="w-3.5 h-3.5" />
+                      )}
                       Approve
                     </button>
                     <button
                       onClick={() => bulkDenyMutation.mutate(selectedRequests)}
-                      disabled={bulkDenyMutation.isPending}
-                      className="pixel-button-secondary-small flex items-center gap-2"
+                      disabled={isBulkBusy}
+                      className="ac-btn ac-btn-danger !min-h-9 !text-[13px]"
                     >
-                      {bulkDenyMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
+                      {bulkDenyMutation.isPending ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <X className="w-3.5 h-3.5" />
+                      )}
                       Deny
                     </button>
                   </motion.div>
                 )}
               </AnimatePresence>
             </div>
-          </motion.div>
-        )}
 
-        {/* Requests List */}
-        {!requests || requests.length === 0 ? (
-          <motion.div className="pixel-panel p-12 text-center" variants={fadeInItem}>
-            <Clock className="w-12 h-12 mx-auto mb-4 text-cyan-400/50" />
-            <h3 className="pixel-font text-lg text-white mb-2">All Clear!</h3>
-            <p className="pixel-font text-sm text-cyan-300/70">No pending access requests.</p>
-          </motion.div>
-        ) : (
-          <motion.div className="space-y-4" variants={staggerContainer}>
-            <AnimatePresence>
-              {requests.map((request) => (
-                <motion.div
-                  key={request.id}
-                  className={clsx(
-                    "pixel-panel !p-4 transition-colors",
-                    selectedRequests.includes(request.id) ? "bg-blue-500/15 border-blue-400" : "bg-cyan-900/20"
-                  )}
-                  variants={fadeInItem}
-                  layout
-                >
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    {/* Left Side: Selection & Student Info */}
-                    <div className="flex items-center gap-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedRequests.includes(request.id)}
-                        onChange={() => handleSelectRequest(request.id)}
-                        className="w-5 h-5 bg-cyan-900/50 border-cyan-400/50 text-cyan-400 focus:ring-cyan-400 flex-shrink-0"
-                      />
-                      <div>
-                        <div className="pixel-font text-base text-white">{request.studentName}</div>
-                        <div className="pixel-font text-xs text-cyan-300/60">
-                          ID: {request.studentId}
-                        </div>
+            <AnimatePresence initial={false}>
+              {requests.map((request) => {
+                const isSelected = selectedRequests.includes(request.id);
+                const isBusy = processingId === request.id;
+
+                return (
+                  <motion.div
+                    key={request.id}
+                    layout
+                    exit={{ opacity: 0, height: 0 }}
+                    className={`flex flex-wrap items-center gap-4 px-5 py-4 border-b border-[#e7e0d3] last:border-b-0 transition-colors ${
+                      isSelected ? "bg-[#e9f2dd]" : "hover:bg-[#faf7f0]"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => handleSelectRequest(request.id)}
+                      className="ac-checkbox"
+                      aria-label={`Select ${request.studentName}`}
+                    />
+
+                    <span
+                      className="ac-avatar"
+                      style={{ background: avatarTint(request.studentId) }}
+                    >
+                      {initials(request.studentName)}
+                    </span>
+
+                    <div className="min-w-0 mr-auto">
+                      <div className="text-[#141414] font-medium leading-tight truncate">
+                        {request.studentName}
+                      </div>
+                      <div className="ac-num text-xs text-[#8c8578] mt-0.5">
+                        {request.studentId}
                       </div>
                     </div>
-                    
-                    {/* Right Side: Level Info & Actions */}
-                    <div className="flex items-center gap-4 w-full sm:w-auto justify-between">
-                      <div className="text-right">
-                        <div className="pixel-font text-xs px-2 py-1 bg-cyan-400/10 text-cyan-300 rounded mb-1">
-                          {formatLevelName(request.levelName)}
-                        </div>
-                        <div className="pixel-font text-[10px] text-cyan-300/50">
-                          {new Date(request.requestedAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                      
-                      <div className="flex gap-2">
-                        <button
-                          title="Approve"
-                          onClick={() => approveMutation.mutate(request.id)}
-                          disabled={approveMutation.isPending || denyMutation.isPending}
-                          className="pixel-button !p-2 sm:!p-3"
-                        >
-                          {approveMutation.isPending && !denyMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
-                        </button>
-                        <button
-                          title="Deny"
-                          onClick={() => denyMutation.mutate(request.id)}
-                          disabled={denyMutation.isPending || approveMutation.isPending}
-                          className="pixel-button-secondary !p-2 sm:!p-3"
-                        >
-                          {denyMutation.isPending && !approveMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <XCircle className="w-4 h-4" />}
-                        </button>
+
+                    <div className="text-right shrink-0">
+                      <span className="ac-pill">
+                        {formatLevelName(request.levelName)}
+                      </span>
+                      <div className="text-[11px] text-[#8c8578] mt-1">
+                        {waitingFor(request.requestedAt)}
                       </div>
                     </div>
-                  </div>
-                </motion.div>
-              ))}
+
+                    <div className="flex gap-2 shrink-0">
+                      <button
+                        onClick={() => {
+                          setProcessingId(request.id);
+                          approveMutation.mutate(request.id);
+                        }}
+                        disabled={isBusy || isBulkBusy}
+                        className="ac-btn ac-btn-approve !min-h-9 !text-[13px]"
+                      >
+                        {isBusy && approveMutation.isPending ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Check className="w-3.5 h-3.5" />
+                        )}
+                        Approve
+                      </button>
+                      <button
+                        onClick={() => {
+                          setProcessingId(request.id);
+                          denyMutation.mutate(request.id);
+                        }}
+                        disabled={isBusy || isBulkBusy}
+                        className="ac-btn ac-btn-danger !min-h-9 !text-[13px]"
+                      >
+                        {isBusy && denyMutation.isPending ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <X className="w-3.5 h-3.5" />
+                        )}
+                        Deny
+                      </button>
+                    </div>
+                  </motion.div>
+                );
+              })}
             </AnimatePresence>
-          </motion.div>
+          </div>
         )}
-      </motion.div>
-    </>
+      </div>
+    </div>
   );
 }
