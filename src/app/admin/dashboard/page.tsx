@@ -21,6 +21,7 @@ import {
 import EditStudentModal from "@/components/admin/EditStudentModal";
 import RankLadder, { rankIndex } from "@/components/admin/RankLadder";
 import AdminTopBar from "@/components/admin/AdminTopBar";
+import { avatarTint, initials } from "@/components/admin/avatar";
 
 // Define the Student type for type safety
 export type Student = {
@@ -56,22 +57,6 @@ const COURSE_LABELS: Record<string, string> = {
   "m3-genius-program": "M3 Genius",
   "vedic-math": "Vedic Math",
 };
-
-const AVATAR_TINTS = ["#f0df6e", "#cfe0b4", "#b4c48d", "#a6bedb", "#e8d0b8"];
-
-const avatarTint = (seed: string) => {
-  let hash = 0;
-  for (let i = 0; i < seed.length; i++) hash = seed.charCodeAt(i) + hash * 31;
-  return AVATAR_TINTS[Math.abs(hash) % AVATAR_TINTS.length];
-};
-
-const initials = (name: string) =>
-  name
-    .trim()
-    .split(/\s+/)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("");
 
 const AdminDashboardPage = () => {
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
